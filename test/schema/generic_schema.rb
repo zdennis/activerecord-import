@@ -11,7 +11,7 @@ ActiveRecord::Schema.define do
   end
 
   create_table :topics, :force=>true do |t|
-    t.column :title, :string, :null=>false
+    t.column :title, :string, :null => false
     t.column :author_name, :string
     t.column :author_email_address, :string
     t.column :written_on, :datetime

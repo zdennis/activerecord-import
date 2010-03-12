@@ -8,6 +8,10 @@ gem "rails", "3.0.0.beta"
 require "rails"
 require "rails/test_help"
 require "active_record/fixtures"
+require "active_support/test_case"
+require 'active_support/core_ext/object/returning'
+
+require "delorean"
 
 require "ar-extensions"
 require "logger"
@@ -32,7 +36,11 @@ class ActiveSupport::TestCase
     alias_method :context, :describe
     
     def let(name, &blk)
-      define_method(name, &blk)
+      values = {}
+      define_method(name) do
+        return values[name] if values.has_key?(name)
+        values[name] = instance_eval(&blk)
+      end
     end
     
     def it(description, &blk)
@@ -46,11 +54,17 @@ def describe(description, &blk)
   ActiveSupport::TestCase.describe(description, true, &blk)
 end
 
+# load test helpers
+require "rails"
+class MyApplication < Rails::Application ; end
 adapter = "sqlite3"
 
-ActiveRecord::Base.logger = Logger.new("foo.log")
+ActiveRecord::Base.logger = Logger.new("log/test.log")
 ActiveRecord::Base.configurations["test"] = YAML.load(this_dir.join("database.yml").open)[adapter]
 ActiveRecord::Base.establish_connection "test"
+
+require "factory_girl"
+Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each{ |file| require file }
 
 # Load base/generic schema
 require this_dir.join("schema/version")
@@ -61,3 +75,4 @@ adapter_schema = this_dir.join("schema/#{adapter}_schema")
 require adapter_schema if File.exists?(adapter_schema)
 
 Dir[File.dirname(__FILE__) + "/models/*.rb"].each{ |file| require file }
+
