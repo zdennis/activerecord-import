@@ -215,32 +215,5 @@ describe "#import" do
       assert_equal "superx", Group.first.order
     end
   end
-  
-    
-  # 
-  # describe "computing insert value sets" do
-  #   context "when the max allowed bytes is 33 and the base SQL is 26 bytes" do
-  #     it "should return 3 value sets when given 3 value sets of 7 bytes a piece"
-  #   end
-  # 
-  #   context "when the max allowed bytes is 40 and the base SQL is 26 bytes" do
-  #     it "should return 3 value sets when given 3 value sets of 7 bytes a piece"
-  #   end
-  # 
-  #   context "when the max allowed bytes is 41 and the base SQL is 26 bytes" do
-  #     it "should return 3 value sets when given 2 value sets of 7 bytes a piece"
-  #   end
-  # 
-  #   context "when the max allowed bytes is 48 and the base SQL is 26 bytes" do
-  #     it "should return 3 value sets when given 2 value sets of 7 bytes a piece"
-  #   end
-  # 
-  #   context "when the max allowed bytes is 49 and the base SQL is 26 bytes" do
-  #     it "should return 3 value sets when given 1 value sets of 7 bytes a piece"
-  #   end
-  # 
-  #   context "when the max allowed bytes is 999999 and the base SQL is 26 bytes" do
-  #     it "should return 3 value sets when given 1 value sets of 7 bytes a piece"
-  #   end
-  # end
+
 end
