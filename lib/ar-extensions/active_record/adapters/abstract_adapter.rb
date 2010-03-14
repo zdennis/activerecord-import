@@ -45,7 +45,7 @@ module ActiveRecord # :nodoc:
             sql2insert = base_sql + values.join( ',' ) + post_sql
             insert( sql2insert, *args )
           end
-        end        
+        end
 
         number_of_inserts
       end

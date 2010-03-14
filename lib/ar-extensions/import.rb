@@ -289,7 +289,6 @@ class ActiveRecord::Base
                                                   values_sql,
                                                   "#{self.class.name} Create Many Without Validations Or Callbacks" )
       end
-      
       number_inserted
     end
     
