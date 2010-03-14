@@ -22,6 +22,21 @@ class ActiveSupport::TestCase
   self.use_transactional_fixtures = true
   
   class << self
+    def assertion(name, &block)
+      mc = class << self ; self ; end
+      mc.class_eval do
+        define_method(name) do
+          it(name, &block)
+        end
+      end
+    end
+
+    def macro(name, &block)
+      class_eval do
+        define_method(name, &block)
+      end
+    end
+    
     def describe(description, toplevel=nil, &blk)
       text = toplevel ? description : "#{name} #{description}"
       klass = Class.new(self)
