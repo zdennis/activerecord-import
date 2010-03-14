@@ -151,24 +151,24 @@ describe "#import" do
             result = Book.import [:title, :author_name, :publisher], [["LDAP", "Big Bird", "Del Rey"]]
             assert_equal 1, result.num_inserts
           end
-          @book = Book.first
         end
+        @book = Book.last
       end
     
       it "should set the created_at column for new records"  do
-        assert_equal 5.minutes.ago.strftime("%H:%m"), @book.created_at.strftime("%H:%m")
+        assert_equal 5.minutes.ago.strftime("%H:%M"), @book.created_at.strftime("%H:%M")
       end
 
       it "should set the created_on column for new records" do
-        assert_equal 5.minutes.ago.strftime("%H:%m"), @book.created_on.strftime("%H:%m")
+        assert_equal 5.minutes.ago.strftime("%H:%M"), @book.created_on.strftime("%H:%M")
       end
 
       it "should set the updated_at column for new records" do
-        assert_equal 5.minutes.ago.strftime("%H:%m"), @book.updated_at.strftime("%H:%m")
+        assert_equal 5.minutes.ago.strftime("%H:%M"), @book.updated_at.strftime("%H:%M")
       end
 
       it "should set the updated_on column for new records" do
-        assert_equal 5.minutes.ago.strftime("%H:%m"), @book.updated_on.strftime("%H:%m")
+        assert_equal 5.minutes.ago.strftime("%H:%M"), @book.updated_on.strftime("%H:%M")
       end
     end
     
@@ -183,23 +183,24 @@ describe "#import" do
           end
         end
         ActiveRecord::Base.default_timezone = original_timezone
-        @book = Book.first
+        @book = Book.last
       end
 
       it "should set the created_at column for new records respecting the time zone"  do
-        assert_equal 5.minutes.ago.utc.strftime("%H:%m"), @book.created_at.strftime("%H:%m")
+        ActiveRecord::Base.default_timezone
+        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.created_at.strftime("%H:%M")
       end
 
       it "should set the created_on column for new records respecting the time zone" do
-        assert_equal 5.minutes.ago.utc.strftime("%H:%m"), @book.created_on.strftime("%H:%m")
+        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.created_on.strftime("%H:%M")
       end
 
       it "should set the updated_at column for new records respecting the time zone" do
-        assert_equal 5.minutes.ago.utc.strftime("%H:%m"), @book.updated_at.strftime("%H:%m")
+        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.updated_at.strftime("%H:%M")
       end
 
       it "should set the updated_on column for new records respecting the time zone" do
-        assert_equal 5.minutes.ago.utc.strftime("%H:%m"), @book.updated_on.strftime("%H:%m")
+        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.updated_on.strftime("%H:%M")
       end
     end
   end
