@@ -16,7 +16,6 @@ describe "ActiveRecord::ConnectionADapter::AbstractAdapter" do
     context "when the max allowed bytes is 40 and the base SQL is 26 bytes" do
       it "should return 3 value sets when given 3 value sets of 7 bytes a piece" do
         value_sets = adapter.get_insert_value_sets values, base_sql.size, max_allowed_bytes = 40
-        puts value_sets.inspect
         assert_equal 3, value_sets.size
       end
     end
