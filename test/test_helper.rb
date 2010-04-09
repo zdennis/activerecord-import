@@ -12,7 +12,7 @@ require 'active_support/core_ext/object/returning'
 
 require "delorean"
 
-require "ar-extensions"
+require "active_record"
 require "logger"
 
 require "ruby-debug"
@@ -88,6 +88,9 @@ end
 require "rails"
 class MyApplication < Rails::Application ; end
 adapter = ENV["ARE_DB"] || "sqlite3"
+
+# load the library
+require "ar-extensions/import/#{adapter}"
 
 ActiveRecord::Base.logger = Logger.new("log/test.log")
 ActiveRecord::Base.logger.level = Logger::DEBUG

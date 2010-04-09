@@ -9,9 +9,10 @@ mysql:
   <<: *common
   adapter: mysql
 
-postgres:
+postgresql:
   <<: *common
-  adapter: postgres
+  username: zdennis
+  adapter: postgresql
   min_messages: warning
 
 oracle:

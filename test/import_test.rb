@@ -77,10 +77,13 @@ describe "#import" do
       topic = Generate(:topic, :title => "foobar")
       assert_no_difference "Topic.count" do
         begin
-          topic.title = "baz"
-          Topic.import [topic]
+          Topic.transaction do
+            topic.title = "baz"
+            Topic.import [topic]
+          end
         rescue Exception
-          # no-op
+          # PostgreSQL raises PgError due to key constraints
+          # I don't know why ActiveRecord doesn't catch these. *sigh*
         end
       end
       assert_equal "foobar", topic.reload.title

@@ -1,8 +1,16 @@
 require 'rake/testtask'
 
-task :default => [:test]
+task :default => ["display:notice"]
 
-ADAPTERS = %w(mysql postgresql sqlite sqlite3 oracle)
+ADAPTERS = %w(mysql postgresql sqlite3 oracle)
+
+namespace :display do
+  task :notice do
+    puts
+    puts "To run tests you must supply the adapter, see rake -T for more information."
+    puts
+  end
+end
 
 desc "Runs generic database tests."
 Rake::TestTask.new("test") { |t|

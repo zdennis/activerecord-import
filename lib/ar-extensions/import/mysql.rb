@@ -1,3 +1,6 @@
+require "active_record/connection_adapters/mysql_adapter"
+require File.join File.dirname(__FILE__),  "base"
+
 module ActiveRecord::Extensions::ConnectionAdapters::MysqlAdapter # :nodoc:
 
   include ActiveRecord::Extensions::Import::ImportSupport  
