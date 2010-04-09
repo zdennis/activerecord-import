@@ -3,7 +3,6 @@ require "ostruct"
 module ActiveRecord::Extensions::ConnectionAdapters ; end
 
 module ActiveRecord::Extensions::Import #:nodoc:
-  
   module ImportSupport #:nodoc:
     def supports_import? #:nodoc:
       true
@@ -15,7 +14,6 @@ module ActiveRecord::Extensions::Import #:nodoc:
       true
     end
   end
-  
 end
 
 class ActiveRecord::Base
@@ -299,7 +297,6 @@ class ActiveRecord::Base
 
     
     private
-
     
     def add_special_rails_stamps( column_names, array_of_attributes, options )
       AREXT_RAILS_COLUMNS[:create].each_pair do |key, blk|

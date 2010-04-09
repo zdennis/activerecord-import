@@ -1,3 +1,4 @@
+require "pathname"
 require "active_record"
 require "active_record/version"
 
@@ -9,5 +10,6 @@ module ActiveRecord::Extensions
   end
 end
 
-require "ar-extensions/import"
-require "ar-extensions/active_record/adapters/abstract_adapter"
+this_dir = Pathname.new File.dirname(__FILE__)
+require this_dir.join("../import")
+require this_dir.join("../active_record/adapters/abstract_adapter")

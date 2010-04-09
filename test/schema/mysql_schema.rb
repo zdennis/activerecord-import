@@ -1,20 +1,5 @@
 ActiveRecord::Schema.define do
  
-  create_table :test_myisam, :options=>'ENGINE=MyISAM', :force=>true do |t|
-    t.column :my_name, :string, :null=>false
-    t.column :description, :string
-  end
-  
-  create_table :test_innodb, :options=>'ENGINE=InnoDb', :force=>true do |t|
-    t.column :my_name, :string, :null=>false
-    t.column :description, :string
-  end
-
-  create_table :test_memory, :options=>'ENGINE=Memory', :force=>true do |t|
-    t.column :my_name, :string, :null=>false
-    t.column :description, :string
-  end
-  
   create_table :books, :options=>'ENGINE=MyISAM', :force=>true do |t|
     t.column :title, :string, :null=>false
     t.column :publisher, :string, :null=>false, :default => 'Default Publisher'
