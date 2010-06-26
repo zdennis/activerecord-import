@@ -14,7 +14,7 @@ adapter = options.adapter
 
 # load the library
 LIB_DIR = this_dir.join("../lib")
-require LIB_DIR.join("ar-extensions/import/#{adapter}")
+require LIB_DIR.join("activerecord-import/#{adapter}")
 
 ActiveRecord::Base.logger = Logger.new("log/test.log")
 ActiveRecord::Base.logger.level = Logger::DEBUG

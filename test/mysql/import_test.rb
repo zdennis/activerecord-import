@@ -1,5 +1,5 @@
 require File.expand_path(File.dirname(__FILE__) + '/../test_helper')
-require "ar-extensions/import/mysql"
+require "activerecord-import/mysql"
 
 describe "#import with :on_duplicate_key_update option (mysql specific functionality)" do
   extend ActiveSupport::TestCase::MySQLAssertions

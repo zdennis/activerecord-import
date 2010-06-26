@@ -90,7 +90,7 @@ class MyApplication < Rails::Application ; end
 adapter = ENV["ARE_DB"] || "sqlite3"
 
 # load the library
-require "ar-extensions/import/#{adapter}"
+require "activerecord-import/#{adapter}"
 
 ActiveRecord::Base.logger = Logger.new("log/test.log")
 ActiveRecord::Base.logger.level = Logger::DEBUG
