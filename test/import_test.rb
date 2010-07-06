@@ -1,4 +1,4 @@
-require File.expand_path(File.dirname(__FILE__) + '/test_helper')
+require File.expand_path('../test_helper', __FILE__)
 
 describe "#import" do
   it "should return the number of inserts performed" do

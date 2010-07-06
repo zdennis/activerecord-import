@@ -1,14 +1,20 @@
-ENV["RAILS_ENV"] = "test"
 require 'pathname'
-this_dir = Pathname.new File.dirname(__FILE__)
-$LOAD_PATH << this_dir.join("../lib")
+test_dir = Pathname.new File.dirname(__FILE__)
+$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+$LOAD_PATH.unshift(File.dirname(__FILE__))
 
-gem "rails", "3.0.0.beta"
+require "fileutils"
+require "rubygems"
+
+ENV["RAILS_ENV"] = "test"
+
+require "bundler"
+Bundler.setup
+
 require "rails"
 require "rails/test_help"
 require "active_record/fixtures"
 require "active_support/test_case"
-require 'active_support/core_ext/object/returning'
 
 require "delorean"
 
@@ -16,6 +22,13 @@ require "active_record"
 require "logger"
 
 require "ruby-debug"
+
+# load test helpers
+class MyApplication < Rails::Application ; end
+adapter = ENV["ARE_DB"] || "sqlite3"
+
+# load the library
+require "activerecord-import/#{adapter}"
 
 class ActiveSupport::TestCase
   include ActiveRecord::TestFixtures
@@ -84,17 +97,10 @@ def describe(description, &blk)
   ActiveSupport::TestCase.describe(description, true, &blk)
 end
 
-# load test helpers
-require "rails"
-class MyApplication < Rails::Application ; end
-adapter = ENV["ARE_DB"] || "sqlite3"
-
-# load the library
-require "activerecord-import/#{adapter}"
-
+FileUtils.mkdir_p'log'
 ActiveRecord::Base.logger = Logger.new("log/test.log")
 ActiveRecord::Base.logger.level = Logger::DEBUG
-ActiveRecord::Base.configurations["test"] = YAML.load(this_dir.join("database.yml").open)[adapter]
+ActiveRecord::Base.configurations["test"] = YAML.load(test_dir.join("database.yml").open)[adapter]
 ActiveRecord::Base.establish_connection "test"
 
 ActiveSupport::Notifications.subscribe(/active_record.sql/) do |event, _, _, _, hsh|
@@ -105,9 +111,9 @@ require "factory_girl"
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each{ |file| require file }
 
 # Load base/generic schema
-require this_dir.join("schema/version")
-require this_dir.join("schema/generic_schema")
-adapter_schema = this_dir.join("schema/#{adapter}_schema.rb")
+require test_dir.join("schema/version")
+require test_dir.join("schema/generic_schema")
+adapter_schema = test_dir.join("schema/#{adapter}_schema.rb")
 require adapter_schema if File.exists?(adapter_schema)
 
 Dir[File.dirname(__FILE__) + "/models/*.rb"].each{ |file| require file }
