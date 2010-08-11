@@ -1,6 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/../test_helper')
 
-describe "ActiveRecord::ConnectionADapter::AbstractAdapter" do
+describe "ActiveRecord::ConnectionAdapter::AbstractAdapter" do
   context "#get_insert_value_sets - computing insert value sets" do
     let(:adapter){ ActiveRecord::ConnectionAdapters::AbstractAdapter }
     let(:base_sql){ "INSERT INTO atable (a,b,c)" }
