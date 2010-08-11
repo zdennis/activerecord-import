@@ -3,7 +3,7 @@ common: &common
   password: 
   encoding: utf8
   host:     localhost
-  database: aroptests
+  database: activerecord_import_test
 
 mysql:
   <<: *common
