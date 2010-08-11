@@ -21,9 +21,11 @@ For more documentation on the matter you can refer to two places:
 1. activerecord-import github wiki: http://wiki.github.com/zdennis/activerecord-import/
 1. the tests in the code base
 
-Note: the tests have been updated since the previous version of ar-extensions to provide better readability and easier maintenance.
+# Upgrading from ar-extensions
 
-# LICENSE
+This library replaces the ar-extensions library and is compatible with Rails 3. It provides the exact same API for importing data, but it does not include any additional ar-extensions functionality.
+
+# License
 
 This is licensed under the ruby license. 
 
@@ -31,7 +33,7 @@ This is licensed under the ruby license.
 
 Zach Dennis (zach.dennis@gmail.com)
 
-# Contributor
+# Contributors
 
 * Blythe Dunham
 * Gabe da Silveira
@@ -40,3 +42,4 @@ Zach Dennis (zach.dennis@gmail.com)
 * Marcus Crafter
 * Thibaud Guillaume-Gentil
 * Mark Van Holstyn 
+* Victor Costan
