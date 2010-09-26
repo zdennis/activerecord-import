@@ -2,9 +2,9 @@ require "pathname"
 require "active_record"
 require "active_record/version"
 
-module ActiveRecord::Extensions
+module ActiveRecord::Import
   AdapterPath = File.join File.expand_path(File.dirname(__FILE__)), "/active_record/adapters"
-  
+
   # Loads the import functionality for a specific database adapter
   def self.require_adapter(adapter)
     require File.join(AdapterPath,"/abstract_adapter")

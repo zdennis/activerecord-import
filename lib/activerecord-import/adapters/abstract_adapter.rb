@@ -1,4 +1,4 @@
-module ActiveRecord::Extensions::Import::AbstractAdapter
+module ActiveRecord::Import::AbstractAdapter
   NO_MAX_PACKET = 0
   QUERY_OVERHEAD = 8 #This was shown to be true for MySQL, but it's not clear where the overhead is from.
     

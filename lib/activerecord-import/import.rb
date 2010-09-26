@@ -1,8 +1,8 @@
 require "ostruct"
 
-module ActiveRecord::Extensions::ConnectionAdapters ; end
+module ActiveRecord::Import::ConnectionAdapters ; end
 
-module ActiveRecord::Extensions::Import #:nodoc:
+module ActiveRecord::Import #:nodoc:
   module ImportSupport #:nodoc:
     def supports_import? #:nodoc:
       true

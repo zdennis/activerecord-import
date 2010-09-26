@@ -1,4 +1,4 @@
-module ActiveRecord::Extensions::Import::Sqlite3Adapter
+module ActiveRecord::Import::Sqlite3Adapter
   module InstanceMethods
     def next_value_for_sequence(sequence_name)
       %{nextval('#{sequence_name}')}

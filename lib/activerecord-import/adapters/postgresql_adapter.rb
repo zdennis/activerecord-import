@@ -1,4 +1,4 @@
-module ActiveRecord::Extensions::Import::PostgreSQLAdapter
+module ActiveRecord::Import::PostgreSQLAdapter
   module InstanceMethods
     def next_value_for_sequence(sequence_name)
       %{nextval('#{sequence_name}')}

@@ -1,9 +1,9 @@
-module ActiveRecord::Extensions::Import::MysqlAdapter
+module ActiveRecord::Import::MysqlAdapter
   module InstanceMethods
     def self.included(klass)
       klass.instance_eval do
-        include ActiveRecord::Extensions::Import::ImportSupport  
-        include ActiveRecord::Extensions::Import::OnDuplicateKeyUpdateSupport
+        include ActiveRecord::Import::ImportSupport  
+        include ActiveRecord::Import::OnDuplicateKeyUpdateSupport
       end
     end
   
