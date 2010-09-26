@@ -1,11 +1,7 @@
 require "active_record/connection_adapters/postgresql_adapter"
+require "activerecord-import/adapters/postgresql_adapter"
 
-module ActiveRecord # :nodoc:
-  module ConnectionAdapters # :nodoc:
-    class PostgreSQLAdapter # :nodoc:
-      def next_value_for_sequence(sequence_name)
-        %{nextval('#{sequence_name}')}
-      end
-    end
-  end
+class ActiveRecord::ConnectionAdapters::PostgreSQLAdapter
+  include ActiveRecord::Extensions::Import::PostgreSQLAdapter::InstanceMethods
 end
+

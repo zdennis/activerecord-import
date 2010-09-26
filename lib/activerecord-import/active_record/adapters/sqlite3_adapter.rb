@@ -1,11 +1,7 @@
 require "active_record/connection_adapters/sqlite3_adapter"
+require "activerecord-import/adapters/sqlite3_adapter"
 
-module ActiveRecord # :nodoc:
-  module ConnectionAdapters # :nodoc:
-    class Sqlite3Adapter # :nodoc:
-      def next_value_for_sequence(sequence_name)
-        %{nextval('#{sequence_name}')}
-      end
-    end
-  end
+class ActiveRecord::ConnectionAdapters::Sqlite3Adapter
+  include ActiveRecord::Extensions::Import::Sqlite3Adapter::InstanceMethods
 end
+

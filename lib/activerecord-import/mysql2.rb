@@ -1,2 +1,2 @@
-require File.join File.dirname(__FILE__),  "base"
-ActiveRecord::Extensions.require_adapter "mysql2"
+require File.expand_path(File.join(File.dirname(__FILE__),  "/../activerecord-import"))
+
