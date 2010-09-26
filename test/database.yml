@@ -9,6 +9,10 @@ mysql:
   <<: *common
   adapter: mysql
 
+mysql2:
+  <<: *common
+  adapter: mysql2
+
 postgresql:
   <<: *common
   username: zdennis

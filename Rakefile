@@ -31,7 +31,7 @@ namespace :display do
 end
 task :default => ["display:notice"]
 
-ADAPTERS = %w(mysql postgresql sqlite3)
+ADAPTERS = %w(mysql mysql2 postgresql sqlite3)
 ADAPTERS.each do |adapter|
   namespace :test do
     desc "Runs #{adapter} database tests."
@@ -44,9 +44,10 @@ end
 
 begin
   require 'rcov/rcovtask'
+  adapter = ENV['ARE_DB']
   Rcov::RcovTask.new do |test|
     test.libs << 'test'
-    test.pattern = "test/*_test.rb"
+    test.pattern = ["test/adapters/#{adapter}.rb", "test/*_test.rb", "test/#{adapter}/**/*_test.rb"]
     test.verbose = true
   end
 rescue LoadError
