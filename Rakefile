@@ -1,10 +1,11 @@
-require 'rubygems'
+require "bundler"
+Bundler.setup
+
 require 'rake'
 require 'rake/testtask'
 
 begin
   require 'jeweler'
-  require 'bundler'
   Jeweler::Tasks.new do |gem|
     gem.name = "activerecord-import"
     gem.summary = %Q{Bulk-loading extension for ActiveRecord}
@@ -13,7 +14,11 @@ begin
     gem.homepage = "http://github.com/zdennis/activerecord-import"
     gem.authors = ["Zach Dennis"]
     gem.files = FileList["VERSION", "Rakefile", "README*", "lib/**/*"]
-    gem.add_bundler_dependencies
+
+    bundler = Bundler.load
+    bundler.dependencies_for(:default).each do |dependency|
+      gem.add_dependency dependency.name, *dependency.requirements_list
+    end
 
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end

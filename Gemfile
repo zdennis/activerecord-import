@@ -1,6 +1,10 @@
 source :gemcutter
 
-gem "rails", ">= 3.0.0.rc"
+gem "rails", ">= 3.0.0rc"
+
+group :development do
+  gem "jeweler", ">= 1.4.0"
+end
 
 group :test do
   # Database Adapters
