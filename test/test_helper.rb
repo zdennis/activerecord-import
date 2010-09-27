@@ -28,10 +28,11 @@ FileUtils.mkdir_p 'log'
 ActiveRecord::Base.logger = Logger.new("log/test.log")
 ActiveRecord::Base.logger.level = Logger::DEBUG
 ActiveRecord::Base.configurations["test"] = YAML.load(test_dir.join("database.yml").open)[adapter]
+
+
+require "activerecord-import"
 ActiveRecord::Base.establish_connection "test"
 
-# load the library
-require "activerecord-import"
 
 ActiveSupport::Notifications.subscribe(/active_record.sql/) do |event, _, _, _, hsh|
   ActiveRecord::Base.logger.info hsh[:sql]
