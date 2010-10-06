@@ -12,8 +12,7 @@ require "bundler"
 Bundler.setup
 
 require "logger"
-require "rails"
-require "rails/test_help"
+require 'test/unit'
 require "active_record"
 require "active_record/fixtures"
 require "active_support/test_case"
@@ -21,7 +20,6 @@ require "active_support/test_case"
 require "delorean"
 require "ruby-debug"
 
-class MyApplication < Rails::Application ; end
 adapter = ENV["ARE_DB"] || "sqlite3"
 
 FileUtils.mkdir_p 'log'
@@ -29,10 +27,8 @@ ActiveRecord::Base.logger = Logger.new("log/test.log")
 ActiveRecord::Base.logger.level = Logger::DEBUG
 ActiveRecord::Base.configurations["test"] = YAML.load(test_dir.join("database.yml").open)[adapter]
 
-
 require "activerecord-import"
 ActiveRecord::Base.establish_connection "test"
-
 
 ActiveSupport::Notifications.subscribe(/active_record.sql/) do |event, _, _, _, hsh|
   ActiveRecord::Base.logger.info hsh[:sql]
