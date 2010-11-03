@@ -1,6 +1,6 @@
 source :gemcutter
 
-gem "activerecord", "~> 3.0.0rc"
+gem "activerecord", "~> 3.0.0"
 
 group :development do
   gem "jeweler", ">= 1.4.0"
