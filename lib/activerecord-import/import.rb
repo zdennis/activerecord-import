@@ -253,10 +253,8 @@ class ActiveRecord::Base
     # information on +column_names+, +array_of_attributes_ and
     # +options+.
     def import_without_validations_or_callbacks( column_names, array_of_attributes, options={} )
-      columns = column_names.map { |name| columns_hash[name] }
-      
       columns_sql = "(#{column_names.map{|name| connection.quote_column_name(name) }.join(',')})"
-      values_sql = values_sql_for_attributes(array_of_attributes)
+      values_sql = values_sql_for_column_names_and_attributes(column_names, array_of_attributes)
       if not supports_import?
         number_inserted = 0
         values_sql.each do |values|
@@ -280,10 +278,12 @@ class ActiveRecord::Base
 
     # Returns SQL the VALUES for an INSERT statement given the passed in +columns+
     # and +array_of_attributes+.
-    def values_sql_for_attributes(array_of_attributes )   # :nodoc:
+    def values_sql_for_column_names_and_attributes(column_names, array_of_attributes)   # :nodoc:
+      columns = column_names.map { |name| columns_hash[name] }
+
       array_of_attributes.map do |arr|
         my_values = arr.each_with_index.map do |val,j|
-          if !sequence_name.blank? && columns[j].primary && val.nil?
+          if !sequence_name.blank? && column_names[j] == primary_key && val.nil?
              connection.next_value_for_sequence(sequence_name)
           else
              connection.quote(val, columns[j])
