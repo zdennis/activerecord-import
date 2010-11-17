@@ -180,6 +180,9 @@ class ActiveRecord::Base
         raise ArgumentError.new( "Invalid arguments!" )
       end
 
+      # dup the passed in array so we don't modify it unintentionally
+      array_of_attributes = array_of_attributes.dup
+
       # Force the primary key col into the insert if it's not
       # on the list and we are using a sequence and stuff a nil
       # value for it into each row so the sequencer will fire later
@@ -187,9 +190,6 @@ class ActiveRecord::Base
          column_names << primary_key
          array_of_attributes.each { |a| a << nil }
       end
-
-      # dup the passed in array so we don't modify it unintentionally
-      array_of_attributes = array_of_attributes.dup
 
       # record timestamps unless disabled in ActiveRecord::Base
       if record_timestamps && options.delete( :timestamps )
