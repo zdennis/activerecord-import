@@ -119,16 +119,12 @@ module ActiveRecord::Import::AbstractAdapter
     # Returns SQL the VALUES for an INSERT statement given the passed in +columns+ 
     # and +array_of_attributes+.
     def values_sql_for_column_names_and_attributes( columns, array_of_attributes )   # :nodoc:
-      values = []
-      array_of_attributes.each do |arr|
-        my_values = []
-        arr.each_with_index do |val,j|
-          importable_value = columns[j].type_cast(val)
-          my_values << quote(importable_value, columns[j] )
+      array_of_attributes.map do |arr|
+        my_values = arr.each_with_index.map do |val,j|
+          quote( columns[j].type_cast(val), columns[j] )
         end
-        values << my_values
-      end   
-      values_arr = values.map{ |arr| '(' + arr.join( ',' ) + ')' }
+        "(#{my_values.join(',')})"
+      end
     end
         
     # Returns the maximum number of bytes that the server will allow
