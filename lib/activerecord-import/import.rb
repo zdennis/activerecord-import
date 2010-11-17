@@ -157,7 +157,9 @@ class ActiveRecord::Base
     def import( *args )
       options = { :validate=>true, :timestamps=>true }
       options.merge!( args.pop ) if args.last.is_a? Hash
-      
+
+      is_validating = options.delete( :validate )
+
       # assume array of model objects
       if args.last.is_a?( Array ) and args.last.first.is_a? ActiveRecord::Base
         if args.length == 2
@@ -199,7 +201,7 @@ class ActiveRecord::Base
          add_special_rails_stamps column_names, array_of_attributes, options
       end
 
-      return_obj = if options[:validate]
+      return_obj = if is_validating
         import_with_validations( column_names, array_of_attributes, options )
       else
         num_inserts = import_without_validations_or_callbacks( column_names, array_of_attributes, options )
