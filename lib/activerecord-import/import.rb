@@ -165,15 +165,12 @@ class ActiveRecord::Base
           column_names = self.column_names.dup
         end
         
-        array_of_attributes  = []
-        models.each do |model|
+        array_of_attributes = models.map do |model|
           # this next line breaks sqlite.so with a segmentation fault
           # if model.new_record? || options[:on_duplicate_key_update]
-            attributes = []
-            column_names.each do |name| 
-              attributes << model.send( "#{name}_before_type_cast" ) 
+            column_names.map do |name|
+              model.send( "#{name}_before_type_cast" )
             end
-            array_of_attributes << attributes
           # end
         end
         # supports 2-element array and array
