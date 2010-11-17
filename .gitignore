@@ -21,3 +21,4 @@ pkg
 ## PROJECT::SPECIFIC
 log/*.log
 test.db
+test/database.yml
