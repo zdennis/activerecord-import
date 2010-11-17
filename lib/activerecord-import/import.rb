@@ -259,25 +259,16 @@ class ActiveRecord::Base
       array_of_attributes.first.each_with_index { |arr,i| columns << columns_hash[ column_names[i].to_s ] }
       
       columns_sql = "(#{column_names.map{|name| connection.quote_column_name(name) }.join(',')})"
+      values_sql = values_sql_for_attributes(array_of_attributes)
       if not supports_import?
-        insert_statements, values = [], []
         number_inserted = 0
-        array_of_attributes.each do |arr|
-          my_values = arr.each_with_index.map do |val,j|
-            if !sequence_name.blank? && column_names[j] == primary_key && val.nil?
-               connection.next_value_for_sequence(sequence_name)
-            else
-               connection.quote( val, columns[j] )
-            end
-          end
-          insert_statements << "INSERT INTO #{quoted_table_name} #{columns_sql} VALUES(" + my_values.join( ',' ) + ")"
-          connection.execute( insert_statements.last )
+        values_sql.each do |values|
+          connection.execute("INSERT INTO #{quoted_table_name} #{columns_sql} VALUES#{values}")
           number_inserted += 1
         end
       else
         # generate the sql
         insert_sql = "INSERT #{options[:ignore] ? 'IGNORE ':''}INTO #{quoted_table_name} #{columns_sql} VALUES "
-        values_sql = connection.values_sql_for_column_names_and_attributes( columns, array_of_attributes )
         post_sql_statements = connection.post_sql_statements( quoted_table_name, options )
         
         # perform the inserts
@@ -289,7 +280,22 @@ class ActiveRecord::Base
     end
 
     private
-    
+
+    # Returns SQL the VALUES for an INSERT statement given the passed in +columns+
+    # and +array_of_attributes+.
+    def values_sql_for_attributes(array_of_attributes )   # :nodoc:
+      array_of_attributes.map do |arr|
+        my_values = arr.each_with_index.map do |val,j|
+          if !sequence_name.blank? && columns[j].primary && val.nil?
+             connection.next_value_for_sequence(sequence_name)
+          else
+             connection.quote(val, columns[j])
+          end
+        end
+        "(#{my_values.join(',')})"
+      end
+    end
+
     def add_special_rails_stamps( column_names, array_of_attributes, options )
       AREXT_RAILS_COLUMNS[:create].each_pair do |key, blk|
         if self.column_names.include?(key)
