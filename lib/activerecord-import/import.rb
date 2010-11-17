@@ -255,12 +255,11 @@ class ActiveRecord::Base
     # information on +column_names+, +array_of_attributes_ and
     # +options+.
     def import_without_validations_or_callbacks( column_names, array_of_attributes, options={} )
-      escaped_column_names = quote_column_names( column_names )
       columns = []
       array_of_attributes.first.each_with_index { |arr,i| columns << columns_hash[ column_names[i] ] }
       
+      columns_sql = "(#{column_names.map{|name| connection.quote_column_name(name) }.join(',')})"
       if not supports_import?
-        columns_sql = "(" + escaped_column_names.join( ',' ) + ")"
         insert_statements, values = [], []
         number_inserted = 0
         array_of_attributes.each do |arr|
@@ -277,7 +276,7 @@ class ActiveRecord::Base
         end
       else
         # generate the sql
-        insert_sql = "INSERT #{options[:ignore] ? 'IGNORE ':''}INTO #{quoted_table_name} (#{escaped_column_names.join(',')}) VALUES "
+        insert_sql = "INSERT #{options[:ignore] ? 'IGNORE ':''}INTO #{quoted_table_name} #{columns_sql} VALUES "
         values_sql = connection.values_sql_for_column_names_and_attributes( columns, array_of_attributes )
         post_sql_statements = connection.post_sql_statements( quoted_table_name, options )
         
@@ -288,13 +287,7 @@ class ActiveRecord::Base
       end
       number_inserted
     end
-    
-    # Returns an array of quoted column names
-    def quote_column_names( names ) 
-      names.map{ |name| connection.quote_column_name( name ) }
-    end
 
-    
     private
     
     def add_special_rails_stamps( column_names, array_of_attributes, options )
