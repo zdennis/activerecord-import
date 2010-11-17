@@ -3,6 +3,9 @@ require "ostruct"
 module ActiveRecord::Import::ConnectionAdapters ; end
 
 module ActiveRecord::Import #:nodoc:
+  class Result < Struct.new(:failed_instances, :num_inserts)
+  end
+
   module ImportSupport #:nodoc:
     def supports_import? #:nodoc:
       true
@@ -200,7 +203,7 @@ class ActiveRecord::Base
         import_with_validations( column_names, array_of_attributes, options )
       else
         num_inserts = import_without_validations_or_callbacks( column_names, array_of_attributes, options )
-        OpenStruct.new :failed_instances=>[], :num_inserts=>num_inserts
+        ActiveRecord::Import::Result.new([], num_inserts)
       end
 
       if options[:synchronize]
@@ -240,7 +243,7 @@ class ActiveRecord::Base
       array_of_attributes.compact!
       
       num_inserts = array_of_attributes.empty? ? 0 : import_without_validations_or_callbacks( column_names, array_of_attributes, options )
-      OpenStruct.new :failed_instances=>failed_instances, :num_inserts => num_inserts
+      ActiveRecord::Import::Result.new(failed_instances, num_inserts)
     end
     
     # Imports the passed in +column_names+ and +array_of_attributes+
