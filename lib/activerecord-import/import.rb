@@ -264,12 +264,11 @@ class ActiveRecord::Base
         insert_statements, values = [], []
         number_inserted = 0
         array_of_attributes.each do |arr|
-          my_values = []
-          arr.each_with_index do |val,j|
+          my_values = arr.each_with_index.map do |val,j|
             if !sequence_name.blank? && column_names[j] == primary_key && val.nil?
-               my_values << connection.next_value_for_sequence(sequence_name)
+               connection.next_value_for_sequence(sequence_name)
             else
-               my_values << connection.quote( val, columns[j] )
+               connection.quote( val, columns[j] )
             end
           end
           insert_statements << "INSERT INTO #{quoted_table_name} #{columns_sql} VALUES(" + my_values.join( ',' ) + ")"
