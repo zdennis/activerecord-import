@@ -253,8 +253,7 @@ class ActiveRecord::Base
     # information on +column_names+, +array_of_attributes_ and
     # +options+.
     def import_without_validations_or_callbacks( column_names, array_of_attributes, options={} )
-      columns = []
-      array_of_attributes.first.each_with_index { |arr,i| columns << columns_hash[ column_names[i].to_s ] }
+      columns = column_names.map { |name| columns_hash[name.to_s] }
       
       columns_sql = "(#{column_names.map{|name| connection.quote_column_name(name) }.join(',')})"
       values_sql = values_sql_for_attributes(array_of_attributes)
