@@ -43,7 +43,7 @@ ADAPTERS.each do |adapter|
     Rake::TestTask.new(adapter) do |t|
       t.test_files = FileList["test/adapters/#{adapter}.rb", "test/*_test.rb", "test/#{adapter}/**/*_test.rb"]
     end
-    task adapter => :check_dependencies
+    task adapter
   end
 end
 
