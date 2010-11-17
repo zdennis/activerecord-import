@@ -334,13 +334,9 @@ class ActiveRecord::Base
     
     # Returns an Array of Hashes for the passed in +column_names+ and +array_of_attributes+.
     def validations_array_for_column_names_and_attributes( column_names, array_of_attributes ) # :nodoc:
-      arr = []
-      array_of_attributes.each do |attributes|
-        c = 0
-        hsh = attributes.inject( {} ){|hsh,attr| hsh[ column_names[c] ] = attr ; c+=1 ; hsh }
-        arr << hsh
+      array_of_attributes.map do |attributes|
+        Hash[attributes.each_with_index.map {|attr, c| [column_names[c], attr] }]
       end
-      arr
     end
     
   end
