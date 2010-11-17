@@ -188,8 +188,6 @@ class ActiveRecord::Base
          array_of_attributes.each { |a| a << nil }
       end
 
-      is_validating = options.delete( :validate )
-
       # dup the passed in array so we don't modify it unintentionally
       array_of_attributes = array_of_attributes.dup
 
@@ -198,7 +196,7 @@ class ActiveRecord::Base
          add_special_rails_stamps column_names, array_of_attributes, options
       end
 
-      return_obj = if is_validating
+      return_obj = if options[:validate]
         import_with_validations( column_names, array_of_attributes, options )
       else
         num_inserts = import_without_validations_or_callbacks( column_names, array_of_attributes, options )
