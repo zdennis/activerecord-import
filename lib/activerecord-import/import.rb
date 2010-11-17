@@ -323,11 +323,13 @@ class ActiveRecord::Base
             array_of_attributes.each { |arr| arr << value }
           end
           
-          if options[:on_duplicate_key_update]
-            options[:on_duplicate_key_update] << key.to_sym if options[:on_duplicate_key_update].is_a?(Array)
-            options[:on_duplicate_key_update][key.to_sym] = key.to_sym if options[:on_duplicate_key_update].is_a?(Hash)
-          else
-            options[:on_duplicate_key_update] = [ key.to_sym ]
+          if supports_on_duplicate_key_update?
+            if options[:on_duplicate_key_update]
+              options[:on_duplicate_key_update] << key.to_sym if options[:on_duplicate_key_update].is_a?(Array)
+              options[:on_duplicate_key_update][key.to_sym] = key.to_sym if options[:on_duplicate_key_update].is_a?(Hash)
+            else
+              options[:on_duplicate_key_update] = [ key.to_sym ]
+            end
           end
         end
       end
