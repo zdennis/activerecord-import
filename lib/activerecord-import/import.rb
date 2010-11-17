@@ -256,16 +256,16 @@ class ActiveRecord::Base
     # +options+.
     def import_without_validations_or_callbacks( column_names, array_of_attributes, options={} )
       columns_sql = "(#{column_names.map{|name| connection.quote_column_name(name) }.join(',')})"
+      insert_sql = "INSERT #{options[:ignore] ? 'IGNORE ':''}INTO #{quoted_table_name} #{columns_sql} VALUES "
       values_sql = values_sql_for_column_names_and_attributes(column_names, array_of_attributes)
       if not supports_import?
         number_inserted = 0
         values_sql.each do |values|
-          connection.execute("INSERT INTO #{quoted_table_name} #{columns_sql} VALUES#{values}")
+          connection.execute(insert_sql + values)
           number_inserted += 1
         end
       else
         # generate the sql
-        insert_sql = "INSERT #{options[:ignore] ? 'IGNORE ':''}INTO #{quoted_table_name} #{columns_sql} VALUES "
         post_sql_statements = connection.post_sql_statements( quoted_table_name, options )
         
         # perform the inserts
