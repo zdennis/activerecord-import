@@ -1,17 +1,22 @@
 common: &common
-  username: myuser
-  password: password
+  username: root
+  password: 
   encoding: utf8
   host:     localhost
-  database: aroptests
+  database: activerecord_import_test
 
 mysql:
   <<: *common
   adapter: mysql
 
-postgres:
+mysql2:
   <<: *common
-  adapter: postgres
+  adapter: mysql2
+
+postgresql:
+  <<: *common
+  username: postgres
+  adapter: postgresql
   min_messages: warning
 
 oracle:
@@ -21,8 +26,8 @@ oracle:
 
 sqlite:
   adapter: sqlite
-  dbfile:  test.db
+  dbfile: test.db
 
 sqlite3:
   adapter: sqlite3
-  dbfile:  test.db
+  database: test.db
