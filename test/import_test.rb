@@ -58,6 +58,14 @@ describe "#import" do
       end
     end
   end
+
+  context "with an empty array" do
+    it "should not import any data" do
+      assert_no_difference "Topic.count" do
+        Topic.import []
+      end
+    end
+  end
   
   context "with an array of unsaved model instances" do
     let(:topic) { Build(:topic, :title => "The RSpec Book", :author_name => "David Chelimsky")}
