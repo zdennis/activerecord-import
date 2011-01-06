@@ -199,4 +199,16 @@ describe "#import" do
     end
   end
 
+  context "importing a datetime field" do
+    it "should import a date with MM/DD/YYYY format just fine" do
+      Topic.import [:author_name, :title, :last_read], [["Bob Jones", "Topic 1", "05/14/2010"]]
+      assert_equal "05/14/2010".to_date, Topic.last.last_read.to_date
+    end
+
+    it "should import a date with YYYY/MM/DD format just fine" do
+      Topic.import [:author_name, :title, :last_read], [["Bob Jones", "Topic 2", "2010/05/14"]]
+      assert_equal "05/14/2010".to_date, Topic.last.last_read.to_date
+    end
+  end
+
 end

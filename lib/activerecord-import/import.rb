@@ -257,7 +257,7 @@ class ActiveRecord::Base
     def import_without_validations_or_callbacks( column_names, array_of_attributes, options={} )
       escaped_column_names = quote_column_names( column_names )
       columns = []
-      array_of_attributes.first.each_with_index { |arr,i| columns << columns_hash[ column_names[i] ] }
+      array_of_attributes.first.each_with_index { |arr,i| columns << columns_hash[ column_names[i].to_s ] }
       
       if not supports_import?
         columns_sql = "(" + escaped_column_names.join( ',' ) + ")"

@@ -129,7 +129,8 @@ module ActiveRecord::Import::AbstractAdapter
       array_of_attributes.each do |arr|
         my_values = []
         arr.each_with_index do |val,j|
-          my_values << quote( val, columns[j] )
+          importable_value = columns[j].type_cast(val)
+          my_values << quote(importable_value, columns[j] )
         end
         values << my_values
       end   
