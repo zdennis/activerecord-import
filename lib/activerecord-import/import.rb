@@ -259,7 +259,7 @@ class ActiveRecord::Base
 
       columns_sql = "(#{column_names.map{|name| connection.quote_column_name(name) }.join(',')})"
       insert_sql = "INSERT #{options[:ignore] ? 'IGNORE ':''}INTO #{quoted_table_name} #{columns_sql} VALUES "
-      values_sql = values_sql_for_column_names_and_attributes(column_names, array_of_attributes)
+      values_sql = values_sql_for_columns_and_attributes(columns, array_of_attributes)
       if not supports_import?
         number_inserted = 0
         values_sql.each do |values|
@@ -282,15 +282,14 @@ class ActiveRecord::Base
 
     # Returns SQL the VALUES for an INSERT statement given the passed in +columns+
     # and +array_of_attributes+.
-    def values_sql_for_column_names_and_attributes(column_names, array_of_attributes)   # :nodoc:
-      columns = column_names.map { |name| columns_hash[name.to_s] }
-
+    def values_sql_for_columns_and_attributes(columns, array_of_attributes)   # :nodoc:
       array_of_attributes.map do |arr|
         my_values = arr.each_with_index.map do |val,j|
-          if !sequence_name.blank? && column_names[j] == primary_key && val.nil?
+          column = columns[j]
+          if !sequence_name.blank? && column.name == primary_key && val.nil?
              connection.next_value_for_sequence(sequence_name)
           else
-             connection.quote(val, columns[j])
+            connection.quote(column.type_cast(val), column)
           end
         end
         "(#{my_values.join(',')})"

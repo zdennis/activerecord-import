@@ -116,17 +116,6 @@ module ActiveRecord::Import::AbstractAdapter
       post_sql_statements
     end
 
-    # Returns SQL the VALUES for an INSERT statement given the passed in +columns+ 
-    # and +array_of_attributes+.
-    def values_sql_for_column_names_and_attributes( columns, array_of_attributes )   # :nodoc:
-      array_of_attributes.map do |arr|
-        my_values = arr.each_with_index.map do |val,j|
-          quote( columns[j].type_cast(val), columns[j] )
-        end
-        "(#{my_values.join(',')})"
-      end
-    end
-        
     # Returns the maximum number of bytes that the server will allow
     # in a single packet
     def max_allowed_packet
