@@ -41,7 +41,7 @@ ADAPTERS.each do |adapter|
   namespace :test do
     desc "Runs #{adapter} database tests."
     Rake::TestTask.new(adapter) do |t|
-      t.test_files = FileList["test/adapters/#{adapter}.rb", "test/*_test.rb", "test/#{adapter}/**/*_test.rb"]
+      t.test_files = FileList["test/adapters/#{adapter}.rb", "test/*_test.rb", "test/active_record/*_test.rb", "test/#{adapter}/**/*_test.rb"]
     end
     task adapter
   end
