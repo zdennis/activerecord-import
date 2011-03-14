@@ -178,6 +178,9 @@ class ActiveRecord::Base
             end
           # end
         end
+        # supports empty array
+      elsif args.last.is_a?( Array ) and args.last.empty?
+        return ActiveRecord::Import::Result.new([], 0) if args.last.empty?
         # supports 2-element array and array
       elsif args.size == 2 and args.first.is_a?( Array ) and args.last.is_a?( Array )
         column_names, array_of_attributes = args
