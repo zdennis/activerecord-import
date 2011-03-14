@@ -12,6 +12,13 @@ describe "#import" do
     end
   end
 
+  it "should not produce an error when importing empty arrays" do
+    assert_nothing_raised do
+      Topic.import []
+      Topic.import %w(title author_name), []
+    end
+  end
+
   context "with :validation option" do
     let(:columns) { %w(title author_name) }
     let(:valid_values) { [[ "LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
