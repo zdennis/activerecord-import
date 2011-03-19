@@ -142,6 +142,13 @@ describe "#import" do
     end
   end
   
+  context "with an array of columns and an array of values" do
+    it "should import ids when specified" do
+      Topic.import [:id, :author_name, :title], [[99, "Bob Jones", "Topic 99"]]
+      assert_equal 99, Topic.last.id
+    end
+  end
+  
   context "ActiveRecord timestamps" do
     context "when the timestamps columns are present" do
       setup do
@@ -217,5 +224,4 @@ describe "#import" do
       assert_equal "05/14/2010".to_date, Topic.last.last_read.to_date
     end
   end
-
 end
