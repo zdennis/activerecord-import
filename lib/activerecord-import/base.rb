@@ -25,3 +25,4 @@ end
 this_dir = Pathname.new File.dirname(__FILE__)
 require this_dir.join("import")
 require this_dir.join("active_record/adapters/abstract_adapter")
+require this_dir.join("synchronize")
