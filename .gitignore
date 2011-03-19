@@ -22,3 +22,8 @@ pkg
 log/*.log
 test.db
 test/database.yml
+
+.bundle/
+.redcar/
+.rvmrc
+docsite/
