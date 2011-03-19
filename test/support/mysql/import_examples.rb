@@ -142,4 +142,30 @@ def should_support_mysql_import_functionality
     end
   
   end
+
+  describe "#import with :synchronization option" do
+    let(:topics){ Array.new } 
+    let(:values){ [ [topics.first.id, "Jerry Carter"], [topics.last.id, "Chad Fowler"] ]}
+    let(:columns){ %W(id author_name) }
+    
+    setup do
+      topics << Topic.create!(:title=>"LDAP", :author_name=>"Big Bird")
+      topics << Topic.create!(:title=>"Rails Recipes", :author_name=>"Elmo") 
+    end
+    
+    it "synchronizes passed in ActiveRecord model instances with the data just imported" do
+      columns2update = [ 'author_name' ]
+      
+      expected_count = Topic.count
+      Topic.import( columns, values,
+        :validate=>false,
+        :on_duplicate_key_update=>columns2update,
+        :synchronize=>topics )
+    
+      assert_equal expected_count, Topic.count, "no new records should have been created!"
+      assert_equal "Jerry Carter",  topics.first.author_name, "wrong author!"
+      assert_equal "Chad Fowler", topics.last.author_name, "wrong author!"
+    end
+  end
+
 end
