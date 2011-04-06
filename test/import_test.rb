@@ -66,6 +66,26 @@ describe "#import" do
     end
   end
   
+  context "with :synchronize option" do
+    context "synchronizing on new records" do
+      let(:new_topics) { Build(3, :topics) }
+    
+      it "doesn't reload any data (doesn't work)" do
+        Topic.import new_topics, :synchronize => new_topics
+        assert new_topics.all?(&:new_record?), "No record should have been reloaded"
+      end
+    end
+    
+    context "synchronizing on new records with explicit conditions" do
+      let(:new_topics) { Build(3, :topics) }
+
+      it "reloads data for existing in-memory instances" do
+        Topic.import(new_topics, :synchronize => new_topics, :synchronize_key => [:title] )
+        assert new_topics.all?(&:new_record?), "Records should have been reloaded"
+      end      
+    end
+  end
+  
   context "with an array of unsaved model instances" do
     let(:topic) { Build(:topic, :title => "The RSpec Book", :author_name => "David Chelimsky")}
     let(:topics) { Build(9, :topics) }

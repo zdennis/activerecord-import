@@ -212,7 +212,8 @@ class ActiveRecord::Base
       end
 
       if options[:synchronize]
-        synchronize( options[:synchronize] )
+        sync_keys = options[:synchronize_keys] || [self.primary_key]
+        synchronize( options[:synchronize], sync_keys)
       end
 
       return_obj.num_inserts = 0 if return_obj.num_inserts.nil?
