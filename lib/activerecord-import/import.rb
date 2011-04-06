@@ -129,6 +129,11 @@ class ActiveRecord::Base
     #  BlogPost.import posts, :synchronize=>[ post ]
     #  puts post.author_name # => 'yoda'
     #
+    #  # Example synchronizing unsaved/new instances in memory by using a uniqued imported field
+    #  posts = [BlogPost.new(:title => "Foo"), BlogPost.new(:title => "Bar")]
+    #  BlogPost.import posts, :synchronize => posts
+    #  puts posts.first.new_record? # => false
+    #
     # == On Duplicate Key Update (MySQL only)
     #
     # The :on_duplicate_key_update option can be either an Array or a Hash. 
