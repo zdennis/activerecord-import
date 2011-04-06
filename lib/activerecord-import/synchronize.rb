@@ -2,12 +2,25 @@ module ActiveRecord # :nodoc:
   class Base # :nodoc:
       
     # Synchronizes the passed in ActiveRecord instances with data
-    # from the database. This is like calling reload
-    # on an individual ActiveRecord instance but it is intended for use on
-    # multiple instances. 
-    #
+    # from the database. This is like calling reload on an individual
+    # ActiveRecord instance but it is intended for use on multiple instances. 
+    # 
     # This uses one query for all instance updates and then updates existing
     # instances rather sending one query for each instance
+    #
+    # == Examples
+    # # Synchronizing existing models by matching on the primary key field
+    # posts = Post.find_by_author("Zach")
+    # <.. out of system changes occur to change author name from Zach to Zachary..>
+    # Post.synchronize posts
+    # posts.first.author # => "Zachary" instead of Zach
+    # 
+    # # Synchronizing using custom key fields
+    # posts = Post.find_by_author("Zach")
+    # <.. out of system changes occur to change the address of author 'Zach' to 1245 Foo Ln ..>
+    # Post.synchronize posts, [:name] # queries on the :name column and not the :id column
+    # posts.first.address # => "1245 Foo Ln" instead of whatever it was
+    #
     def self.synchronize(instances, keys=[self.primary_key])
       return if instances.empty?
 
@@ -35,7 +48,7 @@ module ActiveRecord # :nodoc:
     end
 
     # See ActiveRecord::ConnectionAdapters::AbstractAdapter.synchronize
-    def synchronize(instances, key=ActiveRecord::Base.primary_key)
+    def synchronize(instances, key=[ActiveRecord::Base.primary_key])
       self.class.synchronize(instances, key)
     end
   end
