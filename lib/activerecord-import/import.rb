@@ -245,7 +245,9 @@ class ActiveRecord::Base
       # keep track of the instance and the position it is currently at. if this fails
       # validation we'll use the index to remove it from the array_of_attributes
       arr.each_with_index do |hsh,i|
-        instance = new( hsh )
+        instance = new do |model|
+          hsh.each_pair{ |k,v| model.send("#{k}=", v) }
+        end
         if not instance.valid?
           array_of_attributes[ i ] = nil
           failed_instances << instance
