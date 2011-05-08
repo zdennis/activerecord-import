@@ -6,7 +6,7 @@ module ActiveRecord::Import::AbstractAdapter
     # Returns the sum of the sizes of the passed in objects. This should
     # probably be moved outside this class, but to where?
     def sum_sizes( *objects ) # :nodoc:
-      objects.inject( 0 ){|sum,o| sum += o.size }
+      objects.inject( 0 ){ |sum,o| sum += o.bytesize }
     end
 
     def get_insert_value_sets( values, sql_size, max_bytes ) # :nodoc:
@@ -16,12 +16,12 @@ module ActiveRecord::Import::AbstractAdapter
         comma_bytes = arr.size
         sql_size_thus_far = sql_size + current_size + val.size + comma_bytes
         if NO_MAX_PACKET == max_bytes or sql_size_thus_far <= max_bytes
-          current_size += val.size            
+          current_size += val.bytesize            
           arr << val
         else
           value_sets << arr
           arr = [ val ]
-          current_size = val.size
+          current_size = val.bytesize
         end
       
         # if we're on the last iteration push whatever we have in arr to value_sets
