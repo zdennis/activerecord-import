@@ -1,4 +1,4 @@
-module ActiveRecord::Import::PostgreSQLAdapter
+module ActiveRecord::Import::OracleEnhancedAdapter
   module InstanceMethods
     def self.included(klass)
       klass.instance_eval do
