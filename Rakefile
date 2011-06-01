@@ -1,3 +1,4 @@
+require "rubygems"
 require "bundler"
 Bundler.setup
 
@@ -36,7 +37,7 @@ namespace :display do
 end
 task :default => ["display:notice"]
 
-ADAPTERS = %w(mysql mysql2 postgresql sqlite3)
+ADAPTERS = %w(mysql mysql2 oracle_enhanced postgresql sqlite3)
 ADAPTERS.each do |adapter|
   namespace :test do
     desc "Runs #{adapter} database tests."

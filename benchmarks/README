@@ -2,7 +2,7 @@ To run the benchmarks, from within the benchmarks run:
    ruby benchmark.rb [options]
 
 The following options are supported:
-  --adapter [String]   The database adapter to use. IE: mysql, postgresql, oracle
+  --adapter [String]   The database adapter to use. IE: mysql, postgresql, oracle_enhanced
              
   --do-not-delete       By default all records in the benchmark tables will be deleted at the end of the benchmark. This flag indicates not to delete the benchmark data.
   --num [Integer]      The number of objects to benchmark. (Required!)

@@ -3,7 +3,8 @@ source :gemcutter
 gem "activerecord", "~> 3.0.0"
 
 group :development do
-  gem "rake"
+  # http://stackoverflow.com/questions/6085610/rails-rake-problems-uninitialized-constant-rakedsl
+  gem "rake", "0.8.7"
   gem "jeweler", ">= 1.4.0"
 end
 
@@ -11,6 +12,8 @@ group :test do
   # Database Adapters
   gem "mysql", "~> 2.8.1"
   gem "mysql2", "~> 0.2.4"
+  gem 'activerecord-oracle_enhanced-adapter', '>=1.3.1'
+  gem 'ruby-oci8'
   gem "pg", "~> 0.9.0"
   gem "sqlite3-ruby", "~> 1.3.1"
 

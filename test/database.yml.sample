@@ -19,9 +19,10 @@ postgresql:
   adapter: postgresql
   min_messages: warning
 
-oracle:
-  <<: *common
-  adapter: oracle
+oracle_enhanced:
+  adapter: oracle_enhanced
+  username: arimport
+  database: <tnsname>
   min_messages: debug
 
 sqlite:
