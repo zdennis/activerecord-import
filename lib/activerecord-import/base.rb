@@ -23,6 +23,6 @@ end
 
 
 this_dir = Pathname.new File.dirname(__FILE__)
-require this_dir.join("import")
-require this_dir.join("active_record/adapters/abstract_adapter")
-require this_dir.join("synchronize")
+require this_dir.join("import").to_s
+require this_dir.join("active_record/adapters/abstract_adapter").to_s
+require this_dir.join("synchronize").to_s
