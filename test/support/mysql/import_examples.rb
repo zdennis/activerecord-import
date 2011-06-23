@@ -1,3 +1,4 @@
+# encoding: UTF-8
 def should_support_mysql_import_functionality
 
   describe "building insert value sets" do
@@ -24,6 +25,24 @@ def should_support_mysql_import_functionality
       assert_equal values[0], value_sets[0].first
       assert_equal values[1], value_sets[1].first
       assert_equal values[2], value_sets[2].first
+    end
+    
+    context "data contains multi-byte chars" do
+      it "should properly build insert value set based on max packet allowed" do
+        # each accented e should be 2 bytes, so each entry is 6 bytes instead of 5
+        values = [
+          "('é')",
+          "('é')" ]
+          
+        adapter = ActiveRecord::Base.connection.class
+        base_sql_size_in_bytes = 15
+        max_bytes = 26
+        
+        values_size_in_bytes = adapter.sum_sizes( *values )            
+        value_sets = adapter.get_insert_value_sets( values, base_sql_size_in_bytes, max_bytes )
+        
+        assert_equal 2, value_sets.size, 'Two value sets were expected!'
+      end
     end
   end
 
