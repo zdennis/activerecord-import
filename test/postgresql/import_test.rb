@@ -17,4 +17,8 @@ describe "#import" do
       assert_equal 1, result.num_inserts
     end
   end
+
+  it "should work for a very large number of rows" do
+    result = Topic.import Build(150000, :topics)
+  end
 end
