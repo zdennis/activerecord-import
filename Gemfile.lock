@@ -40,7 +40,7 @@ GEM
     multi_json (1.0.3)
     mysql (2.8.1)
     mysql2 (0.2.7)
-    pg (0.9.0)
+    pg (0.11.0)
     rake (0.8.7)
     ruby-debug (0.10.4)
       columnize (>= 0.1)
@@ -76,7 +76,7 @@ DEPENDENCIES
   jeweler (>= 1.4.0)
   mysql (~> 2.8.1)
   mysql2 (~> 0.2.4)
-  pg (~> 0.9.0)
+  pg (~> 0.9)
   rake
   ruby-debug (= 0.10.4)
   ruby-debug-base (= 0.10.4)
