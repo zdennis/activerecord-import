@@ -19,6 +19,10 @@ describe "#import" do
     end
   end
 
+  it "should not produce an error for a very large number of rows" do
+    assert_nothing_raised {Topic.import Build(150000, :topics)}
+  end
+
   context "with :validation option" do
     let(:columns) { %w(title author_name) }
     let(:valid_values) { [[ "LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
