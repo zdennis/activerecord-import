@@ -12,12 +12,8 @@ module ActiveRecord::Import
   end
 
   # Loads the import functionality for the passed in ActiveRecord connection
-  def self.load_from_connection(connection)
-    import_adapter = "ActiveRecord::Import::#{connection.class.name.demodulize}::InstanceMethods"
-    unless connection.class.ancestors.map(&:name).include?(import_adapter)
-      config = connection.instance_variable_get :@config
-      require_adapter config[:adapter]
-    end
+  def self.load_from_connection_pool(connection_pool)
+    require_adapter connection_pool.spec.config[:adapter]
   end
 end
 
