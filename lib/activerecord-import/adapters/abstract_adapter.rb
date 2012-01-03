@@ -3,12 +3,6 @@ module ActiveRecord::Import::AbstractAdapter
   QUERY_OVERHEAD = 8 #This was shown to be true for MySQL, but it's not clear where the overhead is from.
     
   module ClassMethods
-    # Returns the sum of the sizes of the passed in objects. This should
-    # probably be moved outside this class, but to where?
-    def sum_sizes( *objects ) # :nodoc:
-      objects.inject( 0 ){ |sum,o| sum += o.bytesize }
-    end
-
     def get_insert_value_sets( values, sql_size, max_bytes ) # :nodoc:
       value_sets = []          
       arr, current_arr_values_size, current_size = [], 0, 0
@@ -51,7 +45,7 @@ module ActiveRecord::Import::AbstractAdapter
       sql_size = QUERY_OVERHEAD + base_sql.size + post_sql.size 
 
       # the number of bytes the requested insert statement values will take up
-      values_in_bytes = self.class.sum_sizes( *values )
+      values_in_bytes = values.sum {|value| value.bytesize }
     
       # the number of bytes (commas) it will take to comma separate our values
       comma_separated_bytes = values.size-1
