@@ -13,6 +13,7 @@ group :test do
     gem "mysql", "~> 2.8.1"
     gem "mysql2", "~> 0.2.4"
     gem "pg", "~> 0.9"
+    gem 'activerecord-postgis-adapter', "~> 0.4"
     gem "sqlite3-ruby", "~> 1.3.1"
   end
 

@@ -18,6 +18,15 @@ postgresql:
   username: postgres
   adapter: postgresql
   min_messages: warning
+  
+# To create a spatial enabled database execute the following SQL
+# on a Postgis enabled PostgreSQL instalation:
+# CREATE DATABASE activerecord_import_test TEMPLATE=template_postgis
+postgis:
+  <<: *common
+  username: postgres
+  adapter: postgis
+  min_messages: warning
 
 oracle:
   <<: *common
