@@ -9,7 +9,7 @@ def should_support_mysql_import_functionality
         "('7','8','9')" ]
       
       adapter = ActiveRecord::Base.connection.class
-      values_size_in_bytes = adapter.sum_sizes( *values )
+      values_size_in_bytes = values.sum {|value| value.bytesize }
       base_sql_size_in_bytes = 15
       max_bytes = 30
     
@@ -38,7 +38,7 @@ def should_support_mysql_import_functionality
         base_sql_size_in_bytes = 15
         max_bytes = 26
         
-        values_size_in_bytes = adapter.sum_sizes( *values )            
+        values_size_in_bytes = values.sum {|value| value.bytesize }
         value_sets = adapter.get_insert_value_sets( values, base_sql_size_in_bytes, max_bytes )
         
         assert_equal 2, value_sets.size, 'Two value sets were expected!'
