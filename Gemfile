@@ -1,6 +1,6 @@
 source :gemcutter
 
-gem "activerecord", "~> 3.0pre"
+gem "activerecord"
 
 group :development do
   gem "rake"

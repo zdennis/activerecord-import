@@ -1,26 +1,23 @@
 GEM
   remote: http://rubygems.org/
   specs:
-    activemodel (3.1.0.rc4)
-      activesupport (= 3.1.0.rc4)
-      bcrypt-ruby (~> 2.1.4)
+    activemodel (3.2.0)
+      activesupport (= 3.2.0)
       builder (~> 3.0.0)
-      i18n (~> 0.6)
-    activerecord (3.1.0.rc4)
-      activemodel (= 3.1.0.rc4)
-      activesupport (= 3.1.0.rc4)
-      arel (~> 2.1.1)
-      tzinfo (~> 0.3.27)
+    activerecord (3.2.0)
+      activemodel (= 3.2.0)
+      activesupport (= 3.2.0)
+      arel (~> 3.0.0)
+      tzinfo (~> 0.3.29)
     activerecord-jdbc-adapter (1.1.1)
     activerecord-jdbcmysql-adapter (1.1.1)
       activerecord-jdbc-adapter (= 1.1.1)
       jdbc-mysql (~> 5.1.0)
-    activesupport (3.1.0.rc4)
+    activesupport (3.2.0)
+      i18n (~> 0.6)
       multi_json (~> 1.0)
     archive-tar-minitar (0.5.2)
-    arel (2.1.1)
-    bcrypt-ruby (2.1.4)
-    bcrypt-ruby (2.1.4-java)
+    arel (3.0.0)
     builder (3.0.0)
     chronic (0.3.0)
     columnize (0.3.2)
@@ -37,7 +34,7 @@ GEM
     linecache (0.43)
     linecache19 (0.5.12)
       ruby_core_source (>= 0.1.4)
-    multi_json (1.0.3)
+    multi_json (1.0.4)
     mysql (2.8.1)
     mysql2 (0.2.7)
     pg (0.11.0)
@@ -61,14 +58,14 @@ GEM
     sqlite3 (1.3.3)
     sqlite3-ruby (1.3.3)
       sqlite3 (>= 1.3.3)
-    tzinfo (0.3.28)
+    tzinfo (0.3.31)
 
 PLATFORMS
   java
   ruby
 
 DEPENDENCIES
-  activerecord (~> 3.0pre)
+  activerecord
   activerecord-jdbcmysql-adapter
   delorean (~> 0.2.0)
   factory_girl (~> 1.3.3)
