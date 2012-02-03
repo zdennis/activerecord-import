@@ -36,7 +36,7 @@ namespace :display do
 end
 task :default => ["display:notice"]
 
-ADAPTERS = %w(mysql mysql2 jdbcmysql postgresql sqlite3)
+ADAPTERS = %w(mysql mysql2 jdbcmysql postgresql sqlite3 sqlserver)
 ADAPTERS.each do |adapter|
   namespace :test do
     desc "Runs #{adapter} database tests."
