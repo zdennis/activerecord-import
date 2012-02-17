@@ -2,7 +2,7 @@
 
 activerecord-import is a library for bulk inserting data using ActiveRecord. 
 
-For more information on activerecord-import please see its wiki: http://wiki.github.com/zdennis/activerecord-import/
+For more information on activerecord-import please see its wiki: https://github.com/zdennis/activerecord-import/wiki
 
 # License
 
