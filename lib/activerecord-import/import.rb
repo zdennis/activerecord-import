@@ -254,8 +254,12 @@ class ActiveRecord::Base
         end    
       end
       array_of_attributes.compact!
-      
-      num_inserts = array_of_attributes.empty? ? 0 : import_without_validations_or_callbacks( column_names, array_of_attributes, options )
+
+      num_inserts = if array_of_attributes.empty? || options[:all_or_none] && failed_instances.any?
+                      0
+                    else
+                      import_without_validations_or_callbacks( column_names, array_of_attributes, options )
+                    end
       ActiveRecord::Import::Result.new(failed_instances, num_inserts)
     end
     
