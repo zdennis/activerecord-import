@@ -5,10 +5,12 @@ module ActiveRecord::Import::MysqlAdapter
   # Returns the maximum number of bytes that the server will allow
   # in a single packet
   def max_allowed_packet # :nodoc:
-    result = execute( "SHOW VARIABLES like 'max_allowed_packet';" )
-    # original Mysql gem responds to #fetch_row while Mysql2 responds to #first
-    val = result.respond_to?(:fetch_row) ? result.fetch_row[1] : result.first[1]
-    val.to_i
+    @max_allowed_packet ||= begin
+      result = execute( "SHOW VARIABLES like 'max_allowed_packet';" )
+      # original Mysql gem responds to #fetch_row while Mysql2 responds to #first
+      val = result.respond_to?(:fetch_row) ? result.fetch_row[1] : result.first[1]
+      val.to_i
+    end
   end
   
   # Returns a generated ON DUPLICATE KEY UPDATE statement given the passed
