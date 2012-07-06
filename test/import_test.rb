@@ -65,6 +65,14 @@ describe "#import" do
       end
     end
   end
+
+  context "with an empty array" do
+    it "should not import any data" do
+      assert_no_difference "Topic.count" do
+        Topic.import []
+      end
+    end
+  end
   
   context "with :synchronize option" do
     context "synchronizing on new records" do

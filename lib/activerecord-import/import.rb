@@ -166,7 +166,7 @@ class ActiveRecord::Base
       is_validating = options.delete( :validate )
 
       # assume array of model objects
-      if args.last.is_a?( Array ) and args.last.first.is_a? ActiveRecord::Base
+      if args.last.is_a?( Array ) and (args.last.first.is_a? ActiveRecord::Base or args.last.empty?)
         if args.length == 2
           models = args.last
           column_names = args.first
