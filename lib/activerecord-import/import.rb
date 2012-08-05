@@ -297,7 +297,7 @@ class ActiveRecord::Base
       array_of_attributes.map do |arr|
         my_values = arr.each_with_index.map do |val,j|
           column = columns[j]
-          if !sequence_name.blank? && column.name == primary_key && val.nil?
+          if val.nil? && !sequence_name.blank? && column.name == primary_key
              connection.next_value_for_sequence(sequence_name)
           else
             connection.quote(column.type_cast(val), column)
