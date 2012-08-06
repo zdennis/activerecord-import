@@ -95,4 +95,8 @@ ActiveRecord::Schema.define do
   end
   
   add_index :animals, [:name], :unique => true, :name => 'uk_animals'
+
+  create_table :widgets, :id => false, :force => true do |t|
+    t.integer :w_id
+  end
 end

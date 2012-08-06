@@ -17,4 +17,9 @@ describe "#import" do
       assert_equal 1, result.num_inserts
     end
   end
+  
+  it "should import models whose primary key has no sequence if the primary key's value is specified" do
+    result = Widget.import Build(3, :widgets)
+    assert_equal 1, result.num_inserts
+  end
 end

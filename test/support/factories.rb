@@ -11,3 +11,7 @@ Factory.define :topic do |m|
   m.sequence(:title){ |n| "Title #{n}"}
   m.sequence(:author_name){ |n| "Author #{n}"}
 end
+
+Factory.define :widget do |m|
+  m.sequence(:w_id){ |n| n}
+end
