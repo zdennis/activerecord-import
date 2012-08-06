@@ -19,6 +19,16 @@ describe "#import" do
     end
   end
 
+  describe "with non-default ActiveRecord models" do  
+    context "that have a non-standard primary key (that is no sequence)" do
+      it "should import models successfully" do
+        assert_difference "Widget.count", +3 do
+          Widget.import Build(3, :widgets)
+        end
+      end
+    end
+  end
+
   context "with :validation option" do
     let(:columns) { %w(title author_name) }
     let(:valid_values) { [[ "LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
