@@ -46,6 +46,12 @@ describe "#import" do
           result = Topic.import columns, invalid_values, :validate => false
         end
       end
+
+      it 'should raise a specific error if a column does not exist' do
+        assert_raises ActiveRecord::Import::MissingColumnError do
+          Topic.import ['foo'], [['bar']], :validate => false
+        end
+      end
     end
   
     context "with validation checks turned on" do
