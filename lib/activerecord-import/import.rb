@@ -17,6 +17,12 @@ module ActiveRecord::Import #:nodoc:
       true
     end
   end
+
+  class MissingColumnError < StandardError
+    def initialize(index)
+      super "Missing column for value at index #{index}"
+    end
+  end
 end
 
 class ActiveRecord::Base
@@ -297,6 +303,9 @@ class ActiveRecord::Base
       array_of_attributes.map do |arr|
         my_values = arr.each_with_index.map do |val,j|
           column = columns[j]
+
+          raise ActiveRecord::Import::MissingColumnError.new(j) if column.nil?
+
           if val.nil? && !sequence_name.blank? && column.name == primary_key
              connection.next_value_for_sequence(sequence_name)
           else
