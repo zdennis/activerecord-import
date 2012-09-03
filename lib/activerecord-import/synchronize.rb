@@ -43,6 +43,10 @@ module ActiveRecord # :nodoc:
           instance.clear_aggregation_cache
           instance.clear_association_cache
           instance.instance_variable_set '@attributes', matched_instance.attributes
+          # Since the instance now accurately reflects the record in
+          # the database, ensure that instance.persisted? is true.
+          instance.instance_variable_set '@new_record', false
+          instance.instance_variable_set '@destroyed', false
         end
       end
     end
