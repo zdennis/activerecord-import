@@ -135,7 +135,17 @@ describe "#import" do
 
       it "reloads data for existing in-memory instances" do
         Topic.import(new_topics, :synchronize => new_topics, :synchronize_keys => [:title] )
-        assert !new_topics.any?(&:new_record?), "Records should have been reloaded"
+        assert new_topics.all?(&:persisted?), "Records should have been reloaded"
+      end      
+    end
+
+    context "synchronizing on destroyed records with explicit conditions" do
+      let(:new_topics) { Generate(3, :topics) }
+
+      it "reloads data for existing in-memory instances" do
+        new_topics.each &:destroy
+        Topic.import(new_topics, :synchronize => new_topics, :synchronize_keys => [:title] )
+        assert new_topics.all?(&:persisted?), "Records should have been reloaded"
       end      
     end
   end
