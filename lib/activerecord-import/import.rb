@@ -137,8 +137,8 @@ class ActiveRecord::Base
     #
     #  # Example synchronizing unsaved/new instances in memory by using a uniqued imported field
     #  posts = [BlogPost.new(:title => "Foo"), BlogPost.new(:title => "Bar")]
-    #  BlogPost.import posts, :synchronize => posts
-    #  puts posts.first.new_record? # => false
+    #  BlogPost.import posts, :synchronize => posts, :synchronize_keys => [:title]
+    #  puts posts.first.persisted? # => true
     #
     # == On Duplicate Key Update (MySQL only)
     #
