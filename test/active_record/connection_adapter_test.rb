@@ -50,3 +50,13 @@ describe "ActiveRecord::ConnectionAdapter::AbstractAdapter" do
   end
   
 end
+
+describe "ActiveRecord::Import DB-specific adapter class" do
+  context "when ActiveRecord::Import is in use" do
+    it "should appear in the AR connection adapter class's ancestors" do
+      connection = ActiveRecord::Base.connection
+      import_class_name = 'ActiveRecord::Import::' + connection.class.name.demodulize
+      assert_include connection.class.ancestors, import_class_name.constantize
+    end
+  end
+end
