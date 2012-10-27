@@ -11,7 +11,7 @@ module ActiveRecord::Import #:nodoc:
       true
     end
   end
-  
+
   module OnDuplicateKeyUpdateSupport #:nodoc:
     def supports_on_duplicate_key_update? #:nodoc:
       true
@@ -32,7 +32,7 @@ class ActiveRecord::Base
     tproc = lambda do
       ActiveRecord::Base.default_timezone == :utc ? Time.now.utc : Time.now
     end
-    
+
     AREXT_RAILS_COLUMNS = {
       :create => { "created_on" => tproc ,
                    "created_at" => tproc },
@@ -40,7 +40,7 @@ class ActiveRecord::Base
                    "updated_at" => tproc }
     }
     AREXT_RAILS_COLUMN_NAMES = AREXT_RAILS_COLUMNS[:create].keys + AREXT_RAILS_COLUMNS[:update].keys
-  
+
     # Returns true if the current database connection adapter
     # supports import functionality, otherwise returns false.
     def supports_import?
@@ -57,14 +57,14 @@ class ActiveRecord::Base
     rescue NoMethodError
       false
     end
-    
-    # Imports a collection of values to the database.  
+
+    # Imports a collection of values to the database.
     #
     # This is more efficient than using ActiveRecord::Base#create or
     # ActiveRecord::Base#save multiple times. This method works well if
     # you want to create more than one record at a time and do not care
     # about having ActiveRecord objects returned for each record
-    # inserted. 
+    # inserted.
     #
     # This can be used with or without validations. It does not utilize
     # the ActiveRecord::Callbacks during creation/modification while
@@ -74,9 +74,9 @@ class ActiveRecord::Base
     #  Model.import array_of_models
     #  Model.import column_names, array_of_values
     #  Model.import column_names, array_of_values, options
-    # 
+    #
     # ==== Model.import array_of_models
-    # 
+    #
     # With this form you can call _import_ passing in an array of model
     # objects that you want updated.
     #
@@ -108,9 +108,9 @@ class ActiveRecord::Base
     # * +timestamps+ - true|false, tells import to not add timestamps \
     #   (if false) even if record timestamps is disabled in ActiveRecord::Base
     #
-    # == Examples  
+    # == Examples
     #  class BlogPost < ActiveRecord::Base ; end
-    #  
+    #
     #  # Example using array of model objects
     #  posts = [ BlogPost.new :author_name=>'Zach Dennis', :title=>'AREXT',
     #            BlogPost.new :author_name=>'Zach Dennis', :title=>'AREXT2',
@@ -120,7 +120,7 @@ class ActiveRecord::Base
     #  # Example using column_names and array_of_values
     #  columns = [ :author_name, :title ]
     #  values = [ [ 'zdennis', 'test post' ], [ 'jdoe', 'another test post' ] ]
-    #  BlogPost.import columns, values 
+    #  BlogPost.import columns, values
     #
     #  # Example using column_names, array_of_value and options
     #  columns = [ :author_name, :title ]
@@ -142,8 +142,8 @@ class ActiveRecord::Base
     #
     # == On Duplicate Key Update (MySQL only)
     #
-    # The :on_duplicate_key_update option can be either an Array or a Hash. 
-    # 
+    # The :on_duplicate_key_update option can be either an Array or a Hash.
+    #
     # ==== Using an Array
     #
     # The :on_duplicate_key_update option can be an array of column
@@ -158,9 +158,9 @@ class ActiveRecord::Base
     # to model attribute name mappings. This gives you finer grained
     # control over what fields are updated with what attributes on your
     # model. Below is an example:
-    #   
-    #   BlogPost.import columns, attributes, :on_duplicate_key_update=>{ :title => :title } 
-    #  
+    #
+    #   BlogPost.import columns, attributes, :on_duplicate_key_update=>{ :title => :title }
+    #
     # = Returns
     # This returns an object which responds to +failed_instances+ and +num_inserts+.
     # * failed_instances - an array of objects that fails validation and were not committed to the database. An empty array if no validation is performed.
@@ -180,7 +180,7 @@ class ActiveRecord::Base
           models = args.first
           column_names = self.column_names.dup
         end
-        
+
         array_of_attributes = models.map do |model|
           # this next line breaks sqlite.so with a segmentation fault
           # if model.new_record? || options[:on_duplicate_key_update]
@@ -230,23 +230,23 @@ class ActiveRecord::Base
       return_obj.num_inserts = 0 if return_obj.num_inserts.nil?
       return_obj
     end
-    
-    # TODO import_from_table needs to be implemented. 
+
+    # TODO import_from_table needs to be implemented.
     def import_from_table( options ) # :nodoc:
     end
-    
+
     # Imports the passed in +column_names+ and +array_of_attributes+
     # given the passed in +options+ Hash with validations. Returns an
-    # object with the methods +failed_instances+ and +num_inserts+. 
-    # +failed_instances+ is an array of instances that failed validations. 
+    # object with the methods +failed_instances+ and +num_inserts+.
+    # +failed_instances+ is an array of instances that failed validations.
     # +num_inserts+ is the number of inserts it took to import the data. See
     # ActiveRecord::Base.import for more information on
     # +column_names+, +array_of_attributes+ and +options+.
     def import_with_validations( column_names, array_of_attributes, options={} )
       failed_instances = []
-    
+
       # create instances for each of our column/value sets
-      arr = validations_array_for_column_names_and_attributes( column_names, array_of_attributes )    
+      arr = validations_array_for_column_names_and_attributes( column_names, array_of_attributes )
 
       # keep track of the instance and the position it is currently at. if this fails
       # validation we'll use the index to remove it from the array_of_attributes
@@ -257,7 +257,7 @@ class ActiveRecord::Base
         if not instance.valid?
           array_of_attributes[ i ] = nil
           failed_instances << instance
-        end    
+        end
       end
       array_of_attributes.compact!
 
@@ -268,7 +268,7 @@ class ActiveRecord::Base
                     end
       ActiveRecord::Import::Result.new(failed_instances, num_inserts)
     end
-    
+
     # Imports the passed in +column_names+ and +array_of_attributes+
     # given the passed in +options+ Hash. This will return the number
     # of insert operations it took to create these records without
@@ -296,9 +296,9 @@ class ActiveRecord::Base
       else
         # generate the sql
         post_sql_statements = connection.post_sql_statements( quoted_table_name, options )
-        
+
         # perform the inserts
-        number_inserted = connection.insert_many( [ insert_sql, post_sql_statements ].flatten, 
+        number_inserted = connection.insert_many( [ insert_sql, post_sql_statements ].flatten,
                                                   values_sql,
                                                   "#{self.class.name} Create Many Without Validations Or Callbacks" )
       end
@@ -310,14 +310,22 @@ class ActiveRecord::Base
     # Returns SQL the VALUES for an INSERT statement given the passed in +columns+
     # and +array_of_attributes+.
     def values_sql_for_columns_and_attributes(columns, array_of_attributes)   # :nodoc:
+      # connection gets called a *lot* in this high intensity loop.
+      # Reuse the same one w/in the loop, otherwise it would keep being re-retreived (= lots of time for large imports)
+      connection_memo = connection
       array_of_attributes.map do |arr|
         my_values = arr.each_with_index.map do |val,j|
           column = columns[j]
 
-          if val.nil? && !sequence_name.blank? && column.name == primary_key
-             connection.next_value_for_sequence(sequence_name)
+          # be sure to query sequence_name *last*, only if cheaper tests fail, because it's costly
+          if val.nil? && column.name == primary_key && !sequence_name.blank?
+             connection_memo.next_value_for_sequence(sequence_name)
           else
-            connection.quote(column.type_cast(val), column)
+            if serialized_attributes.include?(column.name)
+              connection_memo.quote(serialized_attributes[column.name].dump(val), column)
+            else
+              connection_memo.quote(val, column)
+            end
           end
         end
         "(#{my_values.join(',')})"
@@ -348,7 +356,7 @@ class ActiveRecord::Base
             column_names << key
             array_of_attributes.each { |arr| arr << value }
           end
-          
+
           if supports_on_duplicate_key_update?
             if options[:on_duplicate_key_update]
               options[:on_duplicate_key_update] << key.to_sym if options[:on_duplicate_key_update].is_a?(Array)
@@ -360,13 +368,13 @@ class ActiveRecord::Base
         end
       end
     end
-    
+
     # Returns an Array of Hashes for the passed in +column_names+ and +array_of_attributes+.
     def validations_array_for_column_names_and_attributes( column_names, array_of_attributes ) # :nodoc:
       array_of_attributes.map do |attributes|
         Hash[attributes.each_with_index.map {|attr, c| [column_names[c], attr] }]
       end
     end
-    
+
   end
 end
