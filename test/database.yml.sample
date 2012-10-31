@@ -31,6 +31,10 @@ oracle:
   adapter: oracle
   min_messages: debug
 
+sqlserver:
+  <<: *common
+  adapter: sqlserver
+
 sqlite:
   adapter: sqlite
   dbfile: test.db
