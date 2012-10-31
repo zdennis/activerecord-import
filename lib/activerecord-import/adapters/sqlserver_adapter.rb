@@ -4,28 +4,27 @@ module ActiveRecord::Import::SQLServerAdapter
   # There is a limit of 1000 rows on the insert method
   # We need to process it in batches
   def insert_many( sql, values, *args ) # :nodoc:
-    #HACK, SQLSERVER doesn't allow you to specify ID as NULL
-#    sql[0].gsub!("[id],","")
-#    values.each do |value| 
-#      value.gsub!(/^\(NULL,/,"(")
-#    end
-
+    
     number_of_inserts = 0
     while !(batch = values.shift(1000)).blank? do
+      #If the ID is NULL, insert without the ID column so SQLserver will add it
+      #If we are supplied the id, include it in the column list.
       nullids =[]
       suppliedids=[]
       batch.each do |value|
+        #If the first argument (id) is null remove it.
+        #this is assuming id is first. We should probably check where id is based on the SQL cmd
         if value.match(/^\(NULL,/) then
            nullids << value.gsub(/^\(NULL,/,"(")
         else
+           #we got given the ID so just use this value as is
            suppliedids << value
         end
       end
-
+      #run two SQL bulk inserts. One in which we remove the NULL ids and let Sqlserver figure them out
+      #the other in which we use the ids as supplied
       number_of_inserts += super( sql.clone[0].gsub!(/\[id\],/,""), nullids, args ) unless nullids.empty?
       number_of_inserts += super( sql.clone, suppliedids, args ) unless suppliedids.empty?
-      # cloning sql here since the super method is modifying it
-      #number_of_inserts += super( sql.clone, batch, args )
     end
     number_of_inserts
   end
