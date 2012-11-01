@@ -4,7 +4,7 @@ module ActiveRecord::Import::SQLServerAdapter
   # There is a limit of 1000 rows on the insert method
   # We need to process it in batches
   def insert_many( sql, values, *args ) # :nodoc:
-    noidsql = sql.clone[0].gsub(/\[id],/,"")
+    noidsql = sql.clone[0].gsub(/\[id\],/,"")
     
     number_of_inserts = 0
     while !(batch = values.shift(1000)).blank? do
