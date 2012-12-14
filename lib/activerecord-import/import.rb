@@ -317,14 +317,22 @@ class ActiveRecord::Base
     # Returns SQL the VALUES for an INSERT statement given the passed in +columns+
     # and +array_of_attributes+.
     def values_sql_for_columns_and_attributes(columns, array_of_attributes)   # :nodoc:
+      # connection gets called a *lot* in this high intensity loop.
+      # Reuse the same one w/in the loop, otherwise it would keep being re-retreived (= lots of time for large imports)
+      connection_memo = connection
       array_of_attributes.map do |arr|
         my_values = arr.each_with_index.map do |val,j|
           column = columns[j]
 
-          if val.nil? && !sequence_name.blank? && column.name == primary_key
-             connection.next_value_for_sequence(sequence_name)
+          # be sure to query sequence_name *last*, only if cheaper tests fail, because it's costly
+          if val.nil? && column.name == primary_key && !sequence_name.blank?
+             connection_memo.next_value_for_sequence(sequence_name)
           else
-            connection.quote(column.type_cast(val), column)
+            if serialized_attributes.include?(column.name)
+              connection_memo.quote(serialized_attributes[column.name].dump(val), column)
+            else
+              connection_memo.quote(val, column)
+            end
           end
         end
         "(#{my_values.join(',')})"
