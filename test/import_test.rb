@@ -293,4 +293,18 @@ describe "#import" do
       assert_equal "2010/05/14".to_date, Topic.last.last_read.to_date
     end
   end
+
+  context "importing through an association scope" do
+    [ true, false ].each do |b|
+      context "when validation is " + (b ? "enabled" : "disabled") do
+        it "should automatically set the foreign key column" do
+          books = [[ "David Chelimsky", "The RSpec Book" ], [ "Chad Fowler", "Rails Recipes" ]]
+          topic = Factory.create :topic
+          topic.books.import [ :author_name, :title ], books, :validate => b
+          assert_equal 2, topic.books.count
+          assert topic.books.all? { |b| b.topic_id == topic.id }
+        end
+      end
+    end
+  end
 end
