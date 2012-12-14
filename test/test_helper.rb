@@ -44,3 +44,8 @@ adapter_schema = test_dir.join("schema/#{adapter}_schema.rb")
 require adapter_schema if File.exists?(adapter_schema)
 
 Dir[File.dirname(__FILE__) + "/models/*.rb"].each{ |file| require file }
+
+# Prevent this deprecation warning from breaking the tests.
+module Rake::DeprecatedObjectDSL
+  remove_method :import
+end

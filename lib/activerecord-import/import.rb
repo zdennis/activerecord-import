@@ -276,6 +276,13 @@ class ActiveRecord::Base
     # information on +column_names+, +array_of_attributes_ and
     # +options+.
     def import_without_validations_or_callbacks( column_names, array_of_attributes, options={} )
+      scope_columns, scope_values = scope_attributes.to_a.transpose
+
+      unless scope_columns.blank?
+        column_names.concat scope_columns
+        array_of_attributes.each { |a| a.concat scope_values }
+      end
+
       columns = column_names.each_with_index.map do |name, i|
         column = columns_hash[name.to_s]
 
