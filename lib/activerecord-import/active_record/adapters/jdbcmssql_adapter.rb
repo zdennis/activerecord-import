@@ -1,6 +1,6 @@
-require "active_record/connection_adapters/sqlserver_adapter"
+require "arjdbc/mssql/adapter"
 require "activerecord-import/adapters/sqlserver_adapter"
 
-class ActiveRecord::ConnectionAdapters::SQLServerAdapter
+class ActiveRecord::ConnectionAdapters::MssqlJdbcConnection
   include ActiveRecord::Import::SQLServerAdapter
 end
