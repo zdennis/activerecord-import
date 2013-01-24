@@ -8,7 +8,7 @@ module ActiveRecord::Import::AbstractAdapter
       arr, current_arr_values_size, current_size = [], 0, 0
       values.each_with_index do |val,i|
         comma_bytes = arr.size
-        sql_size_thus_far = sql_size + current_size + val.size + comma_bytes
+        sql_size_thus_far = sql_size + current_size + val.bytesize + comma_bytes
         if NO_MAX_PACKET == max_bytes or sql_size_thus_far <= max_bytes
           current_size += val.bytesize            
           arr << val
