@@ -22,6 +22,7 @@ group :test do
   platforms :jruby do
     gem "jdbc-mysql"
     gem "activerecord-jdbcmysql-adapter"
+    gem "activerecord-jdbcmssql-adapter"
   end
 
   # Support libs
