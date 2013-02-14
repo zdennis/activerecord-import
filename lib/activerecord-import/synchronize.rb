@@ -10,13 +10,13 @@ module ActiveRecord # :nodoc:
     #
     # == Examples
     # # Synchronizing existing models by matching on the primary key field
-    # posts = Post.find_by_author("Zach")
+    # posts = Post.find_by(author: "Zach")
     # <.. out of system changes occur to change author name from Zach to Zachary..>
     # Post.synchronize posts
     # posts.first.author # => "Zachary" instead of Zach
     #
     # # Synchronizing using custom key fields
-    # posts = Post.find_by_author("Zach")
+    # posts = Post.find_by(author: "Zach")
     # <.. out of system changes occur to change the address of author 'Zach' to 1245 Foo Ln ..>
     # Post.synchronize posts, [:name] # queries on the :name column and not the :id column
     # posts.first.address # => "1245 Foo Ln" instead of whatever it was
@@ -33,7 +33,7 @@ module ActiveRecord # :nodoc:
 
       klass = instances.first.class
 
-      fresh_instances = klass.find( :all, :conditions=>conditions, :order=>order )
+      fresh_instances = klass.where(conditions).order(order)
       instances.each do |instance|
         matched_instance = fresh_instances.detect do |fresh_instance|
           keys.all?{ |key| fresh_instance.send(key) == instance.send(key) }

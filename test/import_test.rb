@@ -77,7 +77,7 @@ describe "#import" do
         assert_difference "Topic.count", +2 do
           result = Topic.import columns, valid_values + invalid_values, :validate => true
         end
-        assert_equal 0, Topic.find_all_by_title(invalid_values.map(&:first)).count
+        assert_equal 0, Topic.where(title: invalid_values.map(&:first)).count
       end
     end
   end
@@ -161,7 +161,7 @@ describe "#import" do
       end
 
       Topic.import [topic]
-      assert Topic.find_by_title_and_author_name("The RSpec Book", "David Chelimsky")
+      assert Topic.find_by(title: "The RSpec Book", author_name: "David Chelimsky")
     end
 
     it "should not overwrite existing records" do
@@ -212,8 +212,8 @@ describe "#import" do
       end
 
       # imported topics should be findable by their imported attributes
-      assert Topic.find_by_author_name(topics.first.author_name)
-      assert Topic.find_by_author_name(topics.last.author_name)
+      assert Topic.find_by(author_name: topics.first.author_name)
+      assert Topic.find_by(author_name: topics.last.author_name)
     end
 
     it "should not populate fields for columns not imported" do
@@ -221,8 +221,8 @@ describe "#import" do
       assert_difference "Topic.count", +2 do
         result = Topic.import [:author_name, :title], topics
       end
-      
-      assert !Topic.find_by_author_email_address("zach.dennis@gmail.com")
+
+      assert !Topic.find_by(author_email_address: "zach.dennis@gmail.com")
     end
   end
 

@@ -128,7 +128,7 @@ class ActiveRecord::Base
     #  BlogPost.import( columns, values, :validate => false  )
     #
     #  # Example synchronizing existing instances in memory
-    #  post = BlogPost.find_by_author_name( 'zdennis' )
+    #  post = BlogPost.find_by(author_name: 'zdennis')
     #  puts post.author_name # => 'zdennis'
     #  columns = [ :author_name, :title ]
     #  values = [ [ 'yoda', 'test post' ] ]
