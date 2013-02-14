@@ -1,31 +1,9 @@
 require "bundler"
 Bundler.setup
 
+require 'appraisal'
 require 'rake'
 require 'rake/testtask'
-
-begin
-  require 'jeweler'
-  Jeweler::Tasks.new do |gem|
-    gem.name = "activerecord-import"
-    gem.summary = %Q{Bulk-loading extension for ActiveRecord}
-    gem.description = %Q{Extraction of the ActiveRecord::Base#import functionality from ar-extensions for Rails 3 and beyond}
-    gem.email = "zach.dennis@gmail.com"
-    gem.homepage = "http://github.com/zdennis/activerecord-import"
-    gem.authors = ["Zach Dennis"]
-    gem.files = FileList["VERSION", "Rakefile", "README*", "lib/**/*"]
-
-    bundler = Bundler.load
-    bundler.dependencies_for(:default).each do |dependency|
-      gem.add_dependency dependency.name, *dependency.requirements_list
-    end
-
-    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
-  end
-  Jeweler::GemcutterTasks.new
-rescue LoadError
-  puts "Jeweler (or a dependency) not available. Install it with: gem install jeweler"
-end
 
 namespace :display do
   task :notice do
