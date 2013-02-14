@@ -3,7 +3,7 @@ module ActiveRecord # :nodoc:
 
     # Synchronizes the passed in ActiveRecord instances with data
     # from the database. This is like calling reload on an individual
-    # ActiveRecord instance but it is intended for use on multiple instances. 
+    # ActiveRecord instance but it is intended for use on multiple instances.
     #
     # This uses one query for all instance updates and then updates existing
     # instances rather sending one query for each instance

@@ -158,9 +158,9 @@ class ActiveRecord::Base
     # to model attribute name mappings. This gives you finer grained
     # control over what fields are updated with what attributes on your
     # model. Below is an example:
-    #   
-    #   BlogPost.import columns, attributes, :on_duplicate_key_update=>{ :title => :title } 
-    #  
+    #
+    #   BlogPost.import columns, attributes, :on_duplicate_key_update=>{ :title => :title }
+    #
     # = Returns
     # This returns an object which responds to +failed_instances+ and +num_inserts+.
     # * failed_instances - an array of objects that fails validation and were not committed to the database. An empty array if no validation is performed.
