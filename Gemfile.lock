@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    activerecord-import (0.3.1)
+    activerecord-import (0.4.0)
       activerecord (>= 3.0)
 
 GEM
