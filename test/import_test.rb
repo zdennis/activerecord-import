@@ -310,7 +310,7 @@ describe "#import" do
       context "when validation is " + (b ? "enabled" : "disabled") do
         it "should automatically set the foreign key column" do
           books = [[ "David Chelimsky", "The RSpec Book" ], [ "Chad Fowler", "Rails Recipes" ]]
-          topic = Factory.create :topic
+          topic = FactoryGirl.create :topic
           topic.books.import [ :author_name, :title ], books, :validate => b
           assert_equal 2, topic.books.count
           assert topic.books.all? { |b| b.topic_id == topic.id }
