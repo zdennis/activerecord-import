@@ -236,6 +236,7 @@ describe "#import" do
   context "ActiveRecord timestamps" do
     context "when the timestamps columns are present" do
       setup do
+        ActiveRecord::Base.default_timezone = :utc
         Delorean.time_travel_to("5 minutes ago") do
           assert_difference "Book.count", +1 do
             result = Book.import [:title, :author_name, :publisher], [["LDAP", "Big Bird", "Del Rey"]]
@@ -245,19 +246,19 @@ describe "#import" do
       end
 
       it "should set the created_at column for new records"  do
-        assert_equal 5.minutes.ago.strftime("%H:%M"), @book.created_at.strftime("%H:%M")
+        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.created_at.strftime("%H:%M")
       end
 
       it "should set the created_on column for new records" do
-        assert_equal 5.minutes.ago.strftime("%H:%M"), @book.created_on.strftime("%H:%M")
+        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.created_on.strftime("%H:%M")
       end
 
       it "should set the updated_at column for new records" do
-        assert_equal 5.minutes.ago.strftime("%H:%M"), @book.updated_at.strftime("%H:%M")
+        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.updated_at.strftime("%H:%M")
       end
 
       it "should set the updated_on column for new records" do
-        assert_equal 5.minutes.ago.strftime("%H:%M"), @book.updated_on.strftime("%H:%M")
+        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.updated_on.strftime("%H:%M")
       end
     end
 
