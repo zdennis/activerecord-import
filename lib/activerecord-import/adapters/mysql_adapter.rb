@@ -12,9 +12,9 @@ module ActiveRecord::Import::MysqlAdapter
       val.to_i
     end
   end
-  
+
   # Returns a generated ON DUPLICATE KEY UPDATE statement given the passed
-  # in +args+. 
+  # in +args+.
   def sql_for_on_duplicate_key_update( table_name, *args ) # :nodoc:
     sql = ' ON DUPLICATE KEY UPDATE '
     arg = args.first

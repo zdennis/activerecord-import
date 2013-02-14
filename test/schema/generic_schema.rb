@@ -30,9 +30,9 @@ ActiveRecord::Schema.define do
 
   create_table :projects, :force=>true do |t|
     t.column :name, :string
-    t.column :type, :string    
+    t.column :type, :string
   end
-  
+
   create_table :developers, :force=>true do |t|
     t.column :name, :string
     t.column :salary, :integer, :default=>'70000'
@@ -52,7 +52,7 @@ ActiveRecord::Schema.define do
   create_table :teams, :force=>true do |t|
     t.column :name, :string
   end
-  
+
   create_table :books, :force=>true do |t|
     t.column :title, :string, :null=>false
     t.column :publisher, :string, :null=>false, :default => 'Default Publisher'
@@ -64,7 +64,7 @@ ActiveRecord::Schema.define do
     t.column :publish_date, :date
     t.column :topic_id, :integer
     t.column :for_sale, :boolean, :default => true
-  end  
+  end
 
   create_table :languages, :force=>true do |t|
     t.column :name, :string
@@ -93,7 +93,7 @@ ActiveRecord::Schema.define do
     t.column :created_at, :datetime
     t.column :updated_at, :datetime
   end
-  
+
   add_index :animals, [:name], :unique => true, :name => 'uk_animals'
 
   create_table :widgets, :id => false, :force => true do |t|
