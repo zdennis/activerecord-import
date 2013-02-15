@@ -231,14 +231,14 @@ class ActiveRecord::Base
       return_obj
     end
 
-    # TODO import_from_table needs to be implemented. 
+    # TODO import_from_table needs to be implemented.
     def import_from_table( options ) # :nodoc:
     end
 
     # Imports the passed in +column_names+ and +array_of_attributes+
     # given the passed in +options+ Hash with validations. Returns an
-    # object with the methods +failed_instances+ and +num_inserts+. 
-    # +failed_instances+ is an array of instances that failed validations. 
+    # object with the methods +failed_instances+ and +num_inserts+.
+    # +failed_instances+ is an array of instances that failed validations.
     # +num_inserts+ is the number of inserts it took to import the data. See
     # ActiveRecord::Base.import for more information on
     # +column_names+, +array_of_attributes+ and +options+.
