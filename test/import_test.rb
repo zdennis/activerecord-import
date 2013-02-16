@@ -337,4 +337,13 @@ describe "#import" do
     end
   end
 
+  describe "importing serialized fields" do
+    it "imports values for serialized fields" do
+      assert_difference "Widget.unscoped.count", +1 do
+        Widget.import [:w_id, :data], [[1, {:a => :b}]]
+      end
+      assert_equal({:a => :b}, Widget.find_by_w_id(1).data)
+    end
+  end
+
 end
