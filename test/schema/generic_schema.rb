@@ -98,5 +98,6 @@ ActiveRecord::Schema.define do
 
   create_table :widgets, :id => false, :force => true do |t|
     t.integer :w_id
+    t.boolean :active, :default => false
   end
 end

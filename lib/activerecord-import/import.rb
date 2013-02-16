@@ -205,7 +205,7 @@ class ActiveRecord::Base
       # Force the primary key col into the insert if it's not
       # on the list and we are using a sequence and stuff a nil
       # value for it into each row so the sequencer will fire later
-      if !column_names.include?(primary_key) && sequence_name && connection.prefetch_primary_key?
+      if !column_names.include?(primary_key) && connection.prefetch_primary_key? && sequence_name
          column_names << primary_key
          array_of_attributes.each { |a| a << nil }
       end
@@ -276,11 +276,15 @@ class ActiveRecord::Base
     # information on +column_names+, +array_of_attributes_ and
     # +options+.
     def import_without_validations_or_callbacks( column_names, array_of_attributes, options={} )
+      column_names = column_names.map(&:to_sym)
       scope_columns, scope_values = scope_attributes.to_a.transpose
 
       unless scope_columns.blank?
-        column_names.concat scope_columns
-        array_of_attributes.each { |a| a.concat scope_values }
+        scope_columns.zip(scope_values).each do |name, value|
+          next if column_names.include?(name.to_sym)
+          column_names << name
+          array_of_attributes.each { |attrs| attrs << value }
+        end
       end
 
       columns = column_names.each_with_index.map do |name, i|
