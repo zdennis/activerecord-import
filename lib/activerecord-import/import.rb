@@ -276,11 +276,15 @@ class ActiveRecord::Base
     # information on +column_names+, +array_of_attributes_ and
     # +options+.
     def import_without_validations_or_callbacks( column_names, array_of_attributes, options={} )
+      column_names = column_names.map(&:to_sym)
       scope_columns, scope_values = scope_attributes.to_a.transpose
 
       unless scope_columns.blank?
-        column_names.concat scope_columns
-        array_of_attributes.each { |a| a.concat scope_values }
+        scope_columns.zip(scope_values).each do |name, value|
+          next if column_names.include?(name.to_sym)
+          column_names << name
+          array_of_attributes.each { |attrs| attrs << value }
+        end
       end
 
       columns = column_names.each_with_index.map do |name, i|
