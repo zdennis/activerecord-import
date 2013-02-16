@@ -43,8 +43,8 @@ class ActiveRecord::Base
   
     # Returns true if the current database connection adapter
     # supports import functionality, otherwise returns false.
-    def supports_import?
-      connection.supports_import?
+    def supports_import?(*args)
+      connection.supports_import?(*args)
     rescue NoMethodError
       false
     end
@@ -307,7 +307,7 @@ class ActiveRecord::Base
       else
         # generate the sql
         post_sql_statements = connection.post_sql_statements( quoted_table_name, options )
-        
+
         # perform the inserts
         number_inserted = connection.insert_many( [ insert_sql, post_sql_statements ].flatten, 
                                                   values_sql,
