@@ -347,3 +347,9 @@ describe "#import" do
   end
 
 end
+
+describe '#ar_import' do
+  it 'aliases to #import' do
+    assert_equal(ActiveRecord::Base.method(:ar_import), ActiveRecord::Base.method(:import))
+  end
+end

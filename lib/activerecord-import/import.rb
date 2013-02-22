@@ -230,6 +230,7 @@ class ActiveRecord::Base
       return_obj.num_inserts = 0 if return_obj.num_inserts.nil?
       return_obj
     end
+    alias_method :ar_import, :import
     
     # TODO import_from_table needs to be implemented. 
     def import_from_table( options ) # :nodoc:
