@@ -17,7 +17,7 @@ require "active_record/fixtures"
 require "active_support/test_case"
 
 require "delorean"
-require "ruby-debug"
+require "ruby-debug" if RUBY_VERSION.to_f < 1.9
 
 adapter = ENV["ARE_DB"] || "sqlite3"
 
