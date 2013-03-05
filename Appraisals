@@ -5,5 +5,5 @@ end
 
 appraise "rails4" do
   gem "mysql", "~> 2.9", :platforms => :ruby
-  gem "rails", github: "rails/rails"
+  gem "activerecord", "~> 4.0.0.beta1"
 end
