@@ -128,7 +128,7 @@ class ActiveRecord::Base
     #  BlogPost.import( columns, values, :validate => false  )
     #
     #  # Example synchronizing existing instances in memory
-    #  post = BlogPost.where(author_name: 'zdennis')
+    #  post = BlogPost.where(author_name: 'zdennis').first
     #  puts post.author_name # => 'zdennis'
     #  columns = [ :author_name, :title ]
     #  values = [ [ 'yoda', 'test post' ] ]

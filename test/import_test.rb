@@ -161,7 +161,7 @@ describe "#import" do
       end
 
       Topic.import [topic]
-      assert Topic.where(title: "The RSpec Book", author_name: "David Chelimsky")
+      assert Topic.where(title: "The RSpec Book", author_name: "David Chelimsky").first
     end
 
     it "should not overwrite existing records" do
@@ -212,8 +212,8 @@ describe "#import" do
       end
 
       # imported topics should be findable by their imported attributes
-      assert Topic.where(author_name: topics.first.author_name)
-      assert Topic.where(author_name: topics.last.author_name)
+      assert Topic.where(author_name: topics.first.author_name).first
+      assert Topic.where(author_name: topics.last.author_name).first
     end
 
     it "should not populate fields for columns not imported" do

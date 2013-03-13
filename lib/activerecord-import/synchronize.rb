@@ -10,13 +10,13 @@ module ActiveRecord # :nodoc:
     #
     # == Examples
     # # Synchronizing existing models by matching on the primary key field
-    # posts = Post.where(author: "Zach")
+    # posts = Post.where(author: "Zach").first
     # <.. out of system changes occur to change author name from Zach to Zachary..>
     # Post.synchronize posts
     # posts.first.author # => "Zachary" instead of Zach
     #
     # # Synchronizing using custom key fields
-    # posts = Post.where(author: "Zach")
+    # posts = Post.where(author: "Zach").first
     # <.. out of system changes occur to change the address of author 'Zach' to 1245 Foo Ln ..>
     # Post.synchronize posts, [:name] # queries on the :name column and not the :id column
     # posts.first.address # => "1245 Foo Ln" instead of whatever it was
