@@ -373,7 +373,7 @@ class ActiveRecord::Base
 
       # dup the passed in array so we don't modify it unintentionally
       column_names = column_names.dup
-      array_of_attributes = array_of_attributes.dup
+      array_of_attributes = array_of_attributes.map(&:dup)
 
       # Force the primary key col into the insert if it's not
       # on the list and we are using a sequence and stuff a nil
