@@ -142,7 +142,7 @@ class ActiveRecord::Base
     #
     # == On Duplicate Key Update (MySQL only)
     #
-    # The :on_duplicate_key_update option can be either an Array or a Hash. 
+    # The :on_duplicate_key_update option can be either an Array or a Hash, or `false` to disable ON DUPLICATE KEY UPDATE completely. 
     # 
     # ==== Using an Array
     #
@@ -372,7 +372,7 @@ class ActiveRecord::Base
             if options[:on_duplicate_key_update]
               options[:on_duplicate_key_update] << key.to_sym if options[:on_duplicate_key_update].is_a?(Array)
               options[:on_duplicate_key_update][key.to_sym] = key.to_sym if options[:on_duplicate_key_update].is_a?(Hash)
-            else
+            elsif options[:on_duplicate_key_update] != false
               options[:on_duplicate_key_update] = [ key.to_sym ]
             end
           end
