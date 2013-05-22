@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
     "lib/activerecord-import.rb",
     "lib/activerecord-import/active_record/adapters/abstract_adapter.rb",
     "lib/activerecord-import/active_record/adapters/jdbcmysql_adapter.rb",
+    "lib/activerecord-import/active_record/adapters/em_mysql2_adapter.rb",
     "lib/activerecord-import/active_record/adapters/mysql2_adapter.rb",
     "lib/activerecord-import/active_record/adapters/mysql_adapter.rb",
     "lib/activerecord-import/active_record/adapters/postgresql_adapter.rb",
@@ -35,6 +36,7 @@ Gem::Specification.new do |s|
     "lib/activerecord-import/import.rb",
     "lib/activerecord-import/mysql.rb",
     "lib/activerecord-import/mysql2.rb",
+    "lib/activerecord-import/em_mysql2.rb",
     "lib/activerecord-import/postgresql.rb",
     "lib/activerecord-import/sqlite3.rb",
     "lib/activerecord-import/synchronize.rb"
