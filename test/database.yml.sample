@@ -1,15 +1,15 @@
 common: &common
   username: root
-  password: 
+  password:
   encoding: utf8
   host:     localhost
   database: activerecord_import_test
 
-mysql:
+mysql: &mysql
   <<: *common
   adapter: mysql
 
-mysql2:
+mysql2: &mysql2
   <<: *common
   adapter: mysql2
 
@@ -26,7 +26,7 @@ seamless_database_pool:
   master:
     host: localhost
 
-postgresql:
+postgresql: &postgresql
   <<: *common
   username: postgres
   adapter: postgresql
@@ -40,7 +40,7 @@ oracle:
   adapter: oracle
   min_messages: debug
 
-sqlite:
+sqlite: &sqlite3
   adapter: sqlite
   dbfile: test.db
 
@@ -50,3 +50,4 @@ sqlite3:
 
 spatialite:
   <<: *sqlite3
+
