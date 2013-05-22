@@ -13,7 +13,7 @@ namespace :display do
 end
 task :default => ["display:notice"]
 
-ADAPTERS = %w(mysql mysql2 jdbcmysql postgresql sqlite3 seamless_database_pool mysqlspatial mysql2spatial spatialite postgis)
+ADAPTERS = %w(mysql mysql2 em_mysql2 jdbcmysql postgresql sqlite3 seamless_database_pool mysqlspatial mysql2spatial spatialite postgis)
 ADAPTERS.each do |adapter|
   namespace :test do
     desc "Runs #{adapter} database tests."

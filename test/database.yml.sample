@@ -15,6 +15,11 @@ mysql2: &mysql2
   adapter: mysql2
   strict: false
 
+em_mysql2:
+  <<: *common
+  adapter: em_mysql2
+  pool: 5
+
 mysqlspatial:
   adapter: mysql
   strict: false
