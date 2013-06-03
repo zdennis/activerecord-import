@@ -11,14 +11,19 @@ module ActiveRecord::Import
     when 'mysql2spatial' then 'mysql2'
     when 'spatialite' then 'sqlite3'
     when 'postgis' then 'postgresql'
+    when 'sqlserver' then ''
+    when 'oracle' then ''
     else adapter
     end
   end
   
   # Loads the import functionality for a specific database adapter
   def self.require_adapter(adapter)
-    require File.join(AdapterPath,"/abstract_adapter")
-    require File.join(AdapterPath,"/#{base_adapter(adapter)}_adapter")
+    base_adapter = base_adapter(adapter)
+    unless base_adapter.blank?
+      require File.join(AdapterPath,"/abstract_adapter")
+      require File.join(AdapterPath,"/#{base_adapter}_adapter")
+    end
   end
 
   # Loads the import functionality for the passed in ActiveRecord connection
