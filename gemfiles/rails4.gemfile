@@ -14,6 +14,6 @@ gem "ruby-debug-base", "= 0.10.4", :platforms=>:jruby
 gem "ruby-debug", "= 0.10.4", :platforms=>:jruby
 gem "debugger", :platforms=>:mri_19
 gem "mysql", "~> 2.9", :platforms=>:ruby
-gem "activerecord", "~> 4.0.0.beta1"
+gem "activerecord", "~> 4.0.0.rc2"
 
 gemspec :path=>"../"
