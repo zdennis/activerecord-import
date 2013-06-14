@@ -4,21 +4,24 @@ common: &common
   encoding: utf8
   host:     localhost
   database: activerecord_import_test
-  strict: false
 
 mysql: &mysql
   <<: *common
   adapter: mysql
+  strict: false
 
 mysql2: &mysql2
   <<: *common
   adapter: mysql2
+  strict: false
 
 mysqlspatial:
   adapter: mysql
+  strict: false
 
 mysqlspatial2:
   adapter: mysql2
+  strict: false
 
 seamless_database_pool:
   <<: *common
