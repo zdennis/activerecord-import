@@ -4,6 +4,7 @@ common: &common
   encoding: utf8
   host:     localhost
   database: activerecord_import_test
+  strict: false
 
 mysql: &mysql
   <<: *common
