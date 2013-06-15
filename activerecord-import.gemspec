@@ -18,7 +18,5 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version = ">= 1.9.2"
 
   gem.add_runtime_dependency "activerecord", ">= 3.0"
-
   gem.add_development_dependency "rake"
-  gem.add_development_dependency "appraisal"
 end

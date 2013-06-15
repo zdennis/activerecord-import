@@ -3,22 +3,36 @@ source 'https://rubygems.org'
 gemspec
 
 # Database Adapters
-gem "mysql2",                 "~> 0.3.0",  :platforms => :ruby
-gem "pg",                     "~> 0.9",    :platforms => :ruby
-gem "sqlite3-ruby",           "~> 1.3.1",  :platforms => :ruby
-gem "seamless_database_pool", "~> 1.0.11", :platforms => :ruby
+platforms :ruby do
+  gem "mysql2",                 "~> 0.3.0"
+  gem "pg",                     "~> 0.9"
+  gem "sqlite3-ruby",           "~> 1.3.1"
+  gem "seamless_database_pool", "~> 1.0.11"
+end
 
-gem "jdbc-mysql",                     :platforms => :jruby
-gem "activerecord-jdbcmysql-adapter", :platforms => :jruby
+platforms :jruby do
+  gem "jdbc-mysql"
+  gem "activerecord-jdbcmysql-adapter"
+end
 
 # Support libs
 gem "factory_girl", "~> 4.2.0"
 gem "delorean",     "~> 0.2.0"
 
 # Debugging
-gem "ruby-debug", "= 0.10.4", :platforms => :mri_18
+platforms :mri_18 do
+  gem "ruby-debug", "= 0.10.4"
+end
 
-gem "ruby-debug-base", "= 0.10.4", :platforms => :jruby
-gem "ruby-debug",      "= 0.10.4", :platforms => :jruby
+platforms :jruby do
+  gem "ruby-debug-base", "= 0.10.4"
+  gem "ruby-debug",      "= 0.10.4"
+end
 
-gem "debugger", :platforms => :mri_19
+platforms :mri_19, :mri_20 do
+  gem "debugger"
+end
+
+version = ENV['RAILS_VERSION'] || "3.2"
+
+eval_gemfile File.expand_path("../gemfiles/#{version}.gemfile", __FILE__)

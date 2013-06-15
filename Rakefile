@@ -1,7 +1,6 @@
 require "bundler"
 Bundler.setup
 
-require 'appraisal'
 require 'rake'
 require 'rake/testtask'
 
