@@ -4,7 +4,6 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 
 require "fileutils"
-require "rubygems"
 
 ENV["RAILS_ENV"] = "test"
 
@@ -18,14 +17,14 @@ require "active_record/fixtures"
 require "active_support/test_case"
 
 require "delorean"
-require "ruby-debug"
+require "ruby-debug" if RUBY_VERSION.to_f < 1.9
 
 adapter = ENV["ARE_DB"] || "sqlite3"
 
 FileUtils.mkdir_p 'log'
 ActiveRecord::Base.logger = Logger.new("log/test.log")
 ActiveRecord::Base.logger.level = Logger::DEBUG
-ActiveRecord::Base.configurations["test"] = YAML.load(test_dir.join("database.yml").open)[adapter]
+ActiveRecord::Base.configurations["test"] = YAML.load_file(test_dir.join("database.yml"))[adapter]
 
 require "activerecord-import"
 ActiveRecord::Base.establish_connection "test"
@@ -46,6 +45,4 @@ require adapter_schema if File.exists?(adapter_schema)
 Dir[File.dirname(__FILE__) + "/models/*.rb"].each{ |file| require file }
 
 # Prevent this deprecation warning from breaking the tests.
-module Rake::DeprecatedObjectDSL
-  remove_method :import
-end
+Rake::FileList.send(:remove_method, :import)
