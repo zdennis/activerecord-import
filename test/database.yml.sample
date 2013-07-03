@@ -44,7 +44,7 @@ sqlite: &sqlite3
   adapter: sqlite
   dbfile: test.db
 
-sqlite3:
+sqlite3: &sqlite3
   adapter: sqlite3
   database: test.db
 
