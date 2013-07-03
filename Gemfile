@@ -29,7 +29,7 @@ platforms :jruby do
   gem "ruby-debug",      "= 0.10.4"
 end
 
-platforms :mri_19, :mri_20 do
+platforms :mri_19 do
   gem "debugger"
 end
 
