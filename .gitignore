@@ -17,6 +17,8 @@ tmtags
 coverage
 rdoc
 pkg
+*.gem
+*.lock
 
 ## PROJECT::SPECIFIC
 log/*.log

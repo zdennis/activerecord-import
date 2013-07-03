@@ -1,17 +1,19 @@
-Factory.define :group do |m|
-  m.sequence(:order) { |n| "Order #{n}" }
-end
+FactoryGirl.define do
+  factory :group do
+    sequence(:order) { |n| "Order #{n}" }
+  end
 
-Factory.define :invalid_topic, :class => "Topic" do |m|
-  m.sequence(:title){ |n| "Title #{n}"}
-  m.author_name nil
-end
+  factory :invalid_topic, :class => "Topic" do
+    sequence(:title){ |n| "Title #{n}"}
+    author_name nil
+  end
 
-Factory.define :topic do |m|
-  m.sequence(:title){ |n| "Title #{n}"}
-  m.sequence(:author_name){ |n| "Author #{n}"}
-end
+  factory :topic do
+    sequence(:title){ |n| "Title #{n}"}
+    sequence(:author_name){ |n| "Author #{n}"}
+  end
 
-Factory.define :widget do |m|
-  m.sequence(:w_id){ |n| n}
+  factory :widget do
+    sequence(:w_id){ |n| n}
+  end
 end

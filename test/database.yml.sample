@@ -8,16 +8,20 @@ common: &common
 mysql: &mysql
   <<: *common
   adapter: mysql
+  strict: false
 
 mysql2: &mysql2
   <<: *common
   adapter: mysql2
+  strict: false
 
 mysqlspatial:
-  <<: *mysql
+  adapter: mysql
+  strict: false
 
 mysqlspatial2:
-  <<: *mysql2
+  adapter: mysql2
+  strict: false
 
 seamless_database_pool:
   <<: *common
@@ -33,7 +37,9 @@ postgresql: &postgresql
   min_messages: warning
 
 postgis:
-  <<: *postgresql
+  username: postgres
+  adapter: postgresql
+  min_messages: warning
 
 oracle:
   <<: *common
@@ -50,4 +56,3 @@ sqlite3: &sqlite3
 
 spatialite:
   <<: *sqlite3
-
