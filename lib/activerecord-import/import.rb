@@ -226,7 +226,11 @@ class ActiveRecord::Base
         sync_keys = options[:synchronize_keys] || [self.primary_key]
         synchronize( options[:synchronize], sync_keys)
       end
-
+      # if we have ids, then set the id on the models and mark the models as clean.
+      return_obj.ids.each_with_index do |obj, index|
+        models[index].id = obj.to_i
+        models[index].instance_variable_get(:@changed_attributes).clear # mark the model as saved
+      end
       return_obj.num_inserts = 0 if return_obj.num_inserts.nil?
       return_obj
     end
