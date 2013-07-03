@@ -55,21 +55,22 @@ module ActiveRecord::Import::AbstractAdapter
     
       max = max_allowed_packet
     
+      ids=[]
       # if we can insert it all as one statement
       if NO_MAX_PACKET == max or total_bytes < max
         number_of_inserts += 1
         sql2insert = base_sql + values.join( ',' ) + post_sql
-        insert( sql2insert, *args )
+        ids = insert( sql2insert, *args )
       else
         value_sets = self.class.get_insert_value_sets( values, sql_size, max )
         value_sets.each do |values|
           number_of_inserts += 1
           sql2insert = base_sql + values.join( ',' ) + post_sql
-          insert( sql2insert, *args )
+          ids.concat(select_many( sql2insert))
         end
       end
 
-      number_of_inserts
+      [number_of_inserts,ids]
     end
 
     def pre_sql_statements(options)
