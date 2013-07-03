@@ -1,5 +1,7 @@
 # encoding: UTF-8
 def should_support_mysql_import_functionality
+  # Forcefully disable strict mode for this session.
+  ActiveRecord::Base.connection.execute "set sql_mode=''"
 
   describe "building insert value sets" do
     it "should properly build insert value set based on max packet allowed" do
@@ -176,6 +178,7 @@ def should_support_mysql_import_functionality
       columns2update = [ 'author_name' ]
       
       expected_count = Topic.count
+      puts topics.inspect
       Topic.import( columns, values,
         :validate=>false,
         :on_duplicate_key_update=>columns2update,
