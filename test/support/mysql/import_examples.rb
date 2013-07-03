@@ -178,7 +178,6 @@ def should_support_mysql_import_functionality
       columns2update = [ 'author_name' ]
 
       expected_count = Topic.count
-      puts topics.inspect
       Topic.import( columns, values,
         :validate=>false,
         :on_duplicate_key_update=>columns2update,
