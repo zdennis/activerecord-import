@@ -3,17 +3,17 @@ require File.expand_path(File.dirname(__FILE__) + '/../test_helper')
 describe "#supports_imports?" do
   context "and SQLite is 3.7.11 or higher" do
     it "supports import" do
-      version = ActiveRecord::ConnectionAdapters::SQLiteAdapter::Version.new("3.7.11")
+      version = ActiveRecord::ConnectionAdapters::SQLite3Adapter::Version.new("3.7.11")
       assert ActiveRecord::Base.supports_import?(version)
 
-      version = ActiveRecord::ConnectionAdapters::SQLiteAdapter::Version.new("3.7.12")
+      version = ActiveRecord::ConnectionAdapters::SQLite3Adapter::Version.new("3.7.12")
       assert ActiveRecord::Base.supports_import?(version)
     end
   end
 
   context "and SQLite less than 3.7.11" do
     it "doesn't support import" do
-      version = ActiveRecord::ConnectionAdapters::SQLiteAdapter::Version.new("3.7.10")
+      version = ActiveRecord::ConnectionAdapters::SQLite3Adapter::Version.new("3.7.10")
       assert !ActiveRecord::Base.supports_import?(version)
     end
   end

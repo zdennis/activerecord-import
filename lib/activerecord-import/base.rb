@@ -14,7 +14,7 @@ module ActiveRecord::Import
     else adapter
     end
   end
-  
+
   # Loads the import functionality for a specific database adapter
   def self.require_adapter(adapter)
     require File.join(AdapterPath,"/abstract_adapter")
