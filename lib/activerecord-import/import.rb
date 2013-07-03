@@ -3,7 +3,7 @@ require "ostruct"
 module ActiveRecord::Import::ConnectionAdapters ; end
 
 module ActiveRecord::Import #:nodoc:
-  class Result < Struct.new(:failed_instances, :num_inserts)
+  class Result < Struct.new(:failed_instances, :num_inserts, :ids)
   end
 
   module ImportSupport #:nodoc:
@@ -68,7 +68,7 @@ class ActiveRecord::Associations::CollectionAssociation
 
     # supports empty array
     elsif args.last.is_a?( Array ) and args.last.empty?
-      return ActiveRecord::Import::Result.new([], 0) if args.last.empty?
+      return ActiveRecord::Import::Result.new([], 0, []) if args.last.empty?
 
     # supports 2-element array and array
     elsif args.size == 2 and args.first.is_a?( Array ) and args.last.is_a?( Array )
@@ -123,6 +123,15 @@ class ActiveRecord::Base
       false
     end
 
+    # returns true if the current database connection adapter
+    # supports setting the primary key of bulk imported models, otherwise
+    # returns false
+    def supports_setting_primary_key?
+      connection.supports_setting_primary_key?
+    rescue NoMethodError
+      false
+    end
+
     # Imports a collection of values to the database.
     #
     # This is more efficient than using ActiveRecord::Base#create or
@@ -172,6 +181,9 @@ class ActiveRecord::Base
     #   existing model instances in memory with updates from the import.
     # * +timestamps+ - true|false, tells import to not add timestamps \
     #   (if false) even if record timestamps is disabled in ActiveRecord::Base
+    # * +recurisve - true|fals, tells import to import all autosave association
+    #   if the adapter supports setting the primary keys of the newly imported
+    #   objects.
     #
     # == Examples
     #  class BlogPost < ActiveRecord::Base ; end
@@ -230,11 +242,24 @@ class ActiveRecord::Base
     # This returns an object which responds to +failed_instances+ and +num_inserts+.
     # * failed_instances - an array of objects that fails validation and were not committed to the database. An empty array if no validation is performed.
     # * num_inserts - the number of insert statements it took to import the data
-    def import( *args )
-      options = { :validate=>true, :timestamps=>true }
+    # * ids - the priamry keys of the imported ids, if the adpater supports it, otherwise and empty array.
+    def import(*args)
+      if args.first.is_a?( Array ) and args.first.first.is_a? ActiveRecord::Base
+        options = {}
+        options.merge!( args.pop ) if args.last.is_a?(Hash)
+
+        models = args.first
+        import_helper(models, options)
+      else
+        import_helper(*args)
+      end
+    end
+
+    def import_helper( *args )
+      options = { :validate=>true, :timestamps=>true, :primary_key=>primary_key }
       options.merge!( args.pop ) if args.last.is_a? Hash
 
-      is_validating = options.delete( :validate )
+      is_validating = options[:validate]
       is_validating = true unless options[:validate_with_context].nil?
 
       # assume array of model objects
@@ -257,7 +282,7 @@ class ActiveRecord::Base
         end
         # supports empty array
       elsif args.last.is_a?( Array ) and args.last.empty?
-        return ActiveRecord::Import::Result.new([], 0) if args.last.empty?
+        return ActiveRecord::Import::Result.new([], 0, []) if args.last.empty?
         # supports 2-element array and array
       elsif args.size == 2 and args.first.is_a?( Array ) and args.last.is_a?( Array )
         column_names, array_of_attributes = args
@@ -284,16 +309,26 @@ class ActiveRecord::Base
       return_obj = if is_validating
         import_with_validations( column_names, array_of_attributes, options )
       else
-        num_inserts = import_without_validations_or_callbacks( column_names, array_of_attributes, options )
-        ActiveRecord::Import::Result.new([], num_inserts)
+        (num_inserts, ids) = import_without_validations_or_callbacks( column_names, array_of_attributes, options )
+        ActiveRecord::Import::Result.new([], num_inserts, ids)
       end
 
       if options[:synchronize]
         sync_keys = options[:synchronize_keys] || [self.primary_key]
         synchronize( options[:synchronize], sync_keys)
       end
-
       return_obj.num_inserts = 0 if return_obj.num_inserts.nil?
+
+      # if we have ids, then set the id on the models and mark the models as clean.
+      if supports_setting_primary_key?
+        set_ids_and_mark_clean(models, return_obj)
+
+        # if there are auto-save associations on the models we imported that are new, import them as well
+        if options[:recursive]
+          import_sub_objects(models, options)
+        end
+      end
+
       return_obj
     end
 
@@ -327,12 +362,12 @@ class ActiveRecord::Base
       end
       array_of_attributes.compact!
 
-      num_inserts = if array_of_attributes.empty? || options[:all_or_none] && failed_instances.any?
-                      0
+      (num_inserts, ids) = if array_of_attributes.empty? || options[:all_or_none] && failed_instances.any?
+                      [0,[]]
                     else
                       import_without_validations_or_callbacks( column_names, array_of_attributes, options )
                     end
-      ActiveRecord::Import::Result.new(failed_instances, num_inserts)
+      ActiveRecord::Import::Result.new(failed_instances, num_inserts, ids)
     end
 
     # Imports the passed in +column_names+ and +array_of_attributes+
@@ -364,6 +399,7 @@ class ActiveRecord::Base
       columns_sql = "(#{column_names.map{|name| connection.quote_column_name(name) }.join(',')})"
       insert_sql = "INSERT #{options[:ignore] ? 'IGNORE ':''}INTO #{quoted_table_name} #{columns_sql} VALUES "
       values_sql = values_sql_for_columns_and_attributes(columns, array_of_attributes)
+      ids = []
       if not supports_import?
         number_inserted = 0
         values_sql.each do |values|
@@ -375,14 +411,54 @@ class ActiveRecord::Base
         post_sql_statements = connection.post_sql_statements( quoted_table_name, options )
 
         # perform the inserts
-        number_inserted = connection.insert_many( [ insert_sql, post_sql_statements ].flatten,
+        (number_inserted,ids) = connection.insert_many( [ insert_sql, post_sql_statements ].flatten,
                                                   values_sql,
                                                   "#{self.class.name} Create Many Without Validations Or Callbacks" )
       end
-      number_inserted
+      [number_inserted, ids]
     end
 
     private
+
+    def set_ids_and_mark_clean(models, import_result)
+      unless models.nil?
+        import_result.ids.each_with_index do |id, index|
+          models[index].id = id.to_i
+          models[index].instance_variable_get(:@changed_attributes).clear # mark the model as saved
+        end
+      end
+    end
+
+    def import_sub_objects(models, options)
+      # now, for all the dirty associations, collect them into a new set of models, then recurse.
+      # notes:
+      #    does not handle associations that reference themselves
+      #    assumes that the only associations to be saved are marked with :autosave
+      #    should probably take a hash to associations to follow.
+      hash={}
+      models.each {|model| find_autosave_assocations_for_import(hash, model) }
+
+      hash.each_pair do |class_name, assocs|
+        assocs.each_pair do |assoc_name, subobjects|
+          subobjects.first.class.import(subobjects, options) unless subobjects.empty?
+        end
+      end
+    end
+
+    def find_autosave_assocations_for_import(hash, parent)
+      hash[parent.class.name]||={}
+      parent.class.reflect_on_all_autosave_associations.each do |assoc|
+        hash[parent.class.name][assoc.name]||=[]
+
+        changed_objects = parent.association(assoc.name).select {|a| a.new_record? || a.changed?}
+        changed_objects.each do |child|
+          child.send("#{assoc.foreign_key}=", parent.id)
+        end
+        hash[parent.class.name][assoc.name].concat changed_objects
+        changed_objects.each
+      end
+      hash
+    end
 
     # Returns SQL the VALUES for an INSERT statement given the passed in +columns+
     # and +array_of_attributes+.
