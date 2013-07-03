@@ -18,7 +18,6 @@ require "active_record/fixtures"
 require "active_support/test_case"
 
 require "delorean"
-require "ruby-debug"
 
 adapter = ENV["ARE_DB"] || "sqlite3"
 

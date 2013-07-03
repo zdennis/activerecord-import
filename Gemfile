@@ -1,10 +1,11 @@
-source :gemcutter
+source "https://rubygems.org"
 
 gem "activerecord", "~> 3.0"
 
 group :development do
   gem "rake"
   gem "jeweler", ">= 1.4.0"
+  gem "brewdler"
 end
 
 group :test do
@@ -38,5 +39,9 @@ group :test do
 
   platforms :mri_19 do
     gem "debugger"
+  end
+
+  platforms :mri_20 do
+   # gem "debugger"
   end
 end
