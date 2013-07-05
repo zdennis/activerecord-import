@@ -166,7 +166,7 @@ class ActiveRecord::Base
     # * failed_instances - an array of objects that fails validation and were not committed to the database. An empty array if no validation is performed.
     # * num_inserts - the number of insert statements it took to import the data
     def import( *args )
-      options = { :validate=>true, :timestamps=>true }
+      options = { :validate=>true, :timestamps=>true, :primary_key=>primary_key }
       options.merge!( args.pop ) if args.last.is_a? Hash
 
       is_validating = options.delete( :validate )
@@ -227,9 +227,11 @@ class ActiveRecord::Base
         synchronize( options[:synchronize], sync_keys)
       end
       # if we have ids, then set the id on the models and mark the models as clean.
-      return_obj.ids.each_with_index do |obj, index|
-        models[index].id = obj.to_i
-        models[index].instance_variable_get(:@changed_attributes).clear # mark the model as saved
+      unless models.nil?
+        return_obj.ids.each_with_index do |obj, index|
+          models[index].id = obj.to_i
+          models[index].instance_variable_get(:@changed_attributes).clear # mark the model as saved
+        end
       end
       return_obj.num_inserts = 0 if return_obj.num_inserts.nil?
       return_obj

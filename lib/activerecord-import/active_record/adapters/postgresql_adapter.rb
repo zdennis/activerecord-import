@@ -6,7 +6,11 @@ class ActiveRecord::ConnectionAdapters::PostgreSQLAdapter
 
   alias_method :post_sql_statements_orig, :post_sql_statements
   def post_sql_statements( table_name, options ) # :nodoc:
-    post_sql_statements_orig(table_name, options).append(" RETURNING ID")
+    unless options[:primary_key].blank?
+      post_sql_statements_orig(table_name, options).append(" RETURNING #{options[:primary_key]}")
+    else
+      post_sql_statements_orig(table_name, options)
+    end
   end
 
 end
