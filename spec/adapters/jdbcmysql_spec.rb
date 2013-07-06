@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe 'Mysql', :adapter => :mysql do
+describe 'JDBC Mysql', :adapter => :jdbcmysql do
   include_examples 'mysql import functionality'
 end
