@@ -3,51 +3,6 @@ def should_support_mysql_import_functionality
   # Forcefully disable strict mode for this session.
   ActiveRecord::Base.connection.execute "set sql_mode=''"
 
-  describe "building insert value sets" do
-    it "should properly build insert value set based on max packet allowed" do
-      values = [
-        "('1','2','3')",
-        "('4','5','6')",
-        "('7','8','9')" ]
-
-      adapter = ActiveRecord::Base.connection.class
-      values_size_in_bytes = values.sum {|value| value.bytesize }
-      base_sql_size_in_bytes = 15
-      max_bytes = 30
-
-      value_sets = adapter.get_insert_value_sets( values, base_sql_size_in_bytes, max_bytes )
-      assert_equal 3, value_sets.size, 'Three value sets were expected!'
-
-      # Each element in the value_sets array must be an array
-      value_sets.each_with_index { |e,i| 
-        assert_kind_of Array, e, "Element #{i} was expected to be an Array!" }
-
-      # Each element in the values array should have a 1:1 correlation to the elements
-      # in the returned value_sets arrays
-      assert_equal values[0], value_sets[0].first
-      assert_equal values[1], value_sets[1].first
-      assert_equal values[2], value_sets[2].first
-    end
-
-    context "data contains multi-byte chars" do
-      it "should properly build insert value set based on max packet allowed" do
-        # each accented e should be 2 bytes, so each entry is 6 bytes instead of 5
-        values = [
-          "('é')",
-          "('é')" ]
-
-        adapter = ActiveRecord::Base.connection.class
-        base_sql_size_in_bytes = 15
-        max_bytes = 26
-
-        values_size_in_bytes = values.sum {|value| value.bytesize }
-        value_sets = adapter.get_insert_value_sets( values, base_sql_size_in_bytes, max_bytes )
-
-        assert_equal 2, value_sets.size, 'Two value sets were expected!'
-      end
-    end
-  end
-
   describe "#import with :on_duplicate_key_update option (mysql specific functionality)" do
     extend ActiveSupport::TestCase::MySQLAssertions
 
