@@ -8,25 +8,21 @@ common: &common
 mysql: &mysql
   <<: *common
   adapter: mysql
-  strict: false
 
 mysql2: &mysql2
   <<: *common
   adapter: mysql2
-  strict: false
+
+mysqlspatial:
+  <<: *mysql
+
+mysql2spatial:
+  <<: *mysql2
 
 em_mysql2:
   <<: *common
   adapter: em_mysql2
   pool: 5
-
-mysqlspatial:
-  adapter: mysql
-  strict: false
-
-mysqlspatial2:
-  adapter: mysql2
-  strict: false
 
 seamless_database_pool:
   <<: *common
@@ -42,16 +38,14 @@ postgresql: &postgresql
   min_messages: warning
 
 postgis:
-  username: postgres
-  adapter: postgresql
-  min_messages: warning
+  <<: *postgresql
 
 oracle:
   <<: *common
   adapter: oracle
   min_messages: debug
 
-sqlite: &sqlite3
+sqlite:
   adapter: sqlite
   dbfile: test.db
 
