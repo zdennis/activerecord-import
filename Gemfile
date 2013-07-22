@@ -34,6 +34,6 @@ platforms :mri_19 do
   gem "debugger"
 end
 
-version = ENV['RAILS_VERSION'] || "3.2"
+version = ENV['AR_VERSION'] || "3.2"
 
 eval_gemfile File.expand_path("../gemfiles/#{version}.gemfile", __FILE__)
