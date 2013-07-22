@@ -1,4 +1,3 @@
-require 'debugger'
 module ActiveRecord::Import::SQLite3Adapter
   include ActiveRecord::Import::ImportSupport
 
