@@ -1,5 +1,5 @@
 module ActiveRecord::Import
-  class ValuesSetsBytesParser
+  class ValueSetsBytesParser
     attr_reader :reserved_bytes, :max_bytes, :values
 
     def self.parse(values, options)
