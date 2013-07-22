@@ -2,7 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/test_helper')
 
 require 'activerecord-import/value_sets_parser'
 
-describe "ActiveRecord::Import::ValuesSetsRecordsParser" do
+describe "ActiveRecord::Import::ValueSetsRecordsParser" do
   context "#parse - computing insert value sets" do
     let(:parser){ ActiveRecord::Import::ValueSetsRecordsParser }
     let(:base_sql){ "INSERT INTO atable (a,b,c)" }
