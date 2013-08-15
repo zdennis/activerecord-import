@@ -345,16 +345,69 @@ describe "#import" do
       assert_equal({:a => :b}, Widget.find_by_w_id(1).data)
     end
   end
+
   describe "importing objects with subobjects" do
-    let(:new_topics) { Build(3, :topic_with_book) }
+
+   let(:new_topics) { Build(num_topics, :topic_with_book) }
+   let(:new_topics_with_invalid_chapter) {
+     chapter = new_topics.first.books.first.chapters.first
+     chapter.title = nil
+     new_topics
+   }
+   let(:num_topics) {3}
+   let(:num_books) {6}
+   let(:num_chapters) {18}
+   
     it 'imports top level' do
-      assert_difference "Topic.count", +3 do
+      assert_difference "Topic.count", +num_topics do
         Topic.import new_topics
       end
     end
-    it 'imports subobjects' do
-      assert_difference "Book.count", +3 do
+    it 'imports first level sub-objects' do
+      assert_difference "Book.count", +num_books do
         Topic.import new_topics
+        new_topics.each do |topic|
+          topic.books.each do |book|
+            assert_equal topic.id, book.topic_id
+          end
+        end
+      end
+    end
+    it 'imports second level sub-objects' do
+      assert_difference "Chapter.count", +num_chapters do
+        Topic.import new_topics
+        new_topics.each do |topic|
+          topic.books.each do |book|
+            book.chapters.each do |chapter|
+              assert_equal book.id, chapter.book_id
+            end
+          end
+        end
+      end
+    end
+    
+    it "skips validation of the subobjects if requested" do
+      assert_difference "Chapter.count", +num_chapters do
+        Topic.import new_topics_with_invalid_chapter, :validate => false        
+      end
+    end
+    
+    # These models dont validate associated.  So we expect that books and topics get inserted, but not chapters
+    # Putting a transaction around everything wouldn't work, so if you want your chapters to prevent topics from
+    # being created, you would need to have validates_assoicated in your models and insert with validation
+    describe "all_or_none" do
+      [Book, Topic].each do |type|
+        it "creates #{type.to_s}" do
+          assert_difference "#{type.to_s}.count", send("num_#{type.to_s.downcase}s") do
+            Topic.import new_topics_with_invalid_chapter, :all_or_none => true
+          end
+        end
+        it "doesn't create chapters" do
+          assert_difference "Chapter.count", 0 do
+            Topic.import new_topics_with_invalid_chapter, :all_or_none => true
+          end
+          
+        end
       end
     end
   end

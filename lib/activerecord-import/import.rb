@@ -167,19 +167,23 @@ class ActiveRecord::Base
     # * num_inserts - the number of insert statements it took to import the data
     def import(*args)
       if args.first.is_a?( Array ) and args.first.first.is_a? ActiveRecord::Base
+        options = {}
+        options.merge!( args.pop ) if args.last.is_a?(Hash)
+        
         models = args.first # the import argument parsing is too tangled for me ... I only want to prove the concept of saving recursively
-        result = import_helper(*args)
+        result = import_helper(models, options)
         # now, for all the dirty associations, collect them into a new set of models, then recurse. 
         # notes: 
         #    does not handle associations that reference themselves
         #    assumes that the only associations to be saved are marked with :autosave
         #    should probably take a hash to associations to follow.
         hash={}
-        models.map do |val| add_objects(hash, val) end
+        models.each {|model| add_objects(hash, model) }
+        
         hash.each_pair do |class_name, assocs|
           clazz=Module.const_get(class_name)
           assocs.each_pair do |assoc_name, subobjects|
-            subobjects.first.class.import(subobjects) unless subobjects.empty?
+            subobjects.first.class.import(subobjects, options) unless subobjects.empty?
           end
         end
         result
@@ -188,13 +192,16 @@ class ActiveRecord::Base
       end
     end
       
-    def add_objects(hash, val)
-      hash[val.class.name]||={}
-      val.class.reflect_on_all_autosave_associations.each do |assoc|
-        hash[val.class.name][assoc.name]||=[]
-        changed_objects = val.association(assoc.name).proxy.select {|a| a.new_record? || a.changed?}
-        changed_objects.each {|obj| add_objects(hash, obj)}
-        hash[val.class.name][assoc.name].concat changed_objects
+    def add_objects(hash, parent)
+      hash[parent.class.name]||={}
+      parent.class.reflect_on_all_autosave_associations.each do |assoc|
+        hash[parent.class.name][assoc.name]||=[]
+        
+        changed_objects = parent.association(assoc.name).proxy.select {|a| a.new_record? || a.changed?}
+        changed_objects.each do |child| 
+          child.send("#{assoc.foreign_key}=", parent.id)
+        end
+        hash[parent.class.name][assoc.name].concat changed_objects
         changed_objects.each
       end
       hash
