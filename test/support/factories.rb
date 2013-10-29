@@ -1,36 +1,33 @@
-Factory.sequence :book_title do |n|
-  "Book #{n}" 
-end
+FactoryGirl.define do
+  sequence(:book_title) {|n| "Book #{n}"}
+  sequence(:chapter_title) {|n| "Chapter #{n}"}
 
-Factory.sequence :chapter_title do |n|
-  "Chapter #{n}" 
-end
+  factory :group do
+    sequence(:order) { |n| "Order #{n}" }
+  end
 
-Factory.define :group do |m|
-  m.sequence(:order) { |n| "Order #{n}" }
-end
+  factory :invalid_topic, :class => "Topic" do
+    sequence(:title){ |n| "Title #{n}"}
+    author_name nil
+  end
 
-Factory.define :invalid_topic, :class => "Topic" do |m|
-  m.sequence(:title){ |n| "Title #{n}"}
-  m.author_name nil
-end
+  factory :topic do
+    sequence(:title){ |n| "Title #{n}"}
+    sequence(:author_name){ |n| "Author #{n}"}
+  end
 
-Factory.define :topic do |m|
-  m.sequence(:title){ |n| "Title #{n}"}
-  m.sequence(:author_name){ |n| "Author #{n}"}
-end
-
-Factory.define :topic_with_book, :parent=>:topic do |m|
-  m.after_build do |topic| 
-    2.times do 
-      book = topic.books.build(:title=>Factory.next(:book_title), :author_name=>'Stephen King') 
-      3.times do
-        book.chapters.build(:title => Factory.next(:chapter_title))
+  factory :widget do
+    sequence(:w_id){ |n| n}
+  end
+  
+  factory :topic_with_book, :parent=>:topic do |m|
+    after(:build) do |topic| 
+      2.times do 
+        book = topic.books.build(:title=>FactoryGirl.generate(:book_title), :author_name=>'Stephen King') 
+        3.times do
+          book.chapters.build(:title => FactoryGirl.generate(:chapter_title))
+        end
       end
     end
   end
-end
-
-Factory.define :widget do |m|
-  m.sequence(:w_id){ |n| n}
 end

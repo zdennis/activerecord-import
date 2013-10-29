@@ -1,6 +1,53 @@
 module ActiveRecord::Import::MysqlAdapter
-  include ActiveRecord::Import::ImportSupport  
+  include ActiveRecord::Import::ImportSupport
   include ActiveRecord::Import::OnDuplicateKeyUpdateSupport
+
+  NO_MAX_PACKET = 0
+  QUERY_OVERHEAD = 8 #This was shown to be true for MySQL, but it's not clear where the overhead is from.
+
+  # +sql+ can be a single string or an array. If it is an array all 
+  # elements that are in position >= 1 will be appended to the final SQL.
+  def insert_many( sql, values, *args ) # :nodoc:
+    # the number of inserts default
+    number_of_inserts = 0
+
+    base_sql,post_sql = if sql.is_a?( String )
+      [ sql, '' ]
+    elsif sql.is_a?( Array )
+      [ sql.shift, sql.join( ' ' ) ]
+    end
+
+    sql_size = QUERY_OVERHEAD + base_sql.size + post_sql.size
+
+    # the number of bytes the requested insert statement values will take up
+    values_in_bytes = values.sum {|value| value.bytesize }
+
+    # the number of bytes (commas) it will take to comma separate our values
+    comma_separated_bytes = values.size-1
+
+    # the total number of bytes required if this statement is one statement
+    total_bytes = sql_size + values_in_bytes + comma_separated_bytes
+
+    max = max_allowed_packet
+
+    # if we can insert it all as one statement
+    if NO_MAX_PACKET == max or total_bytes < max
+      number_of_inserts += 1
+      sql2insert = base_sql + values.join( ',' ) + post_sql
+      insert( sql2insert, *args )
+    else
+      value_sets = ::ActiveRecord::Import::ValueSetsBytesParser.parse(values,
+        :reserved_bytes => sql_size,
+        :max_bytes => max)
+      value_sets.each do |values|
+        number_of_inserts += 1
+        sql2insert = base_sql + values.join( ',' ) + post_sql
+        insert( sql2insert, *args )
+      end
+    end
+
+    number_of_inserts
+  end
 
   # Returns the maximum number of bytes that the server will allow
   # in a single packet
@@ -12,9 +59,9 @@ module ActiveRecord::Import::MysqlAdapter
       val.to_i
     end
   end
-  
+
   # Returns a generated ON DUPLICATE KEY UPDATE statement given the passed
-  # in +args+. 
+  # in +args+.
   def sql_for_on_duplicate_key_update( table_name, *args ) # :nodoc:
     sql = ' ON DUPLICATE KEY UPDATE '
     arg = args.first

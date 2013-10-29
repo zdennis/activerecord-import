@@ -1,10 +1,14 @@
 # activerecord-import
 
-activerecord-import is a library for bulk inserting data using ActiveRecord. 
+activerecord-import is a library for bulk inserting data using ActiveRecord.
 
-### Rails 3.1.x and higher
+### Rails 4.0
 
-Use the latest activerecord-import.
+Use activerecord-import 0.4.0 or higher.
+
+### Rails 3.1.x up to, but not including 4.0
+
+Use the latest in the activerecord-import 0.3.x series.
 
 ### Rails 3.0.x up to, but not including 3.1
 
