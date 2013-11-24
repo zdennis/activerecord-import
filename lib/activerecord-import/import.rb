@@ -216,7 +216,25 @@ class ActiveRecord::Base
       end
 
       return_obj = if is_validating
-        import_with_validations( column_names, array_of_attributes, options )
+        if models
+          failed_instances = [] ; valid = []
+          models.each_with_index do |model, index|
+            if model.valid?
+              valid << array_of_attributes[index]
+            else
+              failed_instances << model
+            end
+          end
+
+          num_inserts = if valid.empty? || options[:all_or_none] && failed_instances.any?
+                          0
+                        else
+                          import_without_validations_or_callbacks( column_names, valid, options )
+                        end
+          ActiveRecord::Import::Result.new(failed_instances, num_inserts)
+        else
+          import_with_validations( column_names, array_of_attributes, options )
+        end
       else
         num_inserts = import_without_validations_or_callbacks( column_names, array_of_attributes, options )
         ActiveRecord::Import::Result.new([], num_inserts)
