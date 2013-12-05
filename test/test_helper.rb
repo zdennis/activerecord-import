@@ -26,6 +26,15 @@ ActiveRecord::Base.logger = Logger.new("log/test.log")
 ActiveRecord::Base.logger.level = Logger::DEBUG
 ActiveRecord::Base.configurations["test"] = YAML.load_file(test_dir.join("database.yml"))[adapter]
 
+if ENV['CREATE_DB']
+  ActiveRecord::Base.establish_connection(
+    ActiveRecord::Base.configurations["test"].merge('database' => 'postgres')
+  )
+
+  ActiveRecord::Base.connection.drop_database("activerecord_import_test") rescue nil
+  ActiveRecord::Base.connection.create_database("activerecord_import_test")
+end
+
 require "activerecord-import"
 ActiveRecord::Base.establish_connection "test"
 
