@@ -45,12 +45,12 @@ If `fake_name` adapter is needed by a gem (potentially called `activerecord-impo
 activerecord-import-fake_name/
 |-- activerecord-import-fake_name.gemspec
 |-- lib
-|   |-- activerecord-import-fake_name
-|   |   |-- version.rb
-|   |-- activerecord-import
-|   |   |-- active_record
-|   |   |   |-- adapters
-|   |   |       |-- fake_name_adapter.rb
+|   |-- activerecord-import-fake_name
+|   |   |-- version.rb
+|   |-- activerecord-import
+|   |   |-- active_record
+|   |   |   |-- adapters
+|   |   |       |-- fake_name_adapter.rb
 |--activerecord-import-fake_name.rb
 ```
 
