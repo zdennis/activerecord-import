@@ -21,7 +21,7 @@ For more information on activerecord-import please see its wiki: https://github.
 ## Additional Adapters
 Additional adapters can be provided by gems external to activerecord-import by providing an adapter that matches the naming convention setup by activerecord-import (and subsequently activerecord) for dynamically loading adapters.  This involves also providing a folder on the load path that follows the activerecord-import naming convention to allow activerecord-import to dynamically load the file.
 
-When `ActiveRecord::Import.require_adapter("fake_name")` is called the code will look to require a file as follows:
+When `ActiveRecord::Import.require_adapter("fake_name")` is called the require will be:
 
 ```ruby
   require 'activerecord-import/active_record/adapters/fake_name_adapter'
