@@ -44,6 +44,7 @@ module ActiveRecord # :nodoc:
           instance.clear_association_cache
           instance.instance_variable_set '@attributes', matched_instance.attributes
           instance.instance_variable_set '@attributes_cache', {}
+          instance.changed_attributes.clear
           # Since the instance now accurately reflects the record in
           # the database, ensure that instance.persisted? is true.
           instance.instance_variable_set '@new_record', false
