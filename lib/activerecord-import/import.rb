@@ -120,7 +120,7 @@ class ActiveRecord::Base
     #  # Example using column_names and array_of_values
     #  columns = [ :author_name, :title ]
     #  values = [ [ 'zdennis', 'test post' ], [ 'jdoe', 'another test post' ] ]
-    #  BlogPost.import columns, values 
+    #  BlogPost.import columns, values
     #
     #  # Example using column_names, array_of_value and options
     #  columns = [ :author_name, :title ]
@@ -142,7 +142,7 @@ class ActiveRecord::Base
     #
     # == On Duplicate Key Update (MySQL only)
     #
-    # The :on_duplicate_key_update option can be either an Array or a Hash. 
+    # The :on_duplicate_key_update option can be either an Array or a Hash.
     #
     # ==== Using an Array
     #
@@ -169,17 +169,17 @@ class ActiveRecord::Base
       if args.first.is_a?( Array ) and args.first.first.is_a? ActiveRecord::Base
         options = {}
         options.merge!( args.pop ) if args.last.is_a?(Hash)
-        
+
         models = args.first # the import argument parsing is too tangled for me ... I only want to prove the concept of saving recursively
         result = import_helper(models, options)
-        # now, for all the dirty associations, collect them into a new set of models, then recurse. 
-        # notes: 
+        # now, for all the dirty associations, collect them into a new set of models, then recurse.
+        # notes:
         #    does not handle associations that reference themselves
         #    assumes that the only associations to be saved are marked with :autosave
         #    should probably take a hash to associations to follow.
         hash={}
         models.each {|model| add_objects(hash, model) }
-        
+
         hash.each_pair do |class_name, assocs|
           clazz=Module.const_get(class_name)
           assocs.each_pair do |assoc_name, subobjects|
@@ -191,14 +191,14 @@ class ActiveRecord::Base
         import_helper(*args)
       end
     end
-      
+
     def add_objects(hash, parent)
       hash[parent.class.name]||={}
       parent.class.reflect_on_all_autosave_associations.each do |assoc|
         hash[parent.class.name][assoc.name]||=[]
-        
-        changed_objects = parent.association(assoc.name).proxy.select {|a| a.new_record? || a.changed?}
-        changed_objects.each do |child| 
+
+        changed_objects = parent.association(assoc.name).select {|a| a.new_record? || a.changed?}
+        changed_objects.each do |child|
           child.send("#{assoc.foreign_key}=", parent.id)
         end
         hash[parent.class.name][assoc.name].concat changed_objects
@@ -357,7 +357,7 @@ class ActiveRecord::Base
         post_sql_statements = connection.post_sql_statements( quoted_table_name, options )
 
         # perform the inserts
-        (number_inserted,ids) = connection.insert_many( [ insert_sql, post_sql_statements ].flatten, 
+        (number_inserted,ids) = connection.insert_many( [ insert_sql, post_sql_statements ].flatten,
                                                   values_sql,
                                                   "#{self.class.name} Create Many Without Validations Or Callbacks" )
       end
