@@ -23,13 +23,12 @@ gem "factory_girl", "~> 4.2.0"
 gem "delorean",     "~> 0.2.0"
 
 # Debugging
-platforms :mri_18 do
-  gem "ruby-debug", "= 0.10.4"
-end
-
 platforms :jruby do
   gem "ruby-debug-base", "= 0.10.4"
-  gem "ruby-debug",      "= 0.10.4"
+end
+
+platforms :jruby, :mri_18 do
+  gem "ruby-debug", "= 0.10.4"
 end
 
 platforms :mri_19 do
