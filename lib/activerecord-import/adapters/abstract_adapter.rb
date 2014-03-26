@@ -1,5 +1,9 @@
 module ActiveRecord::Import::AbstractAdapter
   module InstanceMethods
+    def increment_sequence_and_get_next_id(sequence_name, increment_by)
+      raise NotImplementedError
+    end
+
     def next_value_for_sequence(sequence_name)
       %{#{sequence_name}.nextval}
     end
