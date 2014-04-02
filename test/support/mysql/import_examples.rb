@@ -118,22 +118,23 @@ def should_support_mysql_import_functionality
     end
   
     context "given array of model instances with :on_duplicate_key_update turned off" do
+      let(:columns){  %w( id title author_name author_email_address parent_id ) }
+      let(:values){ [ [ 100, "Book", "John Doe", "john@doe.com", 17 ] ] }
+      let(:updated_values){ [ [ 100, "Book - 2nd Edition", "This should raise an exception", "john@nogo.com", 57 ] ] }
+
       macro(:perform_import) do |*opts|
-        @topic.title = "Book - 2nd Edition"
-        @topic.author_name = "Author Should Not Change"
-        @topic.author_email_address = "johndoe@example.com"
-        @topic.parent_id = 57
-        Topic.import [@topic], opts.extract_options!.merge(:on_duplicate_key_update => false, :validate => false)
+        # `:on_duplicate_key_update => false` is the tested feature
+        Topic.import columns, updated_values, opts.extract_options!.merge(:on_duplicate_key_update => false, :validate => false)
       end
 
       setup do
-        @topic = Generate(:topic, :id => 99, :author_name => "John Doe", :parent_id => 17)
+        Topic.import columns, values, :validate => false
+        @topic = Topic.find 100
       end
     
       context "using string column names" do
         let(:update_columns){ [ "title", "author_email_address", "parent_id" ] }
-        should_support_on_duplicate_key_update
-        should_not_update_fields_mentioned
+        should_raise_update_fields_mentioned
       end
     end
   end
