@@ -181,7 +181,6 @@ class ActiveRecord::Base
         models.each {|model| add_objects(hash, model) }
 
         hash.each_pair do |class_name, assocs|
-          clazz=Module.const_get(class_name)
           assocs.each_pair do |assoc_name, subobjects|
             subobjects.first.class.import(subobjects, options) unless subobjects.empty?
           end
