@@ -56,7 +56,7 @@ describe ActiveRecord::Import::ValueSetsBytesParser do
         "('4','5','6')",
         "('7','8','9')" ]
 
-      values_size_in_bytes = values.sum {|value| value.bytesize }
+      values_size_in_bytes = values.map {|value| value.bytesize }.sum
       base_sql_size_in_bytes = 15
       max_bytes = 30
 
@@ -84,7 +84,7 @@ describe ActiveRecord::Import::ValueSetsBytesParser do
         base_sql_size_in_bytes = 15
         max_bytes = 26
 
-        values_size_in_bytes = values.sum {|value| value.bytesize }
+        values_size_in_bytes = values.map {|value| value.bytesize }.sum
         value_sets = parser.parse values, reserved_bytes: base_sql_size_in_bytes, max_bytes: max_bytes
 
         assert_equal 2, value_sets.size, 'Two value sets were expected!'
