@@ -332,8 +332,8 @@ class ActiveRecord::Base
           if val.nil? && column.name == primary_key && !sequence_name.blank?
              connection_memo.next_value_for_sequence(sequence_name)
           else
-            if serialized_attributes.include?(column.name)
-              connection_memo.quote(serialized_attributes[column.name].dump(val), column)
+            if column_for_attribute(column.name)
+              connection_memo.quote(column_for_attribute(column.name).type_cast_for_database(val), column)
             else
               connection_memo.quote(val, column)
             end
