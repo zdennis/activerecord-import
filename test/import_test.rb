@@ -32,6 +32,7 @@ describe "#import" do
   context "with :validation option" do
     let(:columns) { %w(title author_name) }
     let(:valid_values) { [[ "LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
+    let(:valid_values_with_context) { [[ 1111, "Jerry Carter"], [2222, "Chad Fowler"]] }
     let(:invalid_values) { [[ "The RSpec Book", ""], ["Agile+UX", ""]] }
 
     context "with validation checks turned off" do
@@ -61,9 +62,21 @@ describe "#import" do
         end
       end
 
+      it "should import valid data with on option" do
+        assert_difference "Topic.count", +2 do
+          result = Topic.import columns, valid_values_with_context, :validate => true, :context => :context_test
+        end
+      end
+
       it "should not import invalid data" do
         assert_no_difference "Topic.count" do
           result = Topic.import columns, invalid_values, :validate => true
+        end
+      end
+
+      it "should import invalid data with on option" do
+        assert_no_difference "Topic.count" do
+          result = Topic.import columns, valid_values, :validate => true, :context => :context_test
         end
       end
 
