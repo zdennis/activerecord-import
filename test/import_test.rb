@@ -64,7 +64,7 @@ describe "#import" do
 
       it "should import valid data with on option" do
         assert_difference "Topic.count", +2 do
-          result = Topic.import columns, valid_values_with_context, :validate => true, :validate_with_context => :context_test
+          result = Topic.import columns, valid_values_with_context, :validate_with_context => :context_test
         end
       end
 
@@ -76,7 +76,7 @@ describe "#import" do
 
       it "should import invalid data with on option" do
         assert_no_difference "Topic.count" do
-          result = Topic.import columns, valid_values, :validate => true, :validate_with_context => :context_test
+          result = Topic.import columns, valid_values, :validate_with_context => :context_test
         end
       end
 
