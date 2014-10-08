@@ -348,8 +348,8 @@ class ActiveRecord::Base
         if self.column_names.include?(key)
           value = blk.call
           if index=column_names.index(key)
-             # replace every instance of the array of attributes with our value
-             array_of_attributes.each{ |arr| arr[index] = value }
+            # replace every instance of the array of attributes with our value
+            array_of_attributes.each{ |arr| arr[index] = value if arr[index].nil? }
           else
             column_names << key
             array_of_attributes.each { |arr| arr << value }
