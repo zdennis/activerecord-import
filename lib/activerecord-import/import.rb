@@ -170,6 +170,7 @@ class ActiveRecord::Base
       options.merge!( args.pop ) if args.last.is_a? Hash
 
       is_validating = options.delete( :validate )
+      is_validating = true unless options[:validate_with_context].nil?
 
       # assume array of model objects
       if args.last.is_a?( Array ) and args.last.first.is_a? ActiveRecord::Base
@@ -254,7 +255,7 @@ class ActiveRecord::Base
         instance = new do |model|
           hsh.each_pair{ |k,v| model.send("#{k}=", v) }
         end
-        if not instance.valid?
+        if not instance.valid?(options[:validate_with_context])
           array_of_attributes[ i ] = nil
           failed_instances << instance
         end
