@@ -20,8 +20,9 @@ else
   require 'active_support/testing/autorun'
 end
 
+require 'timecop'
+require 'chronic'
 
-require "delorean"
 require "ruby-debug" if RUBY_VERSION.to_f < 1.9
 
 adapter = ENV["ARE_DB"] || "sqlite3"

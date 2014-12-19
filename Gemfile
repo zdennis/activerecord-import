@@ -20,7 +20,9 @@ end
 
 # Support libs
 gem "factory_girl", "~> 4.2.0"
-gem "delorean",     "~> 0.2.0"
+gem "timecop"
+gem "chronic"
+
 
 # Debugging
 platforms :jruby do
