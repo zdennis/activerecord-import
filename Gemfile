@@ -37,4 +37,8 @@ end
 
 version = ENV['AR_VERSION'] || "3.2"
 
+if version > "4.0"
+  gem "minitest"
+end
+
 eval_gemfile File.expand_path("../gemfiles/#{version}.gemfile", __FILE__)

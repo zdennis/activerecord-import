@@ -10,11 +10,16 @@ ENV["RAILS_ENV"] = "test"
 require "bundler"
 Bundler.setup
 
-require "logger"
-require 'test/unit'
 require "active_record"
 require "active_record/fixtures"
 require "active_support/test_case"
+
+if ActiveSupport::VERSION::STRING < "4.1"
+  require 'test/unit'
+else
+  require 'active_support/testing/autorun'
+end
+
 
 require "delorean"
 require "ruby-debug" if RUBY_VERSION.to_f < 1.9

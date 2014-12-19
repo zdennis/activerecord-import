@@ -55,7 +55,7 @@ class ActiveSupport::TestCase
     end
     
     def it(description, &blk)
-      define_method("test: #{name} #{description}", &blk)
+      define_method("test_#{name}_#{description}", &blk)
     end
   end
   
