@@ -19,7 +19,7 @@ describe "#import" do
     end
   end
 
-  describe "with non-default ActiveRecord models" do  
+  describe "with non-default ActiveRecord models" do
     context "that have a non-standard primary key (that is no sequence)" do
       it "should import models successfully" do
         assert_difference "Widget.count", +3 do
@@ -238,7 +238,7 @@ describe "#import" do
       setup do
         @existing_book = Book.create(title: "Fell", author_name: "Curry", publisher: "Bayer", created_at: 2.years.ago.utc, created_on: 2.years.ago.utc)
         ActiveRecord::Base.default_timezone = :utc
-        Delorean.time_travel_to("5 minutes ago") do
+        Timecop.freeze Chronic.parse("5 minutes ago") do
           assert_difference "Book.count", +2 do
             result = Book.import ["title", "author_name", "publisher", "created_at", "created_on"], [["LDAP", "Big Bird", "Del Rey", nil, nil], [@existing_book.title, @existing_book.author_name, @existing_book.publisher, @existing_book.created_at, @existing_book.created_on]]
           end
@@ -275,7 +275,7 @@ describe "#import" do
       setup do
         original_timezone = ActiveRecord::Base.default_timezone
         ActiveRecord::Base.default_timezone = :utc
-        Delorean.time_travel_to("5 minutes ago") do
+        Timecop.freeze Chronic.parse("5 minutes ago") do
           assert_difference "Book.count", +1 do
             result = Book.import [:title, :author_name, :publisher], [["LDAP", "Big Bird", "Del Rey"]]
           end
