@@ -120,7 +120,7 @@ class ActiveRecord::Base
     #  # Example using column_names and array_of_values
     #  columns = [ :author_name, :title ]
     #  values = [ [ 'zdennis', 'test post' ], [ 'jdoe', 'another test post' ] ]
-    #  BlogPost.import columns, values 
+    #  BlogPost.import columns, values
     #
     #  # Example using column_names, array_of_value and options
     #  columns = [ :author_name, :title ]
@@ -142,7 +142,7 @@ class ActiveRecord::Base
     #
     # == On Duplicate Key Update (MySQL only)
     #
-    # The :on_duplicate_key_update option can be either an Array or a Hash. 
+    # The :on_duplicate_key_update option can be either an Array or a Hash.
     #
     # ==== Using an Array
     #
@@ -331,12 +331,8 @@ class ActiveRecord::Base
           # be sure to query sequence_name *last*, only if cheaper tests fail, because it's costly
           if val.nil? && column.name == primary_key && !sequence_name.blank?
              connection_memo.next_value_for_sequence(sequence_name)
-          else
-            if column_for_attribute(column.name)
-              connection_memo.quote(column_for_attribute(column.name).type_cast_for_database(val), column)
-            else
-              connection_memo.quote(val, column)
-            end
+          elsif column
+            connection_memo.quote(column.type_cast(val), column)
           end
         end
         "(#{my_values.join(',')})"
