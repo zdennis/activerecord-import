@@ -7,7 +7,7 @@ function run {
   $@
 }
 
-for activerecord_version in "3.2" "4.1" ; do
+for activerecord_version in "3.1" "3.2" "4.1" "4.2" ; do
   export AR_VERSION=$activerecord_version
 
   bundle update activerecord
