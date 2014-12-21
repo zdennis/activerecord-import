@@ -333,7 +333,7 @@ class ActiveRecord::Base
           if val.nil? && column.name == primary_key && !sequence_name.blank?
              connection_memo.next_value_for_sequence(sequence_name)
           elsif column
-            connection_memo.quote(column.type_cast(val), column)
+            connection_memo.quote(column.type_cast_from_database(val), column)
           end
         end
         "(#{my_values.join(',')})"
