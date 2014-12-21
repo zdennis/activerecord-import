@@ -298,13 +298,13 @@ describe "#import" do
       end
 
       it "should set the created_at and created_on timestamps for new records"  do
-        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.created_at.strftime("%H:%M")
-        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.created_on.strftime("%H:%M")
+        assert_in_delta 5.minutes.ago.to_i, @book.created_at.to_i, 1.second
+        assert_in_delta 5.minutes.ago.to_i, @book.created_on.to_i, 1.second
       end
 
       it "should set the updated_at and updated_on timestamps for new records" do
-        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.updated_at.strftime("%H:%M")
-        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.updated_on.strftime("%H:%M")
+        assert_in_delta 5.minutes.ago.to_i, @book.updated_at.to_i, 1.second
+        assert_in_delta 5.minutes.ago.to_i, @book.updated_on.to_i, 1.second
       end
     end
   end
