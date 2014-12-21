@@ -42,9 +42,14 @@ module ActiveRecord # :nodoc:
         if matched_instance
           instance.clear_aggregation_cache
           instance.clear_association_cache
-          instance.instance_variable_set '@attributes', matched_instance.attributes
-          instance.instance_variable_set '@attributes_cache', {}
-          instance.changed_attributes.clear
+          instance.instance_variable_set :@attributes, matched_instance.instance_variable_get(:@attributes)
+
+          if instance.respond_to?(:clear_changes_information)
+            instance.clear_changes_information                  # Rails 4.1 and higher
+          else
+            instance.changed_attributes.clear                   # Rails 3.1, 3.2
+          end
+
           # Since the instance now accurately reflects the record in
           # the database, ensure that instance.persisted? is true.
           instance.instance_variable_set '@new_record', false
