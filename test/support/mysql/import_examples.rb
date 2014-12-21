@@ -14,7 +14,7 @@ def should_support_mysql_import_functionality
     end
 
     macro(:perform_import){ raise "supply your own #perform_import in a context below" }
-    macro(:updated_topic){ Topic.find(@topic) }
+    macro(:updated_topic){ Topic.find(@topic.id) }
 
     context "given columns and values with :validation checks turned off" do
       let(:columns){  %w( id title author_name author_email_address parent_id ) }
