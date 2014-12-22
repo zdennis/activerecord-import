@@ -285,26 +285,25 @@ describe "#import" do
     end
 
     context "when a custom time zone is set" do
+      let(:time){ Chronic.parse("5 minutes ago")  }
+
       setup do
-        original_timezone = ActiveRecord::Base.default_timezone
-        ActiveRecord::Base.default_timezone = :utc
-        Timecop.freeze Chronic.parse("5 minutes ago") do
+        Timecop.freeze(time) do
           assert_difference "Book.count", +1 do
             result = Book.import [:title, :author_name, :publisher], [["LDAP", "Big Bird", "Del Rey"]]
           end
         end
-        ActiveRecord::Base.default_timezone = original_timezone
         @book = Book.last
       end
 
       it "should set the created_at and created_on timestamps for new records"  do
-        assert_in_delta 5.minutes.ago.to_i, @book.created_at.to_i, 1.second
-        assert_in_delta 5.minutes.ago.to_i, @book.created_on.to_i, 1.second
+        assert_in_delta time.to_i, @book.created_at.to_i, 1.second
+        assert_in_delta time.to_i, @book.created_on.to_i, 1.second
       end
 
       it "should set the updated_at and updated_on timestamps for new records" do
-        assert_in_delta 5.minutes.ago.to_i, @book.updated_at.to_i, 1.second
-        assert_in_delta 5.minutes.ago.to_i, @book.updated_on.to_i, 1.second
+        assert_in_delta time.to_i, @book.updated_at.to_i, 1.second
+        assert_in_delta time.to_i, @book.updated_on.to_i, 1.second
       end
     end
   end
