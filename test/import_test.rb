@@ -338,6 +338,31 @@ describe "#import" do
         end
       end
     end
+
+    it "works importing models" do
+      topic = FactoryGirl.create :topic
+      books = [
+        Book.new(:author_name => "Author #1", :title => "Book #1"),
+        Book.new(:author_name => "Author #2", :title => "Book #2"),
+      ]
+      topic.books.import books
+      assert_equal 2, topic.books.count
+      assert topic.books.detect { |b| b.title == "Book #1" && b.author_name == "Author #1" }
+      assert topic.books.detect { |b| b.title == "Book #2" && b.author_name == "Author #2" }
+    end
+
+    it "works importing array of columns and values" do
+      topic = FactoryGirl.create :topic
+      books = [
+        Book.new(:author_name => "Foo", :title => "Baz"),
+        Book.new(:author_name => "Foo2", :title => "Baz2"),
+      ]
+      topic.books.import [:author_name, :title], [["Author #1", "Book #1"], ["Author #2", "Book #2"]]
+      assert_equal 2, topic.books.count
+      assert topic.books.detect { |b| b.title == "Book #1" && b.author_name == "Author #1" }
+      assert topic.books.detect { |b| b.title == "Book #2" && b.author_name == "Author #2" }
+    end
+
   end
 
   describe "importing when model has default_scope" do
@@ -367,5 +392,4 @@ describe "#import" do
       assert_equal({:a => :b}, Widget.find_by_w_id(1).data)
     end
   end
-
 end

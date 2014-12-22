@@ -25,6 +25,71 @@ module ActiveRecord::Import #:nodoc:
   end
 end
 
+class ActiveRecord::Associations::CollectionProxy
+  def import(*args, &block)
+    @association.import(*args, &block)
+  end
+end
+
+class ActiveRecord::Associations::CollectionAssociation
+  def import(*args, &block)
+    unless owner.persisted?
+      raise ActiveRecord::RecordNotSaved, "You cannot call import unless the parent is saved"
+    end
+
+    options = args.last.is_a?(Hash) ? args.pop : {}
+
+    model_klass = self.reflection.klass
+    symbolized_foreign_key = self.reflection.foreign_key.to_sym
+    symbolized_column_names = model_klass.column_names.map(&:to_sym)
+
+    owner_primary_key = self.owner.class.primary_key
+    owner_primary_key_value = self.owner.send(owner_primary_key)
+
+    # assume array of model objects
+    if args.last.is_a?( Array ) and args.last.first.is_a? ActiveRecord::Base
+      if args.length == 2
+        models = args.last
+        column_names = args.first
+      else
+        models = args.first
+        column_names = symbolized_column_names
+      end
+
+      if !symbolized_column_names.include?(symbolized_foreign_key)
+        column_names << symbolized_foreign_key
+      end
+
+      models.each do |m|
+        m.send "#{symbolized_foreign_key}=", owner_primary_key_value
+      end
+
+      return model_klass.import column_names, models, options
+
+    # supports empty array
+    elsif args.last.is_a?( Array ) and args.last.empty?
+      return ActiveRecord::Import::Result.new([], 0) if args.last.empty?
+
+    # supports 2-element array and array
+    elsif args.size == 2 and args.first.is_a?( Array ) and args.last.is_a?( Array )
+      column_names, array_of_attributes = args
+      symbolized_column_names = column_names.map(&:to_s)
+
+      if !symbolized_column_names.include?(symbolized_foreign_key)
+        column_names << symbolized_foreign_key
+        array_of_attributes.each { |attrs| attrs << owner_primary_key_value }
+      else
+        index = symbolized_column_names.index(symbolized_foreign_key)
+        array_of_attributes.each { |attrs| attrs[index] = owner_primary_key_value }
+      end
+
+      return model_klass.import column_names, array_of_attributes, options
+    else
+      raise ArgumentError.new( "Invalid arguments!" )
+    end
+  end
+end
+
 class ActiveRecord::Base
   class << self
 
@@ -348,7 +413,7 @@ class ActiveRecord::Base
       AREXT_RAILS_COLUMNS[:create].each_pair do |key, blk|
         if self.column_names.include?(key)
           value = blk.call
-          if index=column_names.index(key)
+          if index=column_names.index(key) || index=column_names.index(key.to_sym)
             # replace every instance of the array of attributes with our value
             array_of_attributes.each{ |arr| arr[index] = value if arr[index].nil? }
           else
@@ -361,7 +426,7 @@ class ActiveRecord::Base
       AREXT_RAILS_COLUMNS[:update].each_pair do |key, blk|
         if self.column_names.include?(key)
           value = blk.call
-          if index=column_names.index(key)
+          if index=column_names.index(key) || index=column_names.index(key.to_sym)
              # replace every instance of the array of attributes with our value
              array_of_attributes.each{ |arr| arr[index] = value }
           else
