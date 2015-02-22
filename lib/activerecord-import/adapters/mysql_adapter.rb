@@ -5,7 +5,7 @@ module ActiveRecord::Import::MysqlAdapter
   NO_MAX_PACKET = 0
   QUERY_OVERHEAD = 8 #This was shown to be true for MySQL, but it's not clear where the overhead is from.
 
-  # +sql+ can be a single string or an array. If it is an array all 
+  # +sql+ can be a single string or an array. If it is an array all
   # elements that are in position >= 1 will be appended to the final SQL.
   def insert_many( sql, values, *args ) # :nodoc:
     # the number of inserts default
@@ -20,7 +20,7 @@ module ActiveRecord::Import::MysqlAdapter
     sql_size = QUERY_OVERHEAD + base_sql.size + post_sql.size
 
     # the number of bytes the requested insert statement values will take up
-    values_in_bytes = values.sum {|value| value.bytesize }
+    values_in_bytes = values.map{|value| value.bytesize }.sum
 
     # the number of bytes (commas) it will take to comma separate our values
     comma_separated_bytes = values.size-1
