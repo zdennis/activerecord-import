@@ -247,13 +247,35 @@ class ActiveRecord::Base
           column_names = self.column_names.dup
         end
 
+        # skip this block unless hydrating "object_ids" (this feature assumes
+        # simple primary/foreign key relationships)
+        if hydrate_object_ids = options.delete(:hydrate_object_ids)
+          model_class = models.first.class
+          primary_key_attribute = model_class.primary_key
+          foreign_key_attribute = "#{model_class.name.downcase}_#{primary_key_attribute}"
+          associations = model_class.reflect_on_all_associations.map(&:name)
+          next_id = connection.increment_sequence_and_get_next_id(sequence_name, models.count)
+        end
+
         array_of_attributes = models.map do |model|
-          # this next line breaks sqlite.so with a segmentation fault
-          # if model.new_record? || options[:on_duplicate_key_update]
-            column_names.map do |name|
-              model.send( "#{name}_before_type_cast" )
+          # the following block will set the "primary" and "foreign" key values
+          # to the "next_id" value from the top level model's sequence (only if
+          # the current value is "nil"). If for some reason a record fails to
+          # save, depending on the adapter, may result in a gap in the "primary"
+          # key values for the backing table
+          if hydrate_object_ids && model[primary_key_attribute].nil?
+            model[primary_key_attribute] = next_id
+            associations.each do |association|
+              [model.send(association)].flatten.compact.each do |associated_model|
+                if associated_model.respond_to?(foreign_key_attribute) && associated_model[foreign_key_attribute].nil?
+                  associated_model[foreign_key_attribute] = next_id
+                end
+              end
             end
-          # end
+            next_id += 1
+          end
+          # return an array of the model instance's attribute values
+          column_names.map { |name| model.send("#{name}_before_type_cast") }
         end
         # supports empty array
       elsif args.last.is_a?( Array ) and args.last.empty?
