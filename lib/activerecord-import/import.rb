@@ -318,7 +318,7 @@ class ActiveRecord::Base
       # validation we'll use the index to remove it from the array_of_attributes
       arr.each_with_index do |hsh,i|
         instance = new do |model|
-          hsh.each_pair{ |k,v| model.send("#{k}=", v) }
+          hsh.each_pair{ |k,v| model[k] = v }
         end
         if not instance.valid?(options[:validate_with_context])
           array_of_attributes[ i ] = nil
