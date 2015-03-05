@@ -450,12 +450,14 @@ class ActiveRecord::Base
       parent.class.reflect_on_all_autosave_associations.each do |assoc|
         hash[parent.class.name][assoc.name]||=[]
 
-        changed_objects = parent.association(assoc.name).select {|a| a.new_record? || a.changed?}
+        association = parent.association(assoc.name)
+        association.loaded!
+
+        changed_objects = association.select {|a| a.new_record? || a.changed?}
         changed_objects.each do |child|
           child.send("#{assoc.foreign_key}=", parent.id)
         end
         hash[parent.class.name][assoc.name].concat changed_objects
-        changed_objects.each
       end
       hash
     end
