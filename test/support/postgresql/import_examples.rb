@@ -51,7 +51,7 @@ def should_support_postgresql_import_functionality
       end
 
       [{:recursive => false}, {}].each do |import_options|
-        it "skips recursion" do
+        it "skips recursion for #{import_options.to_s}" do
           assert_difference "Book.count", 0 do
             Topic.import new_topics, import_options
           end
@@ -87,11 +87,10 @@ def should_support_postgresql_import_functionality
               Topic.import new_topics_with_invalid_chapter, :all_or_none => true, :recursive => true
             end
           end
-          it "doesn't create chapters" do
-            assert_difference "Chapter.count", 0 do
-              Topic.import new_topics_with_invalid_chapter, :all_or_none => true, :recursive => true
-            end
-
+        end
+        it "doesn't create chapters" do
+          assert_difference "Chapter.count", 0 do
+            Topic.import new_topics_with_invalid_chapter, :all_or_none => true, :recursive => true
           end
         end
       end
