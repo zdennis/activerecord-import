@@ -16,13 +16,19 @@ module ActiveRecord::Import::PostgreSQLAdapter
     [number_of_inserts,ids]
   end
 
-
   def next_value_for_sequence(sequence_name)
     %{nextval('#{sequence_name}')}
+  end
+
+  def post_sql_statements( table_name, options ) # :nodoc:
+    unless options[:primary_key].blank?
+      super(table_name, options) << (" RETURNING #{options[:primary_key]}")
+    else
+      super(table_name, options)
+    end
   end
 
   def support_setting_primary_key_of_imported_objects?
     true
   end
 end
-
