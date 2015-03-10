@@ -175,7 +175,7 @@ class ActiveRecord::Base
     #   existing model instances in memory with updates from the import.
     # * +timestamps+ - true|false, tells import to not add timestamps \
     #   (if false) even if record timestamps is disabled in ActiveRecord::Base
-    # * +recurisve - true|fals, tells import to import all autosave association
+    # * +recursive - true|false, tells import to import all autosave association
     #   if the adapter supports setting the primary keys of the newly imported
     #   objects.
     #
