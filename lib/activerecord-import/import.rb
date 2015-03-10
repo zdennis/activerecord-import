@@ -109,27 +109,21 @@ class ActiveRecord::Base
     # Returns true if the current database connection adapter
     # supports import functionality, otherwise returns false.
     def supports_import?(*args)
-      connection.supports_import?(*args)
-    rescue NoMethodError
-      false
+      connection.respond_to?(:supports_import?) && connection.supports_import?(*args)
     end
 
     # Returns true if the current database connection adapter
     # supports on duplicate key update functionality, otherwise
     # returns false.
     def supports_on_duplicate_key_update?
-      connection.supports_on_duplicate_key_update?
-    rescue NoMethodError
-      false
+      connection.respond_to?(:supports_on_duplicate_key_update?) && connection.supports_on_duplicate_key_update?
     end
 
     # returns true if the current database connection adapter
     # supports setting the primary key of bulk imported models, otherwise
     # returns false
     def supports_setting_primary_key?
-      connection.supports_setting_primary_key?
-    rescue NoMethodError
-      false
+      connection.respond_to?(:supports_setting_primary_key?) && connection.supports_setting_primary_key?
     end
 
     # Imports a collection of values to the database.
