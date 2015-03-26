@@ -18,7 +18,7 @@ def should_support_postgresql_import_functionality
       end
     end
 
-    describe "importing objects with ids subobjects" do
+    describe "importing objects with associations" do
 
       let(:new_topics) { Build(num_topics, :topic_with_book) }
       let(:new_topics_with_invalid_chapter) {
@@ -39,7 +39,7 @@ def should_support_postgresql_import_functionality
         end
       end
 
-      it 'imports first level sub-objects' do
+      it 'imports first level associations' do
         assert_difference "Book.count", +num_books do
           Topic.import new_topics, :recursive => true
           new_topics.each do |topic|
@@ -58,7 +58,7 @@ def should_support_postgresql_import_functionality
         end
       end
 
-      it 'imports second level sub-objects' do
+      it 'imports deeper nested associations' do
         assert_difference "Chapter.count", +num_chapters do
           Topic.import new_topics, :recursive => true
           new_topics.each do |topic|
@@ -71,7 +71,7 @@ def should_support_postgresql_import_functionality
         end
       end
 
-      it "skips validation of the subobjects if requested" do
+      it "skips validation of the associations if requested" do
         assert_difference "Chapter.count", +num_chapters do
           Topic.import new_topics_with_invalid_chapter, :validate => false, :recursive => true
         end
