@@ -122,8 +122,8 @@ class ActiveRecord::Base
     # returns true if the current database connection adapter
     # supports setting the primary key of bulk imported models, otherwise
     # returns false
-    def supports_setting_primary_key?
-      connection.respond_to?(:supports_setting_primary_key?) && connection.supports_setting_primary_key?
+    def support_setting_primary_key_of_imported_objects?
+      connection.respond_to?(:support_setting_primary_key_of_imported_objects?) && connection.support_setting_primary_key_of_imported_objects?
     end
 
     # Imports a collection of values to the database.
@@ -314,7 +314,7 @@ class ActiveRecord::Base
       return_obj.num_inserts = 0 if return_obj.num_inserts.nil?
 
       # if we have ids, then set the id on the models and mark the models as clean.
-      if supports_setting_primary_key?
+      if support_setting_primary_key_of_imported_objects?
         set_ids_and_mark_clean(models, return_obj)
 
         # if there are auto-save associations on the models we imported that are new, import them as well

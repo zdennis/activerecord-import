@@ -21,7 +21,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
     %{nextval('#{sequence_name}')}
   end
 
-  def supports_setting_primary_key?
+  def support_setting_primary_key_of_imported_objects?
     true
   end
 end
