@@ -325,7 +325,7 @@ class ActiveRecord::Base
 
         # if there are auto-save associations on the models we imported that are new, import them as well
         if options[:recursive]
-          import_sub_objects(models, options)
+          import_associations(models, options)
         end
       end
 
@@ -429,37 +429,40 @@ class ActiveRecord::Base
       end
     end
 
-    def import_sub_objects(models, options)
+    def import_associations(models, options)
       # now, for all the dirty associations, collect them into a new set of models, then recurse.
       # notes:
       #    does not handle associations that reference themselves
       #    assumes that the only associations to be saved are marked with :autosave
       #    should probably take a hash to associations to follow.
-      hash={}
-      models.each {|model| find_autosave_assocations_for_import(hash, model) }
+      associated_objects_by_class={}
+      models.each {|model| find_associated_objects_for_import(associated_objects_by_class, model) }
 
-      hash.each_pair do |class_name, assocs|
-        assocs.each_pair do |assoc_name, subobjects|
-          subobjects.first.class.import(subobjects, options) unless subobjects.empty?
+      associated_objects_by_class.each_pair do |class_name, associations|
+        associations.each_pair do |association_name, associated_records|
+          associated_records.first.class.import(associated_records, options) unless associated_records.empty?
         end
       end
     end
 
-    def find_autosave_assocations_for_import(hash, parent)
-      hash[parent.class.name]||={}
-      parent.class.reflect_on_all_autosave_associations.each do |assoc|
-        hash[parent.class.name][assoc.name]||=[]
+    # We are eventually going to call Class.import <objects> so we build up a hash
+    # of class => objects to import.
+    def find_associated_objects_for_import(associated_objects_by_class, model)
+      associated_objects_by_class[model.class.name]||={}
 
-        association = parent.association(assoc.name)
+      model.class.reflect_on_all_autosave_associations.each do |association_reflection|
+        associated_objects_by_class[model.class.name][association_reflection.name]||=[]
+
+        association = model.association(association_reflection.name)
         association.loaded!
 
         changed_objects = association.select {|a| a.new_record? || a.changed?}
         changed_objects.each do |child|
-          child.send("#{assoc.foreign_key}=", parent.id)
+          child.send("#{association_reflection.foreign_key}=", model.id)
         end
-        hash[parent.class.name][assoc.name].concat changed_objects
+        associated_objects_by_class[model.class.name][association_reflection.name].concat changed_objects
       end
-      hash
+      associated_objects_by_class
     end
 
     # Returns SQL the VALUES for an INSERT statement given the passed in +columns+
