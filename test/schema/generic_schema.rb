@@ -64,15 +64,23 @@ ActiveRecord::Schema.define do
     t.column :publish_date, :date
     t.column :topic_id, :integer
     t.column :for_sale, :boolean, :default => true
-  end  
-  
+  end
+
   create_table :chapters, :force => true do |t|
     t.column :title, :string
     t.column :book_id, :integer, :null => false
     t.column :created_at, :datetime
     t.column :updated_at, :datetime
   end
-  
+
+  create_table :end_notes, :force => true do |t|
+    t.column :note, :string
+    t.column :book_id, :integer, :null => false
+    t.column :created_at, :datetime
+    t.column :updated_at, :datetime
+  end
+
+
   create_table :languages, :force=>true do |t|
     t.column :name, :string
     t.column :developer_id, :integer
