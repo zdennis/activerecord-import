@@ -79,7 +79,7 @@ def should_support_postgresql_import_functionality
 
       # These models dont validate associated.  So we expect that books and topics get inserted, but not chapters
       # Putting a transaction around everything wouldn't work, so if you want your chapters to prevent topics from
-      # being created, you would need to have validates_assoicated in your models and insert with validation
+      # being created, you would need to have validates_associated in your models and insert with validation
       describe "all_or_none" do
         [Book, Topic].each do |type|
           it "creates #{type.to_s}" do
