@@ -29,6 +29,7 @@ def should_support_postgresql_import_functionality
       let(:num_topics) {3}
       let(:num_books) {6}
       let(:num_chapters) {18}
+      let(:num_endnotes) {24}
 
       it 'imports top level' do
         assert_difference "Topic.count", +num_topics do
@@ -60,11 +61,16 @@ def should_support_postgresql_import_functionality
 
       it 'imports deeper nested associations' do
         assert_difference "Chapter.count", +num_chapters do
-          Topic.import new_topics, :recursive => true
-          new_topics.each do |topic|
-            topic.books.each do |book|
-              book.chapters.each do |chapter|
-                assert_equal book.id, chapter.book_id
+          assert_difference "EndNote.count", +num_endnotes do
+            Topic.import new_topics, :recursive => true
+            new_topics.each do |topic|
+              topic.books.each do |book|
+                book.chapters.each do |chapter|
+                  assert_equal book.id, chapter.book_id
+                end
+                book.end_notes.each do |endnote|
+                  assert_equal book.id, endnote.book_id
+                end
               end
             end
           end
@@ -81,7 +87,7 @@ def should_support_postgresql_import_functionality
       # Putting a transaction around everything wouldn't work, so if you want your chapters to prevent topics from
       # being created, you would need to have validates_associated in your models and insert with validation
       describe "all_or_none" do
-        [Book, Topic].each do |type|
+        [Book, Topic, EndNote].each do |type|
           it "creates #{type.to_s}" do
             assert_difference "#{type.to_s}.count", send("num_#{type.to_s.downcase}s") do
               Topic.import new_topics_with_invalid_chapter, :all_or_none => true, :recursive => true
