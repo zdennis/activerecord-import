@@ -1,3 +1,3 @@
-mysql
-postgresql
-sqlite
+brew "mysql"
+brew "postgresql"
+brew "sqlite"
