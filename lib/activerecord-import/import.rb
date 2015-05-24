@@ -376,7 +376,9 @@ class ActiveRecord::Base
 
       unless scope_columns.blank?
         scope_columns.zip(scope_values).each do |name, value|
-          next if column_names.include?(name.to_sym)
+          name = name.to_sym
+          next if column_names.include?(name)
+          next if name.to_s == inheritance_column.to_s && value.is_a?(Array) # hello from STI
           column_names << name
           array_of_attributes.each { |attrs| attrs << value }
         end
