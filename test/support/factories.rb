@@ -21,6 +21,20 @@ FactoryGirl.define do
     sequence(:w_id){ |n| n}
   end
 
+  factory :question do
+    sequence(:body) { |n| "Text #{n}"}
+
+    trait :with_rule do
+      after(:build) do |question|
+        question.build_rule(FactoryGirl.attributes_for(:rule))
+      end
+    end
+  end
+  
+  factory :rule do
+    sequence(:condition_text){ |n| "q_#{n}_#{n}"} 
+  end
+
   factory :topic_with_book, :parent=>:topic do |m|
     after(:build) do |topic|
       2.times do

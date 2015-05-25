@@ -30,6 +30,8 @@ def should_support_postgresql_import_functionality
       let(:num_chapters) {18}
       let(:num_endnotes) {24}
 
+      let(:new_question_with_rule) { FactoryGirl.build :question, :with_rule }
+
       it 'imports top level' do
         assert_difference "Topic.count", +num_topics do
           Topic.import new_topics, :recursive => true
@@ -79,6 +81,12 @@ def should_support_postgresql_import_functionality
       it "skips validation of the associations if requested" do
         assert_difference "Chapter.count", +num_chapters do
           Topic.import new_topics_with_invalid_chapter, :validate => false, :recursive => true
+        end
+      end
+
+      it 'should not invoke #select when importing a has_one relationship' do
+        assert_nothing_raised do
+          Question.import [new_question_with_rule], recursive: true
         end
       end
 
