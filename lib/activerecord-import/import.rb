@@ -377,7 +377,7 @@ class ActiveRecord::Base
       unless scope_columns.blank?
         scope_columns.zip(scope_values).each do |name, value|
           next if column_names.include?(name.to_sym)
-          column_names << name
+          column_names << name.to_sym
           array_of_attributes.each { |attrs| attrs << value }
         end
       end
