@@ -270,7 +270,7 @@ class ActiveRecord::Base
           # this next line breaks sqlite.so with a segmentation fault
           # if model.new_record? || options[:on_duplicate_key_update]
             column_names.map do |name|
-              model.send( "#{name}_before_type_cast" )
+              model.read_attribute_before_type_cast(name)
             end
           # end
         end
