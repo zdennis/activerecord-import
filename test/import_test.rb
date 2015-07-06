@@ -365,6 +365,34 @@ describe "#import" do
 
   end
 
+  context 'When importing models with Enum fields' do
+    it 'should be able to import enum fields' do
+      Book.delete_all if Book.count > 0
+      books = [
+        Book.new(:author_name => "Foo", :title => "Baz", status: 0),
+        Book.new(:author_name => "Foo2", :title => "Baz2", status: 1),
+      ]
+      Book.import books
+      assert_equal 2, Book.count
+      assert_equal 0, Book.first.read_attribute('status')
+      assert_equal 1, Book.last.read_attribute('status')
+    end
+
+    if ENV['AR_VERSION'].to_i > 4.1
+      it 'should be able to import enum fields by name' do
+        Book.delete_all if Book.count > 0
+        books = [
+          Book.new(:author_name => "Foo", :title => "Baz", status: :draft),
+          Book.new(:author_name => "Foo2", :title => "Baz2", status: :published),
+        ]
+        Book.import books
+        assert_equal 2, Book.count
+        assert_equal 0, Book.first.read_attribute('status')
+        assert_equal 1, Book.last.read_attribute('status')
+      end
+    end
+  end
+
   describe "importing when model has default_scope" do
     it "doesn't import the default scope values" do
       assert_difference "Widget.unscoped.count", +2 do
