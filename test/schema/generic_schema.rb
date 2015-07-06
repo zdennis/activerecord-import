@@ -64,6 +64,7 @@ ActiveRecord::Schema.define do
     t.column :publish_date, :date
     t.column :topic_id, :integer
     t.column :for_sale, :boolean, :default => true
+    t.column :status, :integer
   end
 
   create_table :chapters, :force => true do |t|
