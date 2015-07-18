@@ -39,6 +39,15 @@ class ActiveSupport::TestCase
           assert_equal "johndoe@example.com", updated_topic.author_email_address
         end
 
+        assertion(:should_raise_update_fields_mentioned) do
+          assert_raise ActiveRecord::RecordNotUnique do 
+            perform_import
+          end
+          
+          assert_equal "Book", updated_topic.title
+          assert_equal "john@doe.com", updated_topic.author_email_address
+        end
+
         assertion(:should_update_fields_mentioned_with_hash_mappings) do
           perform_import
           assert_equal "johndoe@example.com", updated_topic.title
