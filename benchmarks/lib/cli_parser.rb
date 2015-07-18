@@ -1,7 +1,7 @@
 require 'optparse'
 require 'ostruct'
 
-# 
+#
 # == PARAMETERS
 # * a - database adapter. ie: mysql, postgresql, oracle, etc.
 # * n - number of objects to test with. ie: 1, 100, 1000, etc.
@@ -13,12 +13,12 @@ module BenchmarkOptionParser
   def self.print_banner
     puts BANNER
   end
-  
+
   def self.print_banner!
     print_banner
     exit
   end
-  
+
   def self.print_options( options )
     puts "Benchmarking the following options:"
     puts "  Database adapter: #{options.adapter}"
@@ -26,7 +26,7 @@ module BenchmarkOptionParser
     puts "  Table types:"
     print_valid_table_types( options, :prefix=>"    " )
   end
-  
+
   # TODO IMPLEMENT THIS
   def self.print_valid_table_types( options, hsh={:prefix=>''} )
     if options.table_types.keys.size > 0
@@ -35,36 +35,37 @@ module BenchmarkOptionParser
       puts 'No table types defined.'
     end
   end
-  
+
   def self.parse( args )
-    options = OpenStruct.new( 
-      :table_types => {}, 
+    options = OpenStruct.new(
+      :adapter => 'mysql',
+      :table_types => {},
       :delete_on_finish => true,
       :number_of_objects => [],
       :outputs => [] )
-    
+
     opts = OptionParser.new do |opts|
       opts.banner = BANNER
-      
+
       # parse the database adapter
-      opts.on( "a", "--adapter [String]", 
+      opts.on( "a", "--adapter [String]",
         "The database adapter to use. IE: mysql, postgresql, oracle" ) do |arg|
         options.adapter = arg
       end
-      
+
       # parse do_not_delete flag
-      opts.on( "d", "--do-not-delete", 
+      opts.on( "d", "--do-not-delete",
         "By default all records in the benchmark tables will be deleted at the end of the benchmark. " +
         "This flag indicates not to delete the benchmark data." ) do |arg|
         options.delete_on_finish = false
       end
-      
+
       # parse the number of row objects to test
       opts.on( "n", "--num [Integer]",
         "The number of objects to benchmark." ) do |arg|
         options.number_of_objects << arg.to_i
       end
-      
+
       # parse the table types to test
       opts.on( "t", "--table-type [String]",
         "The table type to test. This can be used multiple times." ) do |arg|
@@ -72,7 +73,7 @@ module BenchmarkOptionParser
           options.table_types['all'] = options.benchmark_all_types = true
         else
           options.table_types[arg] = true
-        end        
+        end
       end
 
       # print results in CSV format
@@ -86,7 +87,7 @@ module BenchmarkOptionParser
       end
     end #end opt.parse!
 
-    begin 
+    begin
       opts.parse!( args )
       if options.table_types.size == 0
         options.table_types['all'] = options.benchmark_all_types = true
@@ -94,9 +95,12 @@ module BenchmarkOptionParser
     rescue Exception => ex
       print_banner!
     end
-    
+
+    options.number_of_objects = [1000] if options.number_of_objects.empty?
+    options.outputs = [ OpenStruct.new( :format => 'html', :filename => 'benchmark.html')] if options.outputs.empty?
+
     print_options( options )
-    
+
     options
   end
 

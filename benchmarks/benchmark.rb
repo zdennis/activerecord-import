@@ -1,45 +1,48 @@
-require "pathname"
-this_dir = Pathname.new File.dirname(__FILE__)
-require this_dir.join('boot')
+require 'pathname'
+require "fileutils"
+require "active_record"
+
+benchmark_dir = File.dirname(__FILE__)
+
+# Get the gem into the load path
+$LOAD_PATH.unshift(File.join(benchmark_dir, '..', 'lib'))
+
+# Load the benchmark files
+Dir[File.join( benchmark_dir, 'lib', '*.rb' ) ].sort.each{ |f| require f }
 
 # Parse the options passed in via the command line
 options = BenchmarkOptionParser.parse( ARGV )
 
-# The support directory where we use to load our connections and models for the 
-# benchmarks.
-SUPPORT_DIR = this_dir.join('../test')
-
-# Load the database adapter
-adapter = options.adapter
-
-# load the library
-LIB_DIR = this_dir.join("../lib")
-require LIB_DIR.join("activerecord-import/#{adapter}")
-
+FileUtils.mkdir_p 'log'
+ActiveRecord::Base.configurations["test"] = YAML.load_file(File.join(benchmark_dir, "../test/database.yml"))[options.adapter]
 ActiveRecord::Base.logger = Logger.new("log/test.log")
 ActiveRecord::Base.logger.level = Logger::DEBUG
-ActiveRecord::Base.configurations["test"] = YAML.load(SUPPORT_DIR.join("database.yml").open)[adapter]
-ActiveRecord::Base.establish_connection "test"
+ActiveRecord::Base.default_timezone = :utc
+
+require "activerecord-import"
+ActiveRecord::Base.establish_connection(:test)
 
 ActiveSupport::Notifications.subscribe(/active_record.sql/) do |event, _, _, _, hsh|
   ActiveRecord::Base.logger.info hsh[:sql]
 end
 
-adapter_schema = SUPPORT_DIR.join("schema/#{adapter}_schema.rb")
+# Load base/generic schema
+require File.join(benchmark_dir, "../test/schema/version")
+require File.join(benchmark_dir, "../test/schema/generic_schema")
+adapter_schema = File.join(benchmark_dir, "schema/#{options.adapter}_schema.rb")
 require adapter_schema if File.exists?(adapter_schema)
-Dir[this_dir.join("models/*.rb")].each{ |file| require file }
 
-# Load databse specific benchmarks
-require File.join( File.dirname( __FILE__ ), 'lib', "#{adapter}_benchmark" )
+Dir[File.dirname(__FILE__) + "/models/*.rb"].each{ |file| require file }
 
-# TODO implement method/table-type selection
+
+require File.join( benchmark_dir, 'lib', "#{options.adapter}_benchmark" )
+
 table_types = nil
 if options.benchmark_all_types
   table_types = [ "all" ]
 else
   table_types = options.table_types.keys
 end
-puts
 
 letter = options.adapter[0].chr
 clazz_str = letter.upcase + options.adapter[1..-1].downcase
