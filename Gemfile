@@ -19,6 +19,7 @@ platforms :jruby do
   gem "jdbc-postgres"
   gem "activerecord-jdbcmysql-adapter"
   gem "activerecord-jdbcpostgresql-adapter"
+  gem "activerecord-jdbcmssql-adapter"
 end
 
 # Support libs
