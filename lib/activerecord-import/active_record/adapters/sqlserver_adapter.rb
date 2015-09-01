@@ -1,7 +1,7 @@
 if (RUBY_PLATFORM =~ /java/).nil?
   require "active_record/connection_adapters/sqlserver_adapter"
 else
-  require "active_record/connection_adapters/jdbcmssql_adapter"
+  require "active_record/connection_adapters/mssql_adapter"
 end
 require "activerecord-import/adapters/sqlserver_adapter"
 
