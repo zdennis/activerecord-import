@@ -36,7 +36,7 @@ module ActiveRecord::Import::SQLServerAdapter
         end
       else
         number_of_inserts += 1
-        super( sql.clone, values, args )
+        super( sql.clone, batch, args )
       end
     end
 
