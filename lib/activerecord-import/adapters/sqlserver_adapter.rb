@@ -10,8 +10,10 @@ module ActiveRecord::Import::SQLServerAdapter
       (sql_id_index == (columns_names.length - 1) ? sql.clone[0].gsub(/\[id\]/, '') : sql.clone[0].gsub(/\[id\],/, ''))
     end
 
+    max = max_allowed_packet
+
     number_of_inserts = 0
-    while !(batch = values.shift(1000)).blank? do
+    while !(batch = values.shift(max)).blank? do
       if sql_id_index
         null_ids     = []
         supplied_ids = []
@@ -41,5 +43,9 @@ module ActiveRecord::Import::SQLServerAdapter
     end
 
     [number_of_inserts, []]
+  end
+
+  def max_allowed_packet
+    1000
   end
 end
