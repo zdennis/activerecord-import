@@ -34,7 +34,7 @@ module ActiveRecord::Import::SQLite3Adapter
       insert( sql2insert, *args )
     end
 
-    number_of_inserts
+    [number_of_inserts,[]]
   end
 
   def next_value_for_sequence(sequence_name)

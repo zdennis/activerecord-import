@@ -19,7 +19,7 @@ describe "#import" do
     end
   end
 
-  describe "with non-default ActiveRecord models" do  
+  describe "with non-default ActiveRecord models" do
     context "that have a non-standard primary key (that is no sequence)" do
       it "should import models successfully" do
         assert_difference "Widget.count", +3 do
@@ -32,6 +32,7 @@ describe "#import" do
   context "with :validation option" do
     let(:columns) { %w(title author_name) }
     let(:valid_values) { [[ "LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
+    let(:valid_values_with_context) { [[ 1111, "Jerry Carter"], [2222, "Chad Fowler"]] }
     let(:invalid_values) { [[ "The RSpec Book", ""], ["Agile+UX", ""]] }
 
     context "with validation checks turned off" do
@@ -61,9 +62,21 @@ describe "#import" do
         end
       end
 
+      it "should import valid data with on option" do
+        assert_difference "Topic.count", +2 do
+          result = Topic.import columns, valid_values_with_context, :validate_with_context => :context_test
+        end
+      end
+
       it "should not import invalid data" do
         assert_no_difference "Topic.count" do
           result = Topic.import columns, invalid_values, :validate => true
+        end
+      end
+
+      it "should import invalid data with on option" do
+        assert_no_difference "Topic.count" do
+          result = Topic.import columns, valid_values, :validate_with_context => :context_test
         end
       end
 
@@ -236,53 +249,61 @@ describe "#import" do
   context "ActiveRecord timestamps" do
     context "when the timestamps columns are present" do
       setup do
+        @existing_book = Book.create(title: "Fell", author_name: "Curry", publisher: "Bayer", created_at: 2.years.ago.utc, created_on: 2.years.ago.utc)
         ActiveRecord::Base.default_timezone = :utc
-        Delorean.time_travel_to("5 minutes ago") do
-          assert_difference "Book.count", +1 do
-            result = Book.import [:title, :author_name, :publisher], [["LDAP", "Big Bird", "Del Rey"]]
+        Timecop.freeze Chronic.parse("5 minutes ago") do
+          assert_difference "Book.count", +2 do
+            result = Book.import ["title", "author_name", "publisher", "created_at", "created_on"], [["LDAP", "Big Bird", "Del Rey", nil, nil], [@existing_book.title, @existing_book.author_name, @existing_book.publisher, @existing_book.created_at, @existing_book.created_on]]
           end
         end
-        @book = Book.last
+        @new_book, @existing_book = Book.last 2
       end
 
       it "should set the created_at column for new records"  do
-        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.created_at.strftime("%H:%M")
+        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @new_book.created_at.strftime("%H:%M")
       end
 
       it "should set the created_on column for new records" do
-        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.created_on.strftime("%H:%M")
+        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @new_book.created_on.strftime("%H:%M")
+      end
+
+      it "should not set the created_at column for existing records"  do
+        assert_equal 2.years.ago.utc.strftime("%Y:%d"), @existing_book.created_at.strftime("%Y:%d")
+      end
+
+      it "should not set the created_on column for existing records" do
+        assert_equal 2.years.ago.utc.strftime("%Y:%d"), @existing_book.created_on.strftime("%Y:%d")
       end
 
       it "should set the updated_at column for new records" do
-        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.updated_at.strftime("%H:%M")
+        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @new_book.updated_at.strftime("%H:%M")
       end
 
       it "should set the updated_on column for new records" do
-        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.updated_on.strftime("%H:%M")
+        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @new_book.updated_on.strftime("%H:%M")
       end
     end
 
     context "when a custom time zone is set" do
+      let(:time){ Chronic.parse("5 minutes ago")  }
+
       setup do
-        original_timezone = ActiveRecord::Base.default_timezone
-        ActiveRecord::Base.default_timezone = :utc
-        Delorean.time_travel_to("5 minutes ago") do
+        Timecop.freeze(time) do
           assert_difference "Book.count", +1 do
             result = Book.import [:title, :author_name, :publisher], [["LDAP", "Big Bird", "Del Rey"]]
           end
         end
-        ActiveRecord::Base.default_timezone = original_timezone
         @book = Book.last
       end
 
       it "should set the created_at and created_on timestamps for new records"  do
-        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.created_at.strftime("%H:%M")
-        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.created_on.strftime("%H:%M")
+        assert_in_delta time.to_i, @book.created_at.to_i, 1.second
+        assert_in_delta time.to_i, @book.created_on.to_i, 1.second
       end
 
       it "should set the updated_at and updated_on timestamps for new records" do
-        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.updated_at.strftime("%H:%M")
-        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @book.updated_on.strftime("%H:%M")
+        assert_in_delta time.to_i, @book.updated_at.to_i, 1.second
+        assert_in_delta time.to_i, @book.updated_on.to_i, 1.second
       end
     end
   end
@@ -317,6 +338,59 @@ describe "#import" do
         end
       end
     end
+
+    it "works importing models" do
+      topic = FactoryGirl.create :topic
+      books = [
+        Book.new(:author_name => "Author #1", :title => "Book #1"),
+        Book.new(:author_name => "Author #2", :title => "Book #2"),
+      ]
+      topic.books.import books
+      assert_equal 2, topic.books.count
+      assert topic.books.detect { |b| b.title == "Book #1" && b.author_name == "Author #1" }
+      assert topic.books.detect { |b| b.title == "Book #2" && b.author_name == "Author #2" }
+    end
+
+    it "works importing array of columns and values" do
+      topic = FactoryGirl.create :topic
+      books = [
+        Book.new(:author_name => "Foo", :title => "Baz"),
+        Book.new(:author_name => "Foo2", :title => "Baz2"),
+      ]
+      topic.books.import [:author_name, :title], [["Author #1", "Book #1"], ["Author #2", "Book #2"]]
+      assert_equal 2, topic.books.count
+      assert topic.books.detect { |b| b.title == "Book #1" && b.author_name == "Author #1" }
+      assert topic.books.detect { |b| b.title == "Book #2" && b.author_name == "Author #2" }
+    end
+
+  end
+
+  context 'When importing models with Enum fields' do
+    it 'should be able to import enum fields' do
+      Book.delete_all if Book.count > 0
+      books = [
+        Book.new(:author_name => "Foo", :title => "Baz", status: 0),
+        Book.new(:author_name => "Foo2", :title => "Baz2", status: 1),
+      ]
+      Book.import books
+      assert_equal 2, Book.count
+      assert_equal 0, Book.first.read_attribute('status')
+      assert_equal 1, Book.last.read_attribute('status')
+    end
+
+    if ENV['AR_VERSION'].to_i > 4.1
+      it 'should be able to import enum fields by name' do
+        Book.delete_all if Book.count > 0
+        books = [
+          Book.new(:author_name => "Foo", :title => "Baz", status: :draft),
+          Book.new(:author_name => "Foo2", :title => "Baz2", status: :published),
+        ]
+        Book.import books
+        assert_equal 2, Book.count
+        assert_equal 0, Book.first.read_attribute('status')
+        assert_equal 1, Book.last.read_attribute('status')
+      end
+    end
   end
 
   describe "importing when model has default_scope" do
@@ -346,5 +420,4 @@ describe "#import" do
       assert_equal({:a => :b}, Widget.find_by_w_id(1).data)
     end
   end
-
 end

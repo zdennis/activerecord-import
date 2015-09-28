@@ -2,6 +2,25 @@
 
 activerecord-import is a library for bulk inserting data using ActiveRecord.
 
+One of its major features is following activerecord associations and generating the minimal
+number of SQL insert statements required, avoiding the N+1 insert problem. An example probably
+explains it best. Say you had a schema like this:
+ 
+Publishers have Books
+Books have Reviews
+ 
+and you wanted to bulk insert 100 new publishers with 10K books and 3 reviews per book. This library will follow the associations
+down and generate only 3 SQL insert statements - one for the publishers, one for the books, and one for the reviews.
+ 
+In contrast, the standard ActiveRecord save would generate
+100 insert statements for the publishers, then it would visit each publisher and save all the books:
+100 * 10,000 = 1,000,000 SQL insert statements
+and then the reviews:
+100 * 10,000 * 3 = 3M SQL insert statements,
+ 
+That would be about 4M SQL insert statements vs 3, which results in vastly improved performance. In our case, it converted
+an 18 hour batch process to <2 hrs.
+
 ### Rails 4.0
 
 Use activerecord-import 0.4.0 or higher.
