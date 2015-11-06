@@ -48,6 +48,10 @@ module ActiveRecord::Import::AbstractAdapter
         post_sql_statements << sql_for_on_duplicate_key_update( table_name, options[:on_duplicate_key_update] )
       end
 
+      if options[:on_constraint_update_keys]
+        post_sql_statements << sql_for_on_duplicate_constraint_update( table_name, options[:on_constraint_update_keys] )
+      end
+
       #custom user post_sql
       post_sql_statements << options[:post_sql] if options[:post_sql]
 
