@@ -472,11 +472,11 @@ class ActiveRecord::Base
           # be sure to query sequence_name *last*, only if cheaper tests fail, because it's costly
           if val.nil? && column.name == primary_key && !sequence_name.blank?
              connection_memo.next_value_for_sequence(sequence_name)
-          elsif column
-            if column.respond_to?(:type_cast_from_user)                         # Rails 4.2 and higher
-              connection_memo.quote(column.type_cast_from_user(val), column)
+          else
+            if serialized_attributes.include?(column.name)
+              connection_memo.quote(serialized_attributes[column.name].dump(val), column)
             else
-              connection_memo.quote(column.type_cast(val), column)              # Rails 3.1, 3.2, and 4.1
+              connection_memo.quote(val, column)
             end
           end
         end
