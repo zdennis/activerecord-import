@@ -101,5 +101,29 @@ def should_support_postgresql_import_functionality
         end
       end
     end
+
+    describe "with query cache enabled" do
+      setup do
+        unless ActiveRecord::Base.connection.query_cache_enabled
+          ActiveRecord::Base.connection.enable_query_cache!
+          @disable_cache_on_teardown = true
+        end
+      end
+
+      it "clears cache on insert" do
+        before_import = Topic.all.to_a
+
+        Topic.import(Build(2, :topics), validate: false)
+
+        after_import = Topic.all.to_a
+        assert_equal 2, after_import.size - before_import.size
+      end
+
+      teardown do
+        if @disable_cache_on_teardown
+          ActiveRecord::Base.connection.disable_query_cache!
+        end
+      end
+    end
   end
 end
