@@ -1,5 +1,5 @@
 class ActiveSupport::TestCase
-  module MySQLAssertions
+  module ImportAssertions
     def self.extended(klass)
       klass.instance_eval do
         assertion(:should_not_update_created_at_on_timestamp_columns) do
@@ -16,6 +16,15 @@ class ActiveSupport::TestCase
             perform_import
             assert_in_delta time.to_i, updated_topic.updated_at.to_i, 1
             assert_in_delta time.to_i, updated_topic.updated_on.to_i, 1
+          end
+        end
+
+        assertion(:should_not_update_updated_at_on_timestamp_columns) do
+          time = Chronic.parse("5 minutes from now")
+          Timecop.freeze time do
+            perform_import
+            assert_in_delta @topic.updated_at.to_i, updated_topic.updated_at.to_i, 1
+            assert_in_delta @topic.updated_on.to_i, updated_topic.updated_on.to_i, 1
           end
         end
 
@@ -40,10 +49,10 @@ class ActiveSupport::TestCase
         end
 
         assertion(:should_raise_update_fields_mentioned) do
-          assert_raise ActiveRecord::RecordNotUnique do 
+          assert_raise ActiveRecord::RecordNotUnique do
             perform_import
           end
-          
+
           assert_equal "Book", updated_topic.title
           assert_equal "john@doe.com", updated_topic.author_email_address
         end
