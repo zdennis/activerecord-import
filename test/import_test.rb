@@ -38,19 +38,19 @@ describe "#import" do
     context "with validation checks turned off" do
       it "should import valid data" do
         assert_difference "Topic.count", +2 do
-          result = Topic.import columns, valid_values, :validate => false
+          result = Topic.import columns, valid_values, validate: false
         end
       end
 
       it "should import invalid data" do
         assert_difference "Topic.count", +2 do
-          result = Topic.import columns, invalid_values, :validate => false
+          result = Topic.import columns, invalid_values, validate: false
         end
       end
 
       it 'should raise a specific error if a column does not exist' do
         assert_raises ActiveRecord::Import::MissingColumnError do
-          Topic.import ['foo'], [['bar']], :validate => false
+          Topic.import ['foo'], [['bar']], validate: false
         end
       end
     end
@@ -58,37 +58,37 @@ describe "#import" do
     context "with validation checks turned on" do
       it "should import valid data" do
         assert_difference "Topic.count", +2 do
-          result = Topic.import columns, valid_values, :validate => true
+          result = Topic.import columns, valid_values, validate: true
         end
       end
 
       it "should import valid data with on option" do
         assert_difference "Topic.count", +2 do
-          result = Topic.import columns, valid_values_with_context, :validate_with_context => :context_test
+          result = Topic.import columns, valid_values_with_context, validate_with_context: :context_test
         end
       end
 
       it "should not import invalid data" do
         assert_no_difference "Topic.count" do
-          result = Topic.import columns, invalid_values, :validate => true
+          result = Topic.import columns, invalid_values, validate: true
         end
       end
 
       it "should import invalid data with on option" do
         assert_no_difference "Topic.count" do
-          result = Topic.import columns, valid_values, :validate_with_context => :context_test
+          result = Topic.import columns, valid_values, validate_with_context: :context_test
         end
       end
 
       it "should report the failed instances" do
-        results = Topic.import columns, invalid_values, :validate => true
+        results = Topic.import columns, invalid_values, validate: true
         assert_equal invalid_values.size, results.failed_instances.size
         results.failed_instances.each{ |e| assert_kind_of Topic, e }
       end
 
       it "should import valid data when mixed with invalid data" do
         assert_difference "Topic.count", +2 do
-          result = Topic.import columns, valid_values + invalid_values, :validate => true
+          result = Topic.import columns, valid_values + invalid_values, validate: true
         end
         assert_equal 0, Topic.where(title: invalid_values.map(&:first)).count
       end
@@ -104,30 +104,30 @@ describe "#import" do
     context "with validation checks turned on" do
       it "should import valid data" do
         assert_difference "Topic.count", +2 do
-          result = Topic.import columns, valid_values, :all_or_none => true
+          result = Topic.import columns, valid_values, all_or_none: true
         end
       end
 
       it "should not import invalid data" do
         assert_no_difference "Topic.count" do
-          result = Topic.import columns, invalid_values, :all_or_none => true
+          result = Topic.import columns, invalid_values, all_or_none: true
         end
       end
 
       it "should not import valid data when mixed with invalid data" do
         assert_no_difference "Topic.count" do
-          result = Topic.import columns, mixed_values, :all_or_none => true
+          result = Topic.import columns, mixed_values, all_or_none: true
         end
       end
 
       it "should report the failed instances" do
-        results = Topic.import columns, mixed_values, :all_or_none => true
+        results = Topic.import columns, mixed_values, all_or_none: true
         assert_equal invalid_values.size, results.failed_instances.size
         results.failed_instances.each { |e| assert_kind_of Topic, e }
       end
 
       it "should report the zero inserts" do
-        results = Topic.import columns, mixed_values, :all_or_none => true
+        results = Topic.import columns, mixed_values, all_or_none: true
         assert_equal 0, results.num_inserts
       end
     end
@@ -138,7 +138,7 @@ describe "#import" do
       let(:new_topics) { Build(3, :topics) }
 
       it "doesn't reload any data (doesn't work)" do
-        Topic.import new_topics, :synchronize => new_topics
+        Topic.import new_topics, synchronize: new_topics
         assert new_topics.all?(&:new_record?), "No record should have been reloaded"
       end
     end
@@ -147,7 +147,7 @@ describe "#import" do
       let(:new_topics) { Build(3, :topics) }
 
       it "reloads data for existing in-memory instances" do
-        Topic.import(new_topics, :synchronize => new_topics, :synchronize_keys => [:title] )
+        Topic.import(new_topics, synchronize: new_topics, synchronize_keys: [:title] )
         assert new_topics.all?(&:persisted?), "Records should have been reloaded"
       end
     end
@@ -157,14 +157,14 @@ describe "#import" do
 
       it "reloads data for existing in-memory instances" do
         new_topics.each &:destroy
-        Topic.import(new_topics, :synchronize => new_topics, :synchronize_keys => [:title] )
+        Topic.import(new_topics, synchronize: new_topics, synchronize_keys: [:title] )
         assert new_topics.all?(&:persisted?), "Records should have been reloaded"
       end
     end
   end
 
   context "with an array of unsaved model instances" do
-    let(:topic) { Build(:topic, :title => "The RSpec Book", :author_name => "David Chelimsky")}
+    let(:topic) { Build(:topic, title: "The RSpec Book", author_name: "David Chelimsky")}
     let(:topics) { Build(9, :topics) }
     let(:invalid_topics){ Build(7, :invalid_topics)}
 
@@ -178,7 +178,7 @@ describe "#import" do
     end
 
     it "should not overwrite existing records" do
-      topic = Generate(:topic, :title => "foobar")
+      topic = Generate(:topic, title: "foobar")
       assert_no_difference "Topic.count" do
         begin
           Topic.transaction do
@@ -196,13 +196,13 @@ describe "#import" do
     context "with validation checks turned on" do
       it "should import valid models" do
         assert_difference "Topic.count", +9 do
-          result = Topic.import topics, :validate => true
+          result = Topic.import topics, validate: true
         end
       end
 
       it "should not import invalid models" do
         assert_no_difference "Topic.count" do
-          result = Topic.import invalid_topics, :validate => true
+          result = Topic.import invalid_topics, validate: true
         end
       end
     end
@@ -210,7 +210,7 @@ describe "#import" do
     context "with validation checks turned off" do
       it "should import invalid models" do
         assert_difference "Topic.count", +7 do
-          result = Topic.import invalid_topics, :validate => false
+          result = Topic.import invalid_topics, validate: false
         end
       end
     end
@@ -309,7 +309,7 @@ describe "#import" do
   end
 
   context "importing with database reserved words" do
-    let(:group) { Build(:group, :order => "superx") }
+    let(:group) { Build(:group, order: "superx") }
 
     it "should import just fine" do
       assert_difference "Group.count", +1 do
@@ -332,7 +332,7 @@ describe "#import" do
         it "should automatically set the foreign key column" do
           books = [[ "David Chelimsky", "The RSpec Book" ], [ "Chad Fowler", "Rails Recipes" ]]
           topic = FactoryGirl.create :topic
-          topic.books.import [ :author_name, :title ], books, :validate => b
+          topic.books.import [ :author_name, :title ], books, validate: b
           assert_equal 2, topic.books.count
           assert topic.books.all? { |b| b.topic_id == topic.id }
         end
@@ -342,8 +342,8 @@ describe "#import" do
     it "works importing models" do
       topic = FactoryGirl.create :topic
       books = [
-        Book.new(:author_name => "Author #1", :title => "Book #1"),
-        Book.new(:author_name => "Author #2", :title => "Book #2"),
+        Book.new(author_name: "Author #1", title: "Book #1"),
+        Book.new(author_name: "Author #2", title: "Book #2"),
       ]
       topic.books.import books
       assert_equal 2, topic.books.count
@@ -354,8 +354,8 @@ describe "#import" do
     it "works importing array of columns and values" do
       topic = FactoryGirl.create :topic
       books = [
-        Book.new(:author_name => "Foo", :title => "Baz"),
-        Book.new(:author_name => "Foo2", :title => "Baz2"),
+        Book.new(author_name: "Foo", title: "Baz"),
+        Book.new(author_name: "Foo2", title: "Baz2"),
       ]
       topic.books.import [:author_name, :title], [["Author #1", "Book #1"], ["Author #2", "Book #2"]]
       assert_equal 2, topic.books.count
@@ -369,8 +369,8 @@ describe "#import" do
     it 'should be able to import enum fields' do
       Book.delete_all if Book.count > 0
       books = [
-        Book.new(:author_name => "Foo", :title => "Baz", status: 0),
-        Book.new(:author_name => "Foo2", :title => "Baz2", status: 1),
+        Book.new(author_name: "Foo", title: "Baz", status: 0),
+        Book.new(author_name: "Foo2", title: "Baz2", status: 1),
       ]
       Book.import books
       assert_equal 2, Book.count
@@ -382,8 +382,8 @@ describe "#import" do
       it 'should be able to import enum fields by name' do
         Book.delete_all if Book.count > 0
         books = [
-          Book.new(:author_name => "Foo", :title => "Baz", status: :draft),
-          Book.new(:author_name => "Foo2", :title => "Baz2", status: :published),
+          Book.new(author_name: "Foo", title: "Baz", status: :draft),
+          Book.new(author_name: "Foo2", title: "Baz2", status: :published),
         ]
         Book.import books
         assert_equal 2, Book.count
@@ -415,9 +415,9 @@ describe "#import" do
   describe "importing serialized fields" do
     it "imports values for serialized fields" do
       assert_difference "Widget.unscoped.count", +1 do
-        Widget.import [:w_id, :data], [[1, {:a => :b}]]
+        Widget.import [:w_id, :data], [[1, {a: :b}]]
       end
-      assert_equal({:a => :b}, Widget.find_by_w_id(1).data)
+      assert_equal({a: :b}, Widget.find_by_w_id(1).data)
     end
   end
 end

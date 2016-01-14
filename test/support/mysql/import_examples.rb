@@ -22,11 +22,11 @@ def should_support_mysql_import_functionality
       let(:updated_values){ [ [ 99, "Book - 2nd Edition", "Author Should Not Change", "johndoe@example.com", 57 ] ] }
 
       macro(:perform_import) do |*opts|
-        Topic.import columns, updated_values, opts.extract_options!.merge(:on_duplicate_key_update => update_columns, :validate => false)
+        Topic.import columns, updated_values, opts.extract_options!.merge(on_duplicate_key_update: update_columns, validate: false)
       end
 
       setup do
-        Topic.import columns, values, :validate => false
+        Topic.import columns, values, validate: false
         @topic = Topic.find 99
       end
 
@@ -55,13 +55,13 @@ def should_support_mysql_import_functionality
       end
 
       context "using symbol hash map" do
-        let(:update_columns){ { :title => :title, :author_email_address => :author_email_address, :parent_id => :parent_id } }
+        let(:update_columns){ { title: :title, author_email_address: :author_email_address, parent_id: :parent_id } }
         should_support_on_duplicate_key_update
         should_update_fields_mentioned
       end
 
       context "using symbol hash map, but specifying column mismatches" do
-        let(:update_columns){ { :title => :author_email_address, :author_email_address => :title, :parent_id => :parent_id } }
+        let(:update_columns){ { title: :author_email_address, author_email_address: :title, parent_id: :parent_id } }
         should_support_on_duplicate_key_update
         should_update_fields_mentioned_with_hash_mappings
       end
@@ -73,11 +73,11 @@ def should_support_mysql_import_functionality
         @topic.author_name = "Author Should Not Change"
         @topic.author_email_address = "johndoe@example.com"
         @topic.parent_id = 57
-        Topic.import [@topic], opts.extract_options!.merge(:on_duplicate_key_update => update_columns, :validate => false)
+        Topic.import [@topic], opts.extract_options!.merge(on_duplicate_key_update: update_columns, validate: false)
       end
 
       setup do
-        @topic = Generate(:topic, :id => 99, :author_name => "John Doe", :parent_id => 17)
+        @topic = Generate(:topic, id: 99, author_name: "John Doe", parent_id: 17)
       end
 
       context "using string column names" do
@@ -105,13 +105,13 @@ def should_support_mysql_import_functionality
       end
 
       context "using symbol hash map" do
-        let(:update_columns){ { :title => :title, :author_email_address => :author_email_address, :parent_id => :parent_id } }
+        let(:update_columns){ { title: :title, author_email_address: :author_email_address, parent_id: :parent_id } }
         should_support_on_duplicate_key_update
         should_update_fields_mentioned
       end
 
       context "using symbol hash map, but specifying column mismatches" do
-        let(:update_columns){ { :title => :author_email_address, :author_email_address => :title, :parent_id => :parent_id } }
+        let(:update_columns){ { title: :author_email_address, author_email_address: :title, parent_id: :parent_id } }
         should_support_on_duplicate_key_update
         should_update_fields_mentioned_with_hash_mappings
       end
@@ -123,12 +123,12 @@ def should_support_mysql_import_functionality
       let(:updated_values){ [ [ 100, "Book - 2nd Edition", "This should raise an exception", "john@nogo.com", 57 ] ] }
 
       macro(:perform_import) do |*opts|
-        # `:on_duplicate_key_update => false` is the tested feature
-        Topic.import columns, updated_values, opts.extract_options!.merge(:on_duplicate_key_update => false, :validate => false)
+        # `on_duplicate_key_update: false` is the tested feature
+        Topic.import columns, updated_values, opts.extract_options!.merge(on_duplicate_key_update: false, validate: false)
       end
 
       setup do
-        Topic.import columns, values, :validate => false
+        Topic.import columns, values, validate: false
         @topic = Topic.find 100
       end
     
@@ -145,8 +145,8 @@ def should_support_mysql_import_functionality
     let(:columns){ %W(id author_name) }
 
     setup do
-      topics << Topic.create!(:title=>"LDAP", :author_name=>"Big Bird")
-      topics << Topic.create!(:title=>"Rails Recipes", :author_name=>"Elmo")
+      topics << Topic.create!(title:"LDAP", author_name:"Big Bird")
+      topics << Topic.create!(title:"Rails Recipes", author_name:"Elmo")
     end
 
     it "synchronizes passed in ActiveRecord model instances with the data just imported" do
@@ -154,9 +154,9 @@ def should_support_mysql_import_functionality
 
       expected_count = Topic.count
       Topic.import( columns, values,
-        :validate=>false,
-        :on_duplicate_key_update=>columns2update,
-        :synchronize=>topics )
+        validate:false,
+        on_duplicate_key_update:columns2update,
+        synchronize:topics )
 
       assert_equal expected_count, Topic.count, "no new records should have been created!"
       assert_equal "Jerry Carter",  topics.first.author_name, "wrong author!"

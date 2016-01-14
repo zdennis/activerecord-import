@@ -33,7 +33,7 @@ def should_support_postgresql_import_functionality
 
       it 'imports top level' do
         assert_difference "Topic.count", +num_topics do
-          Topic.import new_topics, :recursive => true
+          Topic.import new_topics, recursive: true
           new_topics.each do |topic|
             assert_not_nil topic.id
           end
@@ -42,7 +42,7 @@ def should_support_postgresql_import_functionality
 
       it 'imports first level associations' do
         assert_difference "Book.count", +num_books do
-          Topic.import new_topics, :recursive => true
+          Topic.import new_topics, recursive: true
           new_topics.each do |topic|
             topic.books.each do |book|
               assert_equal topic.id, book.topic_id
@@ -51,7 +51,7 @@ def should_support_postgresql_import_functionality
         end
       end
 
-      [{:recursive => false}, {}].each do |import_options|
+      [{recursive: false}, {}].each do |import_options|
         it "skips recursion for #{import_options.to_s}" do
           assert_difference "Book.count", 0 do
             Topic.import new_topics, import_options
@@ -62,7 +62,7 @@ def should_support_postgresql_import_functionality
       it 'imports deeper nested associations' do
         assert_difference "Chapter.count", +num_chapters do
           assert_difference "EndNote.count", +num_endnotes do
-            Topic.import new_topics, :recursive => true
+            Topic.import new_topics, recursive: true
             new_topics.each do |topic|
               topic.books.each do |book|
                 book.chapters.each do |chapter|
@@ -79,7 +79,7 @@ def should_support_postgresql_import_functionality
 
       it "skips validation of the associations if requested" do
         assert_difference "Chapter.count", +num_chapters do
-          Topic.import new_topics_with_invalid_chapter, :validate => false, :recursive => true
+          Topic.import new_topics_with_invalid_chapter, validate: false, recursive: true
         end
       end
 
@@ -90,13 +90,13 @@ def should_support_postgresql_import_functionality
         [Book, Topic, EndNote].each do |type|
           it "creates #{type.to_s}" do
             assert_difference "#{type.to_s}.count", send("num_#{type.to_s.downcase}s") do
-              Topic.import new_topics_with_invalid_chapter, :all_or_none => true, :recursive => true
+              Topic.import new_topics_with_invalid_chapter, all_or_none: true, recursive: true
             end
           end
         end
         it "doesn't create chapters" do
           assert_difference "Chapter.count", 0 do
-            Topic.import new_topics_with_invalid_chapter, :all_or_none => true, :recursive => true
+            Topic.import new_topics_with_invalid_chapter, all_or_none: true, recursive: true
           end
         end
       end

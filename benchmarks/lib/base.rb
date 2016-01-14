@@ -34,7 +34,7 @@ class BenchmarkBase
     delete_all
     failed = false
 
-    OpenStruct.new :description=>description, :tms=>tms, :failed=>failed
+    OpenStruct.new description:description, tms:tms, failed:failed
   end
   
   # Given a model class (ie: Topic), and an array of columns and value sets
@@ -64,10 +64,10 @@ class BenchmarkBase
       end  }
 
     description = "#{model_clazz.name}.import(column, values) for #{num_inserts} records with validations"
-    group << bm( description ) { model_clazz.import cols, vals, :validate=>true }
+    group << bm( description ) { model_clazz.import cols, vals, validate:true }
 
     description = "#{model_clazz.name}.import(columns, values) for #{num_inserts} records without validations"
-    group << bm( description ) { model_clazz.import cols, vals, :validate=>false }
+    group << bm( description ) { model_clazz.import cols, vals, validate:false }
 
     models = []
     array_of_attrs = []
@@ -79,10 +79,10 @@ class BenchmarkBase
     array_of_attrs.each{ |attrs| models << model_clazz.new(attrs) }
 
     description = "#{model_clazz.name}.import(models) for #{num_inserts} records with validations"
-    group << bm( description ) { model_clazz.import models, :validate=>true }
+    group << bm( description ) { model_clazz.import models, validate:true }
 
     description = "#{model_clazz.name}.import(models) for #{num_inserts} records without validations"
-    group << bm( description ) { model_clazz.import models, :validate=>false }
+    group << bm( description ) { model_clazz.import models, validate:false }
 
     true
   end

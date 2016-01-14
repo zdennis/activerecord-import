@@ -99,9 +99,9 @@ class ActiveRecord::Base
     end
 
     AREXT_RAILS_COLUMNS = {
-      :create => { "created_on" => tproc ,
+      create: { "created_on" => tproc ,
                    "created_at" => tproc },
-      :update => { "updated_on" => tproc ,
+      update: { "updated_on" => tproc ,
                    "updated_at" => tproc }
     }
     AREXT_RAILS_COLUMN_NAMES = AREXT_RAILS_COLUMNS[:create].keys + AREXT_RAILS_COLUMNS[:update].keys
@@ -183,9 +183,9 @@ class ActiveRecord::Base
     #  class BlogPost < ActiveRecord::Base ; end
     #
     #  # Example using array of model objects
-    #  posts = [ BlogPost.new :author_name=>'Zach Dennis', :title=>'AREXT',
-    #            BlogPost.new :author_name=>'Zach Dennis', :title=>'AREXT2',
-    #            BlogPost.new :author_name=>'Zach Dennis', :title=>'AREXT3' ]
+    #  posts = [ BlogPost.new author_name:'Zach Dennis', title:'AREXT',
+    #            BlogPost.new author_name:'Zach Dennis', title:'AREXT2',
+    #            BlogPost.new author_name:'Zach Dennis', title:'AREXT3' ]
     #  BlogPost.import posts
     #
     #  # Example using column_names and array_of_values
@@ -196,19 +196,19 @@ class ActiveRecord::Base
     #  # Example using column_names, array_of_value and options
     #  columns = [ :author_name, :title ]
     #  values = [ [ 'zdennis', 'test post' ], [ 'jdoe', 'another test post' ] ]
-    #  BlogPost.import( columns, values, :validate => false  )
+    #  BlogPost.import( columns, values, validate: false  )
     #
     #  # Example synchronizing existing instances in memory
     #  post = BlogPost.where(author_name: 'zdennis').first
     #  puts post.author_name # => 'zdennis'
     #  columns = [ :author_name, :title ]
     #  values = [ [ 'yoda', 'test post' ] ]
-    #  BlogPost.import posts, :synchronize=>[ post ]
+    #  BlogPost.import posts, synchronize:[ post ]
     #  puts post.author_name # => 'yoda'
     #
     #  # Example synchronizing unsaved/new instances in memory by using a uniqued imported field
-    #  posts = [BlogPost.new(:title => "Foo"), BlogPost.new(:title => "Bar")]
-    #  BlogPost.import posts, :synchronize => posts, :synchronize_keys => [:title]
+    #  posts = [BlogPost.new(title: "Foo"), BlogPost.new(title: "Bar")]
+    #  BlogPost.import posts, synchronize: posts, synchronize_keys: [:title]
     #  puts posts.first.persisted? # => true
     #
     # == On Duplicate Key Update (MySQL only)
@@ -221,7 +221,7 @@ class ActiveRecord::Base
     # names. The column names are the only fields that are updated if
     # a duplicate record is found. Below is an example:
     #
-    #   BlogPost.import columns, values, :on_duplicate_key_update=>[ :date_modified, :content, :author ]
+    #   BlogPost.import columns, values, on_duplicate_key_update:[ :date_modified, :content, :author ]
     #
     # ====  Using A Hash
     #
@@ -230,7 +230,7 @@ class ActiveRecord::Base
     # control over what fields are updated with what attributes on your
     # model. Below is an example:
     #
-    #   BlogPost.import columns, attributes, :on_duplicate_key_update=>{ :title => :title }
+    #   BlogPost.import columns, attributes, on_duplicate_key_update:{ title: :title }
     #
     # = Returns
     # This returns an object which responds to +failed_instances+ and +num_inserts+.
@@ -250,7 +250,7 @@ class ActiveRecord::Base
     end
 
     def import_helper( *args )
-      options = { :validate=>true, :timestamps=>true, :primary_key=>primary_key }
+      options = { validate:true, timestamps:true, primary_key:primary_key }
       options.merge!( args.pop ) if args.last.is_a? Hash
 
       is_validating = options[:validate]
