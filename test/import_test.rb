@@ -423,5 +423,14 @@ describe "#import" do
       end
       assert_equal({:a => :b}, Widget.find_by_w_id(1).data)
     end
+
+    requires_active_record_version ">= 4" do
+      it "imports values for serialized JSON fields" do
+        assert_difference "Widget.unscoped.count", +1 do
+          Widget.import [:w_id, :json_data], [[9, {:a => :b}]]
+        end
+        assert_equal({:a => :b}.as_json, Widget.find_by_w_id(9).json_data)
+      end
+    end
   end
 end
