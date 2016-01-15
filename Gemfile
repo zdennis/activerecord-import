@@ -4,7 +4,7 @@ gemspec
 
 # Database Adapters
 platforms :ruby do
-  gem "em-synchrony",           "1.0.3"
+  gem "em-synchrony",           "1.0.4"
   gem "mysql2",                 "~> 0.3.0"
   gem "pg",                     "~> 0.9"
   gem "sqlite3",                "~> 1.3.10"
