@@ -13,6 +13,8 @@ module ActiveRecord::Import::PostgreSQLAdapter
     sql2insert = base_sql + values.join( ',' ) + post_sql
     ids = select_values( sql2insert, *args )
 
+    ActiveRecord::Base.connection.query_cache.clear
+
     [number_of_inserts,ids]
   end
 
