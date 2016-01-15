@@ -6,8 +6,8 @@ One of its major features is following activerecord associations and generating 
 number of SQL insert statements required, avoiding the N+1 insert problem. An example probably
 explains it best. Say you had a schema like this:
  
-Publishers have Books
-Books have Reviews
+- Publishers have Books
+- Books have Reviews
  
 and you wanted to bulk insert 100 new publishers with 10K books and 3 reviews per book. This library will follow the associations
 down and generate only 3 SQL insert statements - one for the publishers, one for the books, and one for the reviews.
