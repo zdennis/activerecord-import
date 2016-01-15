@@ -236,7 +236,7 @@ class ActiveRecord::Base
     # This returns an object which responds to +failed_instances+ and +num_inserts+.
     # * failed_instances - an array of objects that fails validation and were not committed to the database. An empty array if no validation is performed.
     # * num_inserts - the number of insert statements it took to import the data
-    # * ids - the priamry keys of the imported ids, if the adpater supports it, otherwise and empty array.
+    # * ids - the primary keys of the imported ids, if the adapter supports it, otherwise an empty array.
     def import(*args)
       if args.first.is_a?( Array ) and args.first.first.is_a? ActiveRecord::Base
         options = {}
