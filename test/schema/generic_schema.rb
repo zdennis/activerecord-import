@@ -116,5 +116,6 @@ ActiveRecord::Schema.define do
     t.integer :w_id
     t.boolean :active, :default => false
     t.text    :data
+    t.text    :json_data
   end
 end

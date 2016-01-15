@@ -3,6 +3,12 @@ class ActiveSupport::TestCase
   self.use_transactional_fixtures = true
   
   class << self
+    def requires_active_record_version(version_string, &blk)
+      if Gem::Dependency.new("expected",version_string).match?("actual", ActiveRecord::VERSION::STRING)
+        instance_eval(&blk)
+      end
+    end
+
     def assertion(name, &block)
       mc = class << self ; self ; end
       mc.class_eval do
