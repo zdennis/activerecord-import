@@ -10,6 +10,8 @@ ENV["RAILS_ENV"] = "test"
 require "bundler"
 Bundler.setup
 
+require 'pry'
+
 require "active_record"
 require "active_record/fixtures"
 require "active_support/test_case"
