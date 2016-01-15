@@ -1,4 +1,4 @@
-# activerecord-import
+# activerecord-import [![Build Status](https://travis-ci.org/zdennis/activerecord-import.svg?branch=master)](https://travis-ci.org/zdennis/activerecord-import)
 
 activerecord-import is a library for bulk inserting data using ActiveRecord.
 
