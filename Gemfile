@@ -2,9 +2,10 @@ source 'https://rubygems.org'
 
 gemspec
 
+gem "pry-byebug"
+
 # Database Adapters
 platforms :ruby do
-  gem "em-synchrony",           "1.0.3"
   gem "mysql2",                 "~> 0.3.0"
   gem "pg",                     "~> 0.9"
   gem "sqlite3",                "~> 1.3.10"
@@ -37,10 +38,12 @@ platforms :mri_19 do
   gem "debugger"
 end
 
-version = ENV['AR_VERSION'] || "3.2"
+version = ENV['AR_VERSION'] || "4.2"
 
 if version > "4.0"
   gem "minitest"
+else
+  gem "test-unit"
 end
 
 eval_gemfile File.expand_path("../gemfiles/#{version}.gemfile", __FILE__)
