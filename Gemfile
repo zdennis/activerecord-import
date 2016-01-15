@@ -39,7 +39,7 @@ platforms :mri_19 do
   gem "debugger"
 end
 
-version = ENV['AR_VERSION'] || "3.2"
+version = ENV['AR_VERSION'] || "4.2"
 
 if version > "4.0"
   gem "minitest"
