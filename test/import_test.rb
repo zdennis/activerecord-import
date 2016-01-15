@@ -139,7 +139,11 @@ describe "#import" do
 
       it "doesn't reload any data (doesn't work)" do
         Topic.import new_topics, :synchronize => new_topics
-        assert new_topics.all?(&:new_record?), "No record should have been reloaded"
+        if Topic.support_setting_primary_key_of_imported_objects?
+          assert new_topics.all?(&:persisted?), "Records should have been reloaded"
+        else
+          assert new_topics.all?(&:new_record?), "No record should have been reloaded"
+        end
       end
     end
 

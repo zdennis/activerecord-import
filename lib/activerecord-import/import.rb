@@ -419,6 +419,7 @@ class ActiveRecord::Base
         import_result.ids.each_with_index do |id, index|
           models[index].id = id.to_i
           models[index].instance_variable_get(:@changed_attributes).clear # mark the model as saved
+          models[index].instance_variable_set(:@new_record, false)
         end
       end
     end
