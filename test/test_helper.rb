@@ -36,7 +36,7 @@ ActiveRecord::Base.configurations["test"] = YAML.load_file(test_dir.join("databa
 ActiveRecord::Base.default_timezone = :utc
 
 require "activerecord-import"
-ActiveRecord::Base.establish_connection "test"
+ActiveRecord::Base.establish_connection :test
 
 ActiveSupport::Notifications.subscribe(/active_record.sql/) do |event, _, _, _, hsh|
   ActiveRecord::Base.logger.info hsh[:sql]
