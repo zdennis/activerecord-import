@@ -485,10 +485,12 @@ class ActiveRecord::Base
           if val.nil? && column.name == primary_key && !sequence_name.blank?
              connection_memo.next_value_for_sequence(sequence_name)
           elsif column
-            if column.respond_to?(:type_cast_from_user)                         # Rails 4.2 and higher
+            if connection_memo.respond_to?(:type_cast_from_column)              # Rails 5.0 and higher
+              connection_memo.quote(connection.type_cast_from_column(column, val))
+            elsif column.respond_to?(:type_cast_from_user)                      # Rails 4.2 and higher
               connection_memo.quote(column.type_cast_from_user(val), column)
-            else
-              connection_memo.quote(column.type_cast(val), column)              # Rails 3.1, 3.2, and 4.1
+            else                                                                # Rails 3.1, 3.2, and 4.1
+              connection_memo.quote(column.type_cast(val), column)
             end
           end
         end
