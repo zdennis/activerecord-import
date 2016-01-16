@@ -236,7 +236,7 @@ class ActiveRecord::Base
     # This returns an object which responds to +failed_instances+ and +num_inserts+.
     # * failed_instances - an array of objects that fails validation and were not committed to the database. An empty array if no validation is performed.
     # * num_inserts - the number of insert statements it took to import the data
-    # * ids - the primary keys of the imported ids, if the adapter supports it, otherwise an empty array.
+    # * ids - the primary keys of the imported ids, if the adpater supports it, otherwise and empty array.
     def import(*args)
       if args.first.is_a?( Array ) and args.first.first.is_a? ActiveRecord::Base
         options = {}
@@ -252,6 +252,11 @@ class ActiveRecord::Base
     def import_helper( *args )
       options = { :validate=>true, :timestamps=>true, :primary_key=>primary_key }
       options.merge!( args.pop ) if args.last.is_a? Hash
+
+      # Don't modify incoming arguments
+      if options[:on_duplicate_key_update]
+        options[:on_duplicate_key_update] = options[:on_duplicate_key_update].dup
+      end
 
       is_validating = options[:validate]
       is_validating = true unless options[:validate_with_context].nil?
@@ -285,6 +290,7 @@ class ActiveRecord::Base
       end
 
       # dup the passed in array so we don't modify it unintentionally
+      column_names = column_names.dup
       array_of_attributes = array_of_attributes.dup
 
       # Force the primary key col into the insert if it's not

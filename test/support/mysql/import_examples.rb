@@ -16,6 +16,15 @@ def should_support_mysql_import_functionality
     macro(:perform_import){ raise "supply your own #perform_import in a context below" }
     macro(:updated_topic){ Topic.find(@topic.id) }
 
+    describe "argument safety" do
+      it "should not modify the passed in :on_duplicate_key_update columns array" do
+        assert_nothing_raised do
+          columns = %w(title author_name).freeze
+          Topic.import columns, [["foo", "bar"]], :on_duplicate_key_update => columns
+        end
+      end
+    end
+
     context "given columns and values with :validation checks turned off" do
       let(:columns){  %w( id title author_name author_email_address parent_id ) }
       let(:values){ [ [ 99, "Book", "John Doe", "john@doe.com", 17 ] ] }

@@ -19,6 +19,22 @@ describe "#import" do
     end
   end
 
+  describe "argument safety" do
+    it "should not modify the passed in columns array" do
+      assert_nothing_raised do
+        columns = %w(title author_name).freeze
+        Topic.import columns, [["foo", "bar"]]
+      end
+    end
+
+    it "should not modify the passed in values array" do
+      assert_nothing_raised do
+        values = [["foo", "bar"]].freeze
+        Topic.import %w(title author_name), values
+      end
+    end
+  end
+
   describe "with non-default ActiveRecord models" do
     context "that have a non-standard primary key (that is no sequence)" do
       it "should import models successfully" do
@@ -422,6 +438,15 @@ describe "#import" do
         Widget.import [:w_id, :data], [[1, {:a => :b}]]
       end
       assert_equal({:a => :b}, Widget.find_by_w_id(1).data)
+    end
+
+    requires_active_record_version ">= 4" do
+      it "imports values for serialized JSON fields" do
+        assert_difference "Widget.unscoped.count", +1 do
+          Widget.import [:w_id, :json_data], [[9, {:a => :b}]]
+        end
+        assert_equal({:a => :b}.as_json, Widget.find_by_w_id(9).json_data)
+      end
     end
   end
 end
