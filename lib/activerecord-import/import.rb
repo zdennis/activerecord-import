@@ -382,8 +382,13 @@ class ActiveRecord::Base
 
       unless scope_columns.blank?
         scope_columns.zip(scope_values).each do |name, value|
-          next if column_names.include?(name.to_sym)
-          column_names << name.to_sym
+          name_as_sym = name.to_sym
+          next if column_names.include?(name_as_sym)
+
+          is_sti = (name_as_sym == inheritance_column.to_sym && self < base_class)
+          value = value.first if is_sti
+
+          column_names << name_as_sym
           array_of_attributes.each { |attrs| attrs << value }
         end
       end
