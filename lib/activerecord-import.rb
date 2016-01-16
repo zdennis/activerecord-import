@@ -1,10 +1,12 @@
-class ActiveRecord::Base
-  class << self
-    def establish_connection_with_activerecord_import(*args)
-      establish_connection_without_activerecord_import(*args)
-      ActiveSupport.run_load_hooks(:active_record_connection_established, connection_pool)
+ActiveSupport.on_load(:active_record) do
+  class ActiveRecord::Base
+    class << self
+      def establish_connection_with_activerecord_import(*args)
+        establish_connection_without_activerecord_import(*args)
+        ActiveSupport.run_load_hooks(:active_record_connection_established, connection_pool)
+      end
+      alias_method_chain :establish_connection, :activerecord_import
     end
-    alias_method_chain :establish_connection, :activerecord_import
   end
 end
 
