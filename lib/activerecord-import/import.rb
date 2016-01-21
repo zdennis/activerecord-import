@@ -355,6 +355,7 @@ class ActiveRecord::Base
         instance = new do |model|
           hsh.each_pair{ |k,v| model.send("#{k}=", v) }
         end
+
         if not instance.valid?(options[:validate_with_context])
           array_of_attributes[ i ] = nil
           failed_instances << instance
@@ -485,7 +486,11 @@ class ActiveRecord::Base
           if val.nil? && column.name == primary_key && !sequence_name.blank?
              connection_memo.next_value_for_sequence(sequence_name)
           elsif column
-            if connection_memo.respond_to?(:type_cast_from_column)              # Rails 5.0 and higher
+            if defined_enums[column.name]
+              enum_hsh = defined_enums[column.name]
+              val = enum_hsh.fetch(val, nil) unless val.is_a?(Numeric)
+              connection_memo.quote(connection.type_cast_from_column(column, val))
+            elsif connection_memo.respond_to?(:type_cast_from_column)           # Rails 5.0 and higher
               connection_memo.quote(connection.type_cast_from_column(column, val))
             elsif column.respond_to?(:type_cast_from_user)                      # Rails 4.2 and higher
               connection_memo.quote(column.type_cast_from_user(val), column)
