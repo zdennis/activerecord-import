@@ -486,12 +486,8 @@ class ActiveRecord::Base
           if val.nil? && column.name == primary_key && !sequence_name.blank?
              connection_memo.next_value_for_sequence(sequence_name)
           elsif column
-            if defined_enums[column.name]
-              enum_hsh = defined_enums[column.name]
-              val = enum_hsh.fetch(val, nil) unless val.is_a?(Numeric)
-              connection_memo.quote(connection.type_cast_from_column(column, val))
-            elsif connection_memo.respond_to?(:type_cast_from_column)           # Rails 5.0 and higher
-              connection_memo.quote(connection.type_cast_from_column(column, val))
+            if respond_to?(:type_caster) && type_caster.respond_to?(:type_cast_for_database) # Rails 5.0 and higher
+              connection_memo.quote(type_caster.type_cast_for_database(column.name, val))
             elsif column.respond_to?(:type_cast_from_user)                      # Rails 4.2 and higher
               connection_memo.quote(column.type_cast_from_user(val), column)
             else                                                                # Rails 3.1, 3.2, and 4.1
