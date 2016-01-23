@@ -394,8 +394,14 @@ describe "#import" do
       ]
       Book.import books
       assert_equal 2, Book.count
-      assert_equal 0, Book.first.read_attribute('status')
-      assert_equal 1, Book.last.read_attribute('status')
+
+      if ENV['AR_VERSION'].to_i >= 5.0
+        assert_equal 'draft', Book.first.read_attribute('status')
+        assert_equal 'published', Book.last.read_attribute('status')
+      else
+        assert_equal 0, Book.first.read_attribute('status')
+        assert_equal 1, Book.last.read_attribute('status')
+      end
     end
 
     if ENV['AR_VERSION'].to_i > 4.1
@@ -407,8 +413,14 @@ describe "#import" do
         ]
         Book.import books
         assert_equal 2, Book.count
-        assert_equal 0, Book.first.read_attribute('status')
-        assert_equal 1, Book.last.read_attribute('status')
+
+        if ENV['AR_VERSION'].to_i >= 5.0
+          assert_equal 'draft', Book.first.read_attribute('status')
+          assert_equal 'published', Book.last.read_attribute('status')
+        else
+          assert_equal 0, Book.first.read_attribute('status')
+          assert_equal 1, Book.last.read_attribute('status')
+        end
       end
     end
   end

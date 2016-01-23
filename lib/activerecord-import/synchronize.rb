@@ -40,8 +40,8 @@ module ActiveRecord # :nodoc:
         end
 
         if matched_instance
-          instance.clear_aggregation_cache
-          instance.clear_association_cache
+          instance.send :clear_aggregation_cache
+          instance.send :clear_association_cache
           instance.instance_variable_set :@attributes, matched_instance.instance_variable_get(:@attributes)
 
           if instance.respond_to?(:clear_changes_information)

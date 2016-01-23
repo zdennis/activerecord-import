@@ -355,6 +355,7 @@ class ActiveRecord::Base
         instance = new do |model|
           hsh.each_pair{ |k,v| model.send("#{k}=", v) }
         end
+
         if not instance.valid?(options[:validate_with_context])
           array_of_attributes[ i ] = nil
           failed_instances << instance
@@ -428,9 +429,14 @@ class ActiveRecord::Base
     def set_ids_and_mark_clean(models, import_result)
       unless models.nil?
         import_result.ids.each_with_index do |id, index|
-          models[index].id = id.to_i
-          models[index].instance_variable_get(:@changed_attributes).clear # mark the model as saved
-          models[index].instance_variable_set(:@new_record, false)
+          model = models[index]
+          model.id = id.to_i
+          if model.respond_to?(:clear_changes_information) # Rails 4.0 and higher
+            model.clear_changes_information
+          else  # Rails 3.1
+            model.instance_variable_get(:@changed_attributes).clear
+          end
+          model.instance_variable_set(:@new_record, false)
         end
       end
     end
@@ -485,10 +491,12 @@ class ActiveRecord::Base
           if val.nil? && column.name == primary_key && !sequence_name.blank?
              connection_memo.next_value_for_sequence(sequence_name)
           elsif column
-            if column.respond_to?(:type_cast_from_user)                         # Rails 4.2 and higher
+            if respond_to?(:type_caster) && type_caster.respond_to?(:type_cast_for_database) # Rails 5.0 and higher
+              connection_memo.quote(type_caster.type_cast_for_database(column.name, val))
+            elsif column.respond_to?(:type_cast_from_user)                      # Rails 4.2 and higher
               connection_memo.quote(column.type_cast_from_user(val), column)
-            else
-              connection_memo.quote(column.type_cast(val), column)              # Rails 3.1, 3.2, and 4.1
+            else                                                                # Rails 3.1, 3.2, and 4.1
+              connection_memo.quote(column.type_cast(val), column)
             end
           end
         end
@@ -499,7 +507,7 @@ class ActiveRecord::Base
     def add_special_rails_stamps( column_names, array_of_attributes, options )
       AREXT_RAILS_COLUMNS[:create].each_pair do |key, blk|
         if self.column_names.include?(key)
-          value = connection.quote blk.call
+          value = blk.call
           if index=column_names.index(key) || index=column_names.index(key.to_sym)
             # replace every instance of the array of attributes with our value
             array_of_attributes.each{ |arr| arr[index] = value if arr[index].nil? }
@@ -512,7 +520,7 @@ class ActiveRecord::Base
 
       AREXT_RAILS_COLUMNS[:update].each_pair do |key, blk|
         if self.column_names.include?(key)
-          value = connection.quote blk.call
+          value = blk.call
           if index=column_names.index(key) || index=column_names.index(key.to_sym)
              # replace every instance of the array of attributes with our value
              array_of_attributes.each{ |arr| arr[index] = value }
