@@ -30,6 +30,21 @@ module ActiveRecord::Import::PostgreSQLAdapter
     end
   end
 
+  # Returns a generated ON DUPLICATE KEY UPDATE statement given the passed
+  # in +args+.
+  def sql_for_on_duplicate_constraint_update( table_name, options = {} ) # :nodoc:
+    sql = " ON CONFLICT (#{options[:constraint]}) DO UPDATE SET "
+    sql << sql_for_on_duplicate_key_update_as_array( table_name, options[:keys] )
+    sql
+  end
+
+  def sql_for_on_duplicate_key_update_as_array( table_name, arr )  # :nodoc:
+    results = arr.map do |column|
+      "#{column}=EXCLUDED.#{column}"
+    end
+    results.join( ',' )
+  end
+
   def support_setting_primary_key_of_imported_objects?
     true
   end
