@@ -84,8 +84,8 @@ def should_support_postgresql_import_functionality
         end
       end
 
-      it 'should not invoke #select when importing a has_one relationship' do
-        assert_nothing_raised do
+      it 'imports has_one associations' do
+        assert_difference 'Rule.count' do
           Question.import [new_question_with_rule], recursive: true
         end
       end
