@@ -275,7 +275,7 @@ class ActiveRecord::Base
           # this next line breaks sqlite.so with a segmentation fault
           # if model.new_record? || options[:on_duplicate_key_update]
             column_names.map do |name|
-              if ENV["ARE_DB"] == "postgresql"
+              if ActiveRecord::Base.connection.instance_of?(ActiveRecord::ConnectionAdapters::PostgreSQLAdapter)
                 model.read_attribute(name.to_s)
               else
                 model.read_attribute_before_type_cast(name.to_s)
