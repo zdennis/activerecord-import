@@ -276,7 +276,7 @@ class ActiveRecord::Base
           # if model.new_record? || options[:on_duplicate_key_update]
             column_names.map do |name|
               env =  ENV['RAILS_ENV'] || Rails.env
-              if ActiveRecord::Base.configurations[env]["adapter"] == 'postgresql'
+              if %w{postgresq em_mysql2}.include? ActiveRecord::Base.configurations[env]["adapter"]
                 model.read_attribute(name.to_s)
               else
                 model.read_attribute_before_type_cast(name.to_s)
