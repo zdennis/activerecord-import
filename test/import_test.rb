@@ -404,7 +404,7 @@ describe "#import" do
       end
     end
 
-    if ENV['AR_VERSION'].to_i > 4.1
+    if ENV['AR_VERSION'].to_f > 4.1
       it 'should be able to import enum fields by name' do
         Book.delete_all if Book.count > 0
         books = [
