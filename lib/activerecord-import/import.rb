@@ -532,6 +532,9 @@ class ActiveRecord::Base
         association = model.association(association_reflection.name)
         association.loaded!
 
+        # Wrap target in an array if not already
+        association = Array(association.target)
+
         changed_objects = association.select {|a| a.new_record? || a.changed?}
         changed_objects.each do |child|
           child.send("#{association_reflection.foreign_key}=", model.id)

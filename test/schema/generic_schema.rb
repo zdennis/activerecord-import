@@ -126,4 +126,13 @@ ActiveRecord::Schema.define do
   end
 
   add_index :promotions, [:code], :unique => true, :name => 'uk_code'
+
+  create_table :rules, force: true do |t|
+    t.column :condition_text, :string
+    t.column :question_id, :integer
+  end
+
+  create_table :questions, force: true do |t|
+    t.column :body, :string
+  end
 end
