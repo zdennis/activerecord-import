@@ -345,18 +345,16 @@ class ActiveRecord::Base
         end
 
         array_of_attributes = models.map do |model|
-            # this next line breaks sqlite.so with a segmentation fault
-            # if model.new_record? || options[:on_duplicate_key_update]
-            column_names.map do |name|
-              name = name.to_s
-              if respond_to?(:defined_enums) && defined_enums.key?(name) # ActiveRecord 5
-                model.read_attribute(name)
-              elsif model.class.column_defaults[name].is_a?(Integer)
-                model.read_attribute(name)
-              else
-                model.read_attribute_before_type_cast(name)
-              end
+          # this next line breaks sqlite.so with a segmentation fault
+          # if model.new_record? || options[:on_duplicate_key_update]
+          column_names.map do |name|
+            name = name.to_s
+            if respond_to?(:defined_enums) && defined_enums.key?(name) # ActiveRecord 5
+              model.read_attribute(name)
+            else
+              model.read_attribute_before_type_cast(name)
             end
+          end
           # end
         end
         # supports empty array
@@ -431,7 +429,7 @@ class ActiveRecord::Base
       # validation we'll use the index to remove it from the array_of_attributes
       arr.each_with_index do |hsh, i|
         instance = new do |model|
-          hsh.each_pair { |k, v| model.public_send("#{k}=", v) }
+          hsh.each_pair { |k, v| model[k] = v }
         end
 
         unless instance.valid?(options[:validate_with_context])

@@ -399,6 +399,21 @@ describe "#import" do
       end
     end
 
+    it 'should be able to import enum fields with default value' do
+      Book.delete_all if Book.count > 0
+      books = [
+        Book.new(author_name: "Foo", title: "Baz")
+      ]
+      Book.import books
+      assert_equal 1, Book.count
+
+      if ENV['AR_VERSION'].to_i >= 5.0
+        assert_equal 'draft', Book.first.read_attribute('status')
+      else
+        assert_equal 0, Book.first.read_attribute('status')
+      end
+    end
+
     if ENV['AR_VERSION'].to_f > 4.1
       it 'should be able to import enum fields by name' do
         Book.delete_all if Book.count > 0
