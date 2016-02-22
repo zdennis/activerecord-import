@@ -1,4 +1,3 @@
 platforms :ruby do
-  gem 'mysql',        '~> 2.9'
   gem 'activerecord', '~> 4.0'
 end
