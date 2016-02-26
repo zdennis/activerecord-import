@@ -38,7 +38,7 @@ module BenchmarkOptionParser
 
   def self.parse( args )
     options = OpenStruct.new(
-      :adapter => 'mysql',
+      :adapter => 'mysql2',
       :table_types => {},
       :delete_on_finish => true,
       :number_of_objects => [],
