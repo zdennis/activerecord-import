@@ -10,7 +10,7 @@ ENV["RAILS_ENV"] = "test"
 require "bundler"
 Bundler.setup
 
-require 'pry'
+require 'pry' unless RbConfig::CONFIG["RUBY_INSTALL_NAME"] =~ /jruby/
 
 require "active_record"
 require "active_record/fixtures"
