@@ -12,11 +12,8 @@ for activerecord_version in "3.1" "3.2" "4.0" "4.1" "4.2" "5.0" ; do
 
   bundle update activerecord
 
-  run bundle exec rake test:em_mysql2               # Run tests for em_mysql2
-  run bundle exec rake test:mysql                   # Run tests for mysql
   run bundle exec rake test:mysql2                  # Run tests for mysql2
   run bundle exec rake test:mysql2spatial           # Run tests for mysql2spatial
-  run bundle exec rake test:mysqlspatial            # Run tests for mysqlspatial
   run bundle exec rake test:postgis                 # Run tests for postgis
   run bundle exec rake test:postgresql              # Run tests for postgresql
   run bundle exec rake test:seamless_database_pool  # Run tests for seamless_database_pool

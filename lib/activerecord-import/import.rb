@@ -339,10 +339,13 @@ class ActiveRecord::Base
           # this next line breaks sqlite.so with a segmentation fault
           # if model.new_record? || options[:on_duplicate_key_update]
             column_names.map do |name|
-              if model.class.column_defaults[name.to_s].is_a? Integer
-                model.read_attribute(name.to_s)
+              name = name.to_s
+              if respond_to?(:defined_enums) && defined_enums.has_key?(name) # ActiveRecord 5
+                model.read_attribute(name)
+              elsif model.class.column_defaults[name].is_a?(Integer)
+                model.read_attribute(name)
               else
-                model.read_attribute_before_type_cast(name.to_s)
+                model.read_attribute_before_type_cast(name)
               end
             end
           # end
