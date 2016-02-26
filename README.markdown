@@ -21,6 +21,10 @@ and then the reviews:
 That would be about 4M SQL insert statements vs 3, which results in vastly improved performance. In our case, it converted
 an 18 hour batch process to <2 hrs.
 
+### Rails 5.0
+
+Use activerecord-import 0.11.0 or higher.
+
 ### Rails 4.0
 
 Use activerecord-import 0.4.0 or higher.
