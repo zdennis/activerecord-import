@@ -2,8 +2,6 @@ source 'https://rubygems.org'
 
 gemspec
 
-gem "pry-byebug"
-
 # Database Adapters
 platforms :ruby do
   gem "mysql2",                 "~> 0.3.0"
@@ -36,6 +34,10 @@ end
 
 platforms :mri_19 do
   gem "debugger"
+end
+
+platforms :ruby do
+  gem "pry-byebug"
 end
 
 version = ENV['AR_VERSION'] || "4.2"
