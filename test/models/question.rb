@@ -1,3 +1,3 @@
 class Question < ActiveRecord::Base
-	has_one :rule, autosave: true
+	has_one :rule
 end

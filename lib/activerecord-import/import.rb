@@ -179,9 +179,9 @@ class ActiveRecord::Base
     #   existing model instances in memory with updates from the import.
     # * +timestamps+ - true|false, tells import to not add timestamps
     #   (if false) even if record timestamps is disabled in ActiveRecord::Base
-    # * +recursive - true|false, tells import to import all autosave association
-    #   if the adapter supports setting the primary keys of the newly imported
-    #   objects.
+    # * +recursive - true|false, tells import to import all has_many/has_one
+    #   associations if the adapter supports setting the primary keys of the
+    #   newly imported objects.
     #
     # == Examples
     #  class BlogPost < ActiveRecord::Base ; end
@@ -516,7 +516,6 @@ class ActiveRecord::Base
       # now, for all the dirty associations, collect them into a new set of models, then recurse.
       # notes:
       #    does not handle associations that reference themselves
-      #    assumes that the only associations to be saved are marked with :autosave
       #    should probably take a hash to associations to follow.
       associated_objects_by_class={}
       models.each {|model| find_associated_objects_for_import(associated_objects_by_class, model) }
@@ -533,7 +532,10 @@ class ActiveRecord::Base
     def find_associated_objects_for_import(associated_objects_by_class, model)
       associated_objects_by_class[model.class.name]||={}
 
-      model.class.reflect_on_all_autosave_associations.each do |association_reflection|
+      association_reflections =
+        model.class.reflect_on_all_associations(:has_one) +
+        model.class.reflect_on_all_associations(:has_many)
+      association_reflections.each do |association_reflection|
         associated_objects_by_class[model.class.name][association_reflection.name]||=[]
 
         association = model.association(association_reflection.name)
