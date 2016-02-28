@@ -45,9 +45,10 @@ module ActiveRecord # :nodoc:
           instance.instance_variable_set :@attributes, matched_instance.instance_variable_get(:@attributes)
 
           if instance.respond_to?(:clear_changes_information)
-            instance.clear_changes_information                  # Rails 4.1 and higher
+            instance.clear_changes_information                      # Rails 4.1 and higher
           else
-            instance.changed_attributes.clear                   # Rails 3.1, 3.2
+            instance.changed_attributes.clear                       # Rails 3.1, 3.2
+            instance.instance_variable_set '@attributes_cache', {}  # Rails 4.0
           end
 
           # Since the instance now accurately reflects the record in
