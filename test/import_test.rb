@@ -149,6 +149,26 @@ describe "#import" do
     end
   end
 
+  context "with :batch_size option" do
+    it "should import with a single insert" do
+      assert_difference "Topic.count", +10 do
+        result = Topic.import Build(10, :topics), batch_size: 10
+        if Topic.supports_import?
+          assert_equal 1, result.num_inserts
+        end
+      end
+    end
+
+    it "should import with multiple inserts" do
+      assert_difference "Topic.count", +10 do
+        result = Topic.import Build(10, :topics), batch_size: 4
+        if Topic.supports_import?
+          assert_equal 3, result.num_inserts
+        end
+      end
+    end
+  end
+
   context "with :synchronize option" do
     context "synchronizing on new records" do
       let(:new_topics) { Build(3, :topics) }
