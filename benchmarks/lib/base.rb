@@ -4,7 +4,7 @@ class BenchmarkBase
 
   # The main benchmark method dispatcher. This dispatches the benchmarks
   # to actual benchmark_xxxx methods.
-  # 
+  #
   # == PARAMETERS
   #  * table_types - an array of table types to benchmark
   #  * num - the number of record insertions to test
@@ -29,17 +29,17 @@ class BenchmarkBase
   def bm( description, &blk )
     tms  = nil
     puts "Benchmarking #{description}"
-    
+
     Benchmark.bm { |x| tms = x.report { blk.call } }
     delete_all
     failed = false
 
     OpenStruct.new :description=>description, :tms=>tms, :failed=>failed
   end
-  
+
   # Given a model class (ie: Topic), and an array of columns and value sets
   # this will perform all of the benchmarks necessary for this library.
-  # 
+  #
   # == PARAMETERS
   #  * model_clazz - the model class to benchmark (ie: Topic)
   #  * array_of_cols_and_vals - an array of column identifiers and value sets
@@ -58,7 +58,7 @@ class BenchmarkBase
     @results << group
 
     description = "#{model_clazz.name}.create (#{num_inserts} records)"
-    group << bm( description ) { 
+    group << bm( description ) {
       vals.each do |values|
         model_clazz.create create_hash_for_cols_and_vals( cols, values )
       end  }
@@ -71,7 +71,7 @@ class BenchmarkBase
 
     models = []
     array_of_attrs = []
-    
+
     vals.each do |arr|
       array_of_attrs << (attrs={})
       arr.each_with_index { |value, i| attrs[cols[i]] = value }
@@ -92,7 +92,7 @@ class BenchmarkBase
   #
   # === What is a value set?
   # A value set is an array of arrays. Each child array represents an array of value sets
-  # for a given row of data. 
+  # for a given row of data.
   #
   # For example, say we wanted to represent an insertion of two records:
   #   column_names = [ 'id', 'name', 'description' ]
@@ -110,12 +110,12 @@ class BenchmarkBase
   end
 
   # Returns a hash of column identifier to value mappings giving the passed in
-  # value array. 
+  # value array.
   #
   # Example:
   #   cols = [ 'id', 'name', 'description' ]
   #   values = [ 1, 'John Doe', 'A plumber' ]
-  #   hsh = create_hash_for_cols_and_vals( cols, values )   
+  #   hsh = create_hash_for_cols_and_vals( cols, values )
   #   # hsh => { 'id'=>1, 'name'=>'John Doe', 'description'=>'A plumber' }
   def create_hash_for_cols_and_vals( cols, vals )
     h = {}
@@ -133,5 +133,5 @@ class BenchmarkBase
   def initialize   # :nodoc:
     @results = []
   end
-	
+
 end

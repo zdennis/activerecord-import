@@ -50,7 +50,7 @@ EOT
           times << "failed"
         else
           time = result.tms.real.round_to( 3 )
-          speedup = ( result_set.first.tms.real / result.tms.real ).round 
+          speedup = ( result_set.first.tms.real / result.tms.real ).round
 
           if result == result_set.first
             times << "#{time}"
@@ -63,7 +63,7 @@ EOT
       template = ERB.new( TEMPLATE, 0, "%<>")
       html << template.result( binding )
     end
-    
+
     File.open( filename, 'w' ){ |file| file.write( TEMPLATE_HEADER + html ) }
   end
 end

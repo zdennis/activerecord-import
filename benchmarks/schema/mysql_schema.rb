@@ -3,7 +3,7 @@ ActiveRecord::Schema.define do
     t.column :my_name, :string, :null=>false
     t.column :description, :string
   end
-  
+
   create_table :test_innodb, :options=>'ENGINE=InnoDb', :force=>true do |t|
     t.column :my_name, :string, :null=>false
     t.column :description, :string

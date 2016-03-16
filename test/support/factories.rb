@@ -30,9 +30,9 @@ FactoryGirl.define do
       end
     end
   end
-  
+
   factory :rule do
-    sequence(:condition_text){ |n| "q_#{n}_#{n}"} 
+    sequence(:condition_text){ |n| "q_#{n}_#{n}"}
   end
 
   factory :topic_with_book, :parent=>:topic do |m|
