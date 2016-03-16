@@ -48,7 +48,7 @@ class ActiveSupport::TestCase
         end
       end
 
-      klass.instance_eval &blk
+      klass.instance_eval(&blk)
     end
     alias_method :context, :describe
 
