@@ -18,3 +18,5 @@ before_script:
 
 script:
   - test/travis/build.sh
+
+sudo: false
