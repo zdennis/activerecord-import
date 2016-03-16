@@ -45,7 +45,7 @@ describe ActiveRecord::Import::ValueSetsBytesParser do
 
     context "when the max allowed bytes is 999999 and the base SQL is 26 bytes" do
       it "should return 1 value sets when given 1 value sets of 7 bytes a piece" do
-        value_sets = parser.parse values, reserved_bytes: base_sql.size, max_bytes: 999999
+        value_sets = parser.parse values, reserved_bytes: base_sql.size, max_bytes: 999_999
         assert_equal 1, value_sets.size
       end
     end

@@ -2,7 +2,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
   include ActiveRecord::Import::ImportSupport
   include ActiveRecord::Import::OnDuplicateKeyUpdateSupport
 
-  MIN_VERSION_FOR_UPSERT = 90500
+  MIN_VERSION_FOR_UPSERT = 90_500
 
   def insert_many( sql, values, *args ) # :nodoc:
     number_of_inserts = 1
