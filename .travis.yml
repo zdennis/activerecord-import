@@ -6,8 +6,6 @@ rvm:
 gemfile:
   - Gemfile
 
-bundler_args: -j2
-
 before_script:
   - mysql -e 'create database activerecord_import_test;'
   - psql -c 'create database activerecord_import_test;' -U postgres
