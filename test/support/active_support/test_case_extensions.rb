@@ -4,9 +4,8 @@ class ActiveSupport::TestCase
 
   class << self
     def requires_active_record_version(version_string, &blk)
-      if Gem::Dependency.new("expected", version_string).match?("actual", ActiveRecord::VERSION::STRING)
-        instance_eval(&blk)
-      end
+      return unless Gem::Dependency.new("expected", version_string).match?("actual", ActiveRecord::VERSION::STRING)
+      instance_eval(&blk)
     end
 
     def assertion(name, &block)

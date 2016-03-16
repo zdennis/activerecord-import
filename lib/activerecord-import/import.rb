@@ -497,17 +497,16 @@ class ActiveRecord::Base
     private
 
     def set_ids_and_mark_clean(models, import_result)
-      unless models.nil?
-        import_result.ids.each_with_index do |id, index|
-          model = models[index]
-          model.id = id.to_i
-          if model.respond_to?(:clear_changes_information) # Rails 4.0 and higher
-            model.clear_changes_information
-          else  # Rails 3.1
-            model.instance_variable_get(:@changed_attributes).clear
-          end
-          model.instance_variable_set(:@new_record, false)
+      return if models.nil?
+      import_result.ids.each_with_index do |id, index|
+        model = models[index]
+        model.id = id.to_i
+        if model.respond_to?(:clear_changes_information) # Rails 4.0 and higher
+          model.clear_changes_information
+        else  # Rails 3.1
+          model.instance_variable_get(:@changed_attributes).clear
         end
+        model.instance_variable_set(:@new_record, false)
       end
     end
 
