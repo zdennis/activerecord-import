@@ -52,6 +52,21 @@ def should_support_postgresql_import_functionality
         end
       end
 
+      it 'imports polymorphic associations' do
+        discounts = Array.new(1) { |i| Discount.new(amount: i) }
+        books = Array.new(1) { |i| Book.new(:author_name => "Author ##{i}", :title => "Book ##{i}") }
+        books.each do |book|
+          book.discounts << discounts
+        end
+        Book.import books, recursive: true
+        books.each do |book|
+          book.discounts.each do |discount|
+            assert_not_nil discount.discountable_id
+            assert_equal 'Book', discount.discountable_type
+          end
+        end
+      end
+
       [{ recursive: false }, {}].each do |import_options|
         it "skips recursion for #{import_options}" do
           assert_difference "Book.count", 0 do

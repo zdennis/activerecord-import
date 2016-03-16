@@ -543,6 +543,10 @@ class ActiveRecord::Base
         changed_objects = association.select { |a| a.new_record? || a.changed? }
         changed_objects.each do |child|
           child.send("#{association_reflection.foreign_key}=", model.id)
+          # For polymorphic associations
+          association_reflection.type.try do |type|
+            child.send("#{type}=", model.class.name)
+          end
         end
         associated_objects_by_class[model.class.name][association_reflection.name].concat changed_objects
       end
