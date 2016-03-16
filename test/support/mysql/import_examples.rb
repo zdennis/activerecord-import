@@ -60,7 +60,7 @@ def should_support_mysql_import_functionality
     context "with :synchronization option" do
       let(:topics){ Array.new }
       let(:values){ [ [topics.first.id, "Jerry Carter", "title1"], [topics.last.id, "Chad Fowler", "title2"] ]}
-      let(:columns){ %W(id author_name title) }
+      let(:columns){ %w(id author_name title) }
 
       setup do
         topics << Topic.create!(title: "LDAP", author_name: "Big Bird")
