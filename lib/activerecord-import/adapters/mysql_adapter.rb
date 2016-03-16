@@ -20,7 +20,7 @@ module ActiveRecord::Import::MysqlAdapter
     sql_size = QUERY_OVERHEAD + base_sql.size + post_sql.size
 
     # the number of bytes the requested insert statement values will take up
-    values_in_bytes = values.sum { |value| value.bytesize }
+    values_in_bytes = values.sum(&:bytesize)
 
     # the number of bytes (commas) it will take to comma separate our values
     comma_separated_bytes = values.size - 1

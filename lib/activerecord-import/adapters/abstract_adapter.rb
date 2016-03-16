@@ -38,7 +38,7 @@ module ActiveRecord::Import::AbstractAdapter
     # Synchronizes the passed in ActiveRecord instances with the records in
     # the database by calling +reload+ on each instance.
     def after_import_synchronize( instances )
-      instances.each { |e| e.reload }
+      instances.each(&:reload)
     end
 
     # Returns an array of post SQL statements given the passed in options.
