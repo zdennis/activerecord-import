@@ -24,11 +24,11 @@ module BenchmarkOptionParser
     puts "  Database adapter: #{options.adapter}"
     puts "  Number of objects: #{options.number_of_objects}"
     puts "  Table types:"
-    print_valid_table_types( options, :prefix=>"    " )
+    print_valid_table_types( options, prefix: "    " )
   end
 
   # TODO IMPLEMENT THIS
-  def self.print_valid_table_types( options, hsh={:prefix=>''} )
+  def self.print_valid_table_types( options, hsh={prefix: ''} )
     if options.table_types.keys.size > 0
       options.table_types.keys.sort.each{ |type| puts hsh[:prefix].to_s + type.to_s }
     else
@@ -38,11 +38,11 @@ module BenchmarkOptionParser
 
   def self.parse( args )
     options = OpenStruct.new(
-      :adapter => 'mysql2',
-      :table_types => {},
-      :delete_on_finish => true,
-      :number_of_objects => [],
-      :outputs => [] )
+      adapter: 'mysql2',
+      table_types: {},
+      delete_on_finish: true,
+      number_of_objects: [],
+      outputs: [] )
 
     opts = OptionParser.new do |opts|
       opts.banner = BANNER
@@ -78,12 +78,12 @@ module BenchmarkOptionParser
 
       # print results in CSV format
       opts.on( "--to-csv [String]", "Print results in a CSV file format" ) do |filename|
-        options.outputs << OpenStruct.new( :format=>'csv', :filename=>filename)
+        options.outputs << OpenStruct.new( format: 'csv', filename: filename)
       end
 
       # print results in HTML format
       opts.on( "--to-html [String]", "Print results in HTML format" ) do |filename|
-        options.outputs << OpenStruct.new( :format=>'html', :filename=>filename )
+        options.outputs << OpenStruct.new( format: 'html', filename: filename )
       end
     end #end opt.parse!
 
@@ -97,7 +97,7 @@ module BenchmarkOptionParser
     end
 
     options.number_of_objects = [1000] if options.number_of_objects.empty?
-    options.outputs = [ OpenStruct.new( :format => 'html', :filename => 'benchmark.html')] if options.outputs.empty?
+    options.outputs = [ OpenStruct.new( format: 'html', filename: 'benchmark.html')] if options.outputs.empty?
 
     print_options( options )
 

@@ -7,7 +7,7 @@ FactoryGirl.define do
     sequence(:order) { |n| "Order #{n}" }
   end
 
-  factory :invalid_topic, :class => "Topic" do
+  factory :invalid_topic, class: "Topic" do
     sequence(:title){ |n| "Title #{n}"}
     author_name nil
   end
@@ -35,16 +35,16 @@ FactoryGirl.define do
     sequence(:condition_text){ |n| "q_#{n}_#{n}"}
   end
 
-  factory :topic_with_book, :parent=>:topic do |m|
+  factory :topic_with_book, parent: :topic do |m|
     after(:build) do |topic|
       2.times do
-        book = topic.books.build(:title=>FactoryGirl.generate(:book_title), :author_name=>'Stephen King')
+        book = topic.books.build(title: FactoryGirl.generate(:book_title), author_name: 'Stephen King')
         3.times do
-          book.chapters.build(:title => FactoryGirl.generate(:chapter_title))
+          book.chapters.build(title: FactoryGirl.generate(:chapter_title))
         end
 
         4.times do
-          book.end_notes.build(:note => FactoryGirl.generate(:end_note))
+          book.end_notes.build(note: FactoryGirl.generate(:end_note))
         end
       end
     end

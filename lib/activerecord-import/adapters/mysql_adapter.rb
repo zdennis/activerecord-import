@@ -37,8 +37,8 @@ module ActiveRecord::Import::MysqlAdapter
       insert( sql2insert, *args )
     else
       value_sets = ::ActiveRecord::Import::ValueSetsBytesParser.parse(values,
-        :reserved_bytes => sql_size,
-        :max_bytes => max)
+        reserved_bytes: sql_size,
+        max_bytes: max)
       value_sets.each do |values|
         number_of_inserts += 1
         sql2insert = base_sql + values.join( ',' ) + post_sql

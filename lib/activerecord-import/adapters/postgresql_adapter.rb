@@ -62,7 +62,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
   def sql_for_on_duplicate_key_update( table_name, *args ) # :nodoc:
     arg = args.first
     if arg.is_a?( Array ) || arg.is_a?( String )
-      arg = { :columns => arg }
+      arg = { columns: arg }
     end
     return unless arg.is_a?( Hash )
 

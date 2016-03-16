@@ -10,21 +10,21 @@ describe "ActiveRecord::Import::ValueSetsRecordsParser" do
 
     context "when the max number of records is 1" do
       it "should return 3 value sets when given 3 values sets" do
-        value_sets = parser.parse values, :max_records => 1
+        value_sets = parser.parse values, max_records: 1
         assert_equal 3, value_sets.size
       end
     end
 
     context "when the max number of records is 2" do
       it "should return 2 value sets when given 3 values sets" do
-        value_sets = parser.parse values, :max_records => 2
+        value_sets = parser.parse values, max_records: 2
         assert_equal 2, value_sets.size
       end
     end
 
     context "when the max number of records is 3" do
       it "should return 1 value sets when given 3 values sets" do
-        value_sets = parser.parse values, :max_records => 3
+        value_sets = parser.parse values, max_records: 3
         assert_equal 1, value_sets.size
       end
     end

@@ -18,11 +18,11 @@ def should_support_basic_on_duplicate_key_update
       let(:updated_values){ [ [ 99, "Book - 2nd Edition", "Author Should Not Change", "johndoe@example.com", 57 ] ] }
 
       macro(:perform_import) do |*opts|
-        Topic.import columns, updated_values, opts.extract_options!.merge(:on_duplicate_key_update => update_columns , :validate => false)
+        Topic.import columns, updated_values, opts.extract_options!.merge(on_duplicate_key_update: update_columns , validate: false)
       end
 
       setup do
-        Topic.import columns, values, :validate => false
+        Topic.import columns, values, validate: false
         @topic = Topic.find 99
       end
 
@@ -52,12 +52,12 @@ def should_support_basic_on_duplicate_key_update
       let(:update_columns){ [ :code ] }
 
       macro(:perform_import) do |*opts|
-        Promotion.import columns, updated_values, opts.extract_options!.merge(:on_duplicate_key_update => update_columns, :validate => false)
+        Promotion.import columns, updated_values, opts.extract_options!.merge(on_duplicate_key_update: update_columns, validate: false)
       end
       macro(:updated_promotion){ Promotion.find(@promotion.promotion_id) }
 
       setup do
-        Promotion.import columns, values, :validate => false
+        Promotion.import columns, values, validate: false
         @promotion = Promotion.find 1
       end
 
@@ -73,12 +73,12 @@ def should_support_basic_on_duplicate_key_update
       let(:updated_values){ [ [ 100, "Book - 2nd Edition", "This should raise an exception", "john@nogo.com", 57 ] ] }
 
       macro(:perform_import) do |*opts|
-        # `:on_duplicate_key_update => false` is the tested feature
-        Topic.import columns, updated_values, opts.extract_options!.merge(:on_duplicate_key_update => false, :validate => false)
+        # `on_duplicate_key_update: false` is the tested feature
+        Topic.import columns, updated_values, opts.extract_options!.merge(on_duplicate_key_update: false, validate: false)
       end
 
       setup do
-        Topic.import columns, values, :validate => false
+        Topic.import columns, values, validate: false
         @topic = Topic.find 100
       end
 
