@@ -339,7 +339,7 @@ class ActiveRecord::Base
             # if model.new_record? || options[:on_duplicate_key_update]
             column_names.map do |name|
               name = name.to_s
-              if respond_to?(:defined_enums) && defined_enums.has_key?(name) # ActiveRecord 5
+              if respond_to?(:defined_enums) && defined_enums.key?(name) # ActiveRecord 5
                 model.read_attribute(name)
               elsif model.class.column_defaults[name].is_a?(Integer)
                 model.read_attribute(name)
