@@ -578,32 +578,30 @@ class ActiveRecord::Base
 
     def add_special_rails_stamps( column_names, array_of_attributes, options )
       AREXT_RAILS_COLUMNS[:create].each_pair do |key, blk|
-        if self.column_names.include?(key)
-          value = blk.call
-          if index = column_names.index(key) || index = column_names.index(key.to_sym)
-            # replace every instance of the array of attributes with our value
-            array_of_attributes.each { |arr| arr[index] = value if arr[index].nil? }
-          else
-            column_names << key
-            array_of_attributes.each { |arr| arr << value }
-          end
+        next unless self.column_names.include?(key)
+        value = blk.call
+        if index = column_names.index(key) || index = column_names.index(key.to_sym)
+          # replace every instance of the array of attributes with our value
+          array_of_attributes.each { |arr| arr[index] = value if arr[index].nil? }
+        else
+          column_names << key
+          array_of_attributes.each { |arr| arr << value }
         end
       end
 
       AREXT_RAILS_COLUMNS[:update].each_pair do |key, blk|
-        if self.column_names.include?(key)
-          value = blk.call
-          if index = column_names.index(key) || index = column_names.index(key.to_sym)
-             # replace every instance of the array of attributes with our value
-             array_of_attributes.each { |arr| arr[index] = value }
-          else
-            column_names << key
-            array_of_attributes.each { |arr| arr << value }
-          end
+        next unless self.column_names.include?(key)
+        value = blk.call
+        if index = column_names.index(key) || index = column_names.index(key.to_sym)
+           # replace every instance of the array of attributes with our value
+           array_of_attributes.each { |arr| arr[index] = value }
+        else
+          column_names << key
+          array_of_attributes.each { |arr| arr << value }
+        end
 
-          if supports_on_duplicate_key_update?
-            connection.add_column_for_on_duplicate_key_update(key, options)
-          end
+        if supports_on_duplicate_key_update?
+          connection.add_column_for_on_duplicate_key_update(key, options)
         end
       end
     end
