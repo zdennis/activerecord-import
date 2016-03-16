@@ -57,11 +57,11 @@ class BenchmarkBase
     @results << group
 
     description = "#{model_clazz.name}.create (#{num_inserts} records)"
-    group << bm( description ) {
+    group << bm( description ) do
       vals.each do |values|
         model_clazz.create create_hash_for_cols_and_vals( cols, values )
       end
-    }
+    end
 
     description = "#{model_clazz.name}.import(column, values) for #{num_inserts} records with validations"
     group << bm( description ) { model_clazz.import cols, vals, validate: true }

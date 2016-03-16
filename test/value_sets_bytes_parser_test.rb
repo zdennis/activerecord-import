@@ -64,9 +64,9 @@ describe ActiveRecord::Import::ValueSetsBytesParser do
       assert_equal 3, value_sets.size, 'Three value sets were expected!'
 
       # Each element in the value_sets array must be an array
-      value_sets.each_with_index { |e, i|
+      value_sets.each_with_index do |e, i|
         assert_kind_of Array, e, "Element #{i} was expected to be an Array!"
-      }
+      end
 
       # Each element in the values array should have a 1:1 correlation to the elements
       # in the returned value_sets arrays
