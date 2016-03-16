@@ -56,7 +56,7 @@ class ActiveRecord::Associations::CollectionAssociation
         column_names = symbolized_column_names
       end
 
-      if !symbolized_column_names.include?(symbolized_foreign_key)
+      unless symbolized_column_names.include?(symbolized_foreign_key)
         column_names << symbolized_foreign_key
       end
 
@@ -75,12 +75,12 @@ class ActiveRecord::Associations::CollectionAssociation
       column_names, array_of_attributes = args
       symbolized_column_names = column_names.map(&:to_s)
 
-      if !symbolized_column_names.include?(symbolized_foreign_key)
-        column_names << symbolized_foreign_key
-        array_of_attributes.each { |attrs| attrs << owner_primary_key_value }
-      else
+      if symbolized_column_names.include?(symbolized_foreign_key)
         index = symbolized_column_names.index(symbolized_foreign_key)
         array_of_attributes.each { |attrs| attrs[index] = owner_primary_key_value }
+      else
+        column_names << symbolized_foreign_key
+        array_of_attributes.each { |attrs| attrs << owner_primary_key_value }
       end
 
       return model_klass.import column_names, array_of_attributes, options
@@ -424,7 +424,7 @@ class ActiveRecord::Base
           hsh.each_pair { |k, v| model.send("#{k}=", v) }
         end
 
-        if not instance.valid?(options[:validate_with_context])
+        unless instance.valid?(options[:validate_with_context])
           array_of_attributes[i] = nil
           failed_instances << instance
         end
@@ -474,13 +474,7 @@ class ActiveRecord::Base
       insert_sql = "INSERT #{options[:ignore] ? 'IGNORE ' : ''}INTO #{quoted_table_name} #{columns_sql} VALUES "
       values_sql = values_sql_for_columns_and_attributes(columns, array_of_attributes)
       ids = []
-      if not supports_import?
-        number_inserted = 0
-        values_sql.each do |values|
-          connection.execute(insert_sql + values)
-          number_inserted += 1
-        end
-      else
+      if supports_import?
         # generate the sql
         post_sql_statements = connection.post_sql_statements( quoted_table_name, options )
 
@@ -488,6 +482,12 @@ class ActiveRecord::Base
         (number_inserted, ids) = connection.insert_many( [insert_sql, post_sql_statements].flatten,
                                                   values_sql,
                                                   "#{self.class.name} Create Many Without Validations Or Callbacks" )
+      else
+        number_inserted = 0
+        values_sql.each do |values|
+          connection.execute(insert_sql + values)
+          number_inserted += 1
+        end
       end
       [number_inserted, ids]
     end
