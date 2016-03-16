@@ -394,9 +394,7 @@ class ActiveRecord::Base
         set_ids_and_mark_clean(models, return_obj)
 
         # if there are auto-save associations on the models we imported that are new, import them as well
-        if options[:recursive]
-          import_associations(models, options)
-        end
+        import_associations(models, options) if options[:recursive]
       end
 
       return_obj

@@ -56,6 +56,4 @@ Dir[File.dirname(__FILE__) + "/models/*.rb"].each { |file| require file }
 # Prevent this deprecation warning from breaking the tests.
 Rake::FileList.send(:remove_method, :import)
 
-if ENV['AR_VERSION'].to_f >= 4.2
-  ActiveSupport::TestCase.test_order = :random
-end
+ActiveSupport::TestCase.test_order = :random if ENV['AR_VERSION'].to_f >= 4.2

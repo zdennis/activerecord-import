@@ -51,9 +51,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
   # in +args+.
   def sql_for_on_duplicate_key_ignore( table_name, *args ) # :nodoc:
     arg = args.first
-    if arg.is_a?( Hash )
-      conflict_target = sql_for_conflict_target( arg )
-    end
+    conflict_target = sql_for_conflict_target( arg ) if arg.is_a?( Hash )
     " ON CONFLICT #{conflict_target}DO NOTHING"
   end
 
@@ -61,9 +59,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
   # in +args+.
   def sql_for_on_duplicate_key_update( table_name, *args ) # :nodoc:
     arg = args.first
-    if arg.is_a?( Array ) || arg.is_a?( String )
-      arg = { columns: arg }
-    end
+    arg = { columns: arg } if arg.is_a?( Array ) || arg.is_a?( String )
     return unless arg.is_a?( Hash )
 
     sql = " ON CONFLICT "
