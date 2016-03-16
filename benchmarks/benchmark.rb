@@ -32,7 +32,7 @@ end
 require File.join(benchmark_dir, "../test/schema/version")
 require File.join(benchmark_dir, "../test/schema/generic_schema")
 adapter_schema = File.join(benchmark_dir, "schema/#{options.adapter}_schema.rb")
-require adapter_schema if File.exists?(adapter_schema)
+require adapter_schema if File.exist?(adapter_schema)
 
 Dir[File.dirname(__FILE__) + "/models/*.rb"].each { |file| require file }
 
