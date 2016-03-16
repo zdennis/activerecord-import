@@ -92,7 +92,7 @@ module BenchmarkOptionParser
       if options.table_types.size == 0
         options.table_types['all'] = options.benchmark_all_types = true
       end
-    rescue Exception => ex
+    rescue Exception
       print_banner!
     end
 

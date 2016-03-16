@@ -54,13 +54,13 @@ describe "#import" do
     context "with validation checks turned off" do
       it "should import valid data" do
         assert_difference "Topic.count", +2 do
-          result = Topic.import columns, valid_values, validate: false
+          Topic.import columns, valid_values, validate: false
         end
       end
 
       it "should import invalid data" do
         assert_difference "Topic.count", +2 do
-          result = Topic.import columns, invalid_values, validate: false
+          Topic.import columns, invalid_values, validate: false
         end
       end
 
@@ -74,25 +74,25 @@ describe "#import" do
     context "with validation checks turned on" do
       it "should import valid data" do
         assert_difference "Topic.count", +2 do
-          result = Topic.import columns, valid_values, validate: true
+          Topic.import columns, valid_values, validate: true
         end
       end
 
       it "should import valid data with on option" do
         assert_difference "Topic.count", +2 do
-          result = Topic.import columns, valid_values_with_context, validate_with_context: :context_test
+          Topic.import columns, valid_values_with_context, validate_with_context: :context_test
         end
       end
 
       it "should not import invalid data" do
         assert_no_difference "Topic.count" do
-          result = Topic.import columns, invalid_values, validate: true
+          Topic.import columns, invalid_values, validate: true
         end
       end
 
       it "should import invalid data with on option" do
         assert_no_difference "Topic.count" do
-          result = Topic.import columns, valid_values, validate_with_context: :context_test
+          Topic.import columns, valid_values, validate_with_context: :context_test
         end
       end
 
@@ -104,7 +104,7 @@ describe "#import" do
 
       it "should import valid data when mixed with invalid data" do
         assert_difference "Topic.count", +2 do
-          result = Topic.import columns, valid_values + invalid_values, validate: true
+          Topic.import columns, valid_values + invalid_values, validate: true
         end
         assert_equal 0, Topic.where(title: invalid_values.map(&:first)).count
       end
@@ -120,19 +120,19 @@ describe "#import" do
     context "with validation checks turned on" do
       it "should import valid data" do
         assert_difference "Topic.count", +2 do
-          result = Topic.import columns, valid_values, all_or_none: true
+          Topic.import columns, valid_values, all_or_none: true
         end
       end
 
       it "should not import invalid data" do
         assert_no_difference "Topic.count" do
-          result = Topic.import columns, invalid_values, all_or_none: true
+          Topic.import columns, invalid_values, all_or_none: true
         end
       end
 
       it "should not import valid data when mixed with invalid data" do
         assert_no_difference "Topic.count" do
-          result = Topic.import columns, mixed_values, all_or_none: true
+          Topic.import columns, mixed_values, all_or_none: true
         end
       end
 
@@ -190,7 +190,7 @@ describe "#import" do
 
     it "should import records based on those model's attributes" do
       assert_difference "Topic.count", +9 do
-        result = Topic.import topics
+        Topic.import topics
       end
 
       Topic.import [topic]
@@ -216,13 +216,13 @@ describe "#import" do
     context "with validation checks turned on" do
       it "should import valid models" do
         assert_difference "Topic.count", +9 do
-          result = Topic.import topics, validate: true
+          Topic.import topics, validate: true
         end
       end
 
       it "should not import invalid models" do
         assert_no_difference "Topic.count" do
-          result = Topic.import invalid_topics, validate: true
+          Topic.import invalid_topics, validate: true
         end
       end
     end
@@ -230,7 +230,7 @@ describe "#import" do
     context "with validation checks turned off" do
       it "should import invalid models" do
         assert_difference "Topic.count", +7 do
-          result = Topic.import invalid_topics, validate: false
+          Topic.import invalid_topics, validate: false
         end
       end
     end
@@ -241,7 +241,7 @@ describe "#import" do
 
     it "should import records populating the supplied columns with the corresponding model instance attributes" do
       assert_difference "Topic.count", +2 do
-        result = Topic.import [:author_name, :title], topics
+        Topic.import [:author_name, :title], topics
       end
 
       # imported topics should be findable by their imported attributes
@@ -252,7 +252,7 @@ describe "#import" do
     it "should not populate fields for columns not imported" do
       topics.first.author_email_address = "zach.dennis@gmail.com"
       assert_difference "Topic.count", +2 do
-        result = Topic.import [:author_name, :title], topics
+        Topic.import [:author_name, :title], topics
       end
 
       assert !Topic.where(author_email_address: "zach.dennis@gmail.com").first
@@ -273,7 +273,7 @@ describe "#import" do
         ActiveRecord::Base.default_timezone = :utc
         Timecop.freeze Chronic.parse("5 minutes ago") do
           assert_difference "Book.count", +2 do
-            result = Book.import %w(title author_name publisher created_at created_on), [["LDAP", "Big Bird", "Del Rey", nil, nil], [@existing_book.title, @existing_book.author_name, @existing_book.publisher, @existing_book.created_at, @existing_book.created_on]]
+            Book.import %w(title author_name publisher created_at created_on), [["LDAP", "Big Bird", "Del Rey", nil, nil], [@existing_book.title, @existing_book.author_name, @existing_book.publisher, @existing_book.created_at, @existing_book.created_on]]
           end
         end
         @new_book, @existing_book = Book.last 2
@@ -310,7 +310,7 @@ describe "#import" do
       setup do
         Timecop.freeze(time) do
           assert_difference "Book.count", +1 do
-            result = Book.import [:title, :author_name, :publisher], [["LDAP", "Big Bird", "Del Rey"]]
+            Book.import [:title, :author_name, :publisher], [["LDAP", "Big Bird", "Del Rey"]]
           end
         end
         @book = Book.last
@@ -333,7 +333,7 @@ describe "#import" do
 
     it "should import just fine" do
       assert_difference "Group.count", +1 do
-        result = Group.import [group]
+        Group.import [group]
       end
       assert_equal "superx", Group.first.order
     end
@@ -373,10 +373,6 @@ describe "#import" do
 
     it "works importing array of columns and values" do
       topic = FactoryGirl.create :topic
-      books = [
-        Book.new(author_name: "Foo", title: "Baz"),
-        Book.new(author_name: "Foo2", title: "Baz2"),
-      ]
       topic.books.import [:author_name, :title], [["Author #1", "Book #1"], ["Author #2", "Book #2"]]
       assert_equal 2, topic.books.count
       assert topic.books.detect { |b| b.title == "Book #1" && b.author_name == "Author #1" }

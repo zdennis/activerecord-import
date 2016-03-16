@@ -24,7 +24,6 @@ module ActiveRecord # :nodoc:
       return if instances.empty?
 
       conditions = {}
-      order = ""
 
       key_values = keys.map { |key| instances.map(&"#{key}".to_sym) }
       keys.zip(key_values).each { |key, values| conditions[key] = values }
