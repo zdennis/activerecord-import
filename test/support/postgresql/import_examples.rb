@@ -53,7 +53,7 @@ def should_support_postgresql_import_functionality
       end
 
       [{ recursive: false }, {}].each do |import_options|
-        it "skips recursion for #{import_options.to_s}" do
+        it "skips recursion for #{import_options}" do
           assert_difference "Book.count", 0 do
             Topic.import new_topics, import_options
           end
@@ -95,8 +95,8 @@ def should_support_postgresql_import_functionality
       # being created, you would need to have validates_associated in your models and insert with validation
       describe "all_or_none" do
         [Book, Topic, EndNote].each do |type|
-          it "creates #{type.to_s}" do
-            assert_difference "#{type.to_s}.count", send("num_#{type.to_s.downcase}s") do
+          it "creates #{type}" do
+            assert_difference "#{type}.count", send("num_#{type.to_s.downcase}s") do
               Topic.import new_topics_with_invalid_chapter, all_or_none: true, recursive: true
             end
           end
