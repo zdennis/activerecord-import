@@ -347,14 +347,14 @@ describe "#import" do
   end
 
   context "importing through an association scope" do
-    [true, false].each do |b|
-      context "when validation is " + (b ? "enabled" : "disabled") do
+    [true, false].each do |bool|
+      context "when validation is " + (bool ? "enabled" : "disabled") do
         it "should automatically set the foreign key column" do
           books = [["David Chelimsky", "The RSpec Book"], ["Chad Fowler", "Rails Recipes"]]
           topic = FactoryGirl.create :topic
-          topic.books.import [:author_name, :title], books, validate: b
+          topic.books.import [:author_name, :title], books, validate: bool
           assert_equal 2, topic.books.count
-          assert topic.books.all? { |b| b.topic_id == topic.id }
+          assert topic.books.all? { |book| book.topic_id == topic.id }
         end
       end
     end
