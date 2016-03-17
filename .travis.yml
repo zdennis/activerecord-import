@@ -15,6 +15,9 @@ env:
     - AR_VERSION=4.2
     - AR_VERSION=5.0
 
+matrix:
+  fast_finish: true
+
 before_script:
   - mysql -e 'create database activerecord_import_test;'
   - psql -c 'create database activerecord_import_test;' -U postgres
