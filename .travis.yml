@@ -3,18 +3,32 @@ cache: bundler
 rvm:
   - 2.2.4
 
-gemfile:
-  - Gemfile
+env:
+  global:
+    # https://github.com/discourse/discourse/blob/master/.travis.yml
+    - RUBY_GC_MALLOC_LIMIT=50000000
+  matrix:
+    - AR_VERSION=3.1
+    - AR_VERSION=3.2
+    - AR_VERSION=4.0
+    - AR_VERSION=4.1
+    - AR_VERSION=4.2
+    - AR_VERSION=5.0
 
 before_script:
   - mysql -e 'create database activerecord_import_test;'
   - psql -c 'create database activerecord_import_test;' -U postgres
   - psql -U postgres -c "create extension postgis"
   - cp test/travis/database.yml test/database.yml
-# https://github.com/discourse/discourse/blob/master/.travis.yml
-  - export RUBY_GC_MALLOC_LIMIT=50000000
 
 script:
-  - test/travis/build.sh
+  - bundle exec rake test:mysql2
+  - bundle exec rake test:mysql2spatial
+  - bundle exec rake test:postgis
+  - bundle exec rake test:postgresql
+  - bundle exec rake test:seamless_database_pool
+  - bundle exec rake test:spatialite
+  # so far the version installed in travis seems < 3.7.11 so we cannot test sqlite3 on it
+  # bundle exec rake test:sqlite3
 
 sudo: false
