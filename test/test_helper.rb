@@ -57,5 +57,5 @@ Dir[File.dirname(__FILE__) + "/models/*.rb"].each{ |file| require file }
 Rake::FileList.send(:remove_method, :import)
 
 if ENV['AR_VERSION'].to_f >= 4.2
-  ActiveSupport::TestCase.test_order = :sorted
+  ActiveSupport::TestCase.test_order = :random
 end
