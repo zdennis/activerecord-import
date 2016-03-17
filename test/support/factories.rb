@@ -35,7 +35,7 @@ FactoryGirl.define do
     sequence(:condition_text) { |n| "q_#{n}_#{n}" }
   end
 
-  factory :topic_with_book, parent: :topic do |m|
+  factory :topic_with_book, parent: :topic do
     after(:build) do |topic|
       2.times do
         book = topic.books.build(title: FactoryGirl.generate(:book_title), author_name: 'Stephen King')

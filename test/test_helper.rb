@@ -38,7 +38,7 @@ ActiveRecord::Base.default_timezone = :utc
 require "activerecord-import"
 ActiveRecord::Base.establish_connection :test
 
-ActiveSupport::Notifications.subscribe(/active_record.sql/) do |event, _, _, _, hsh|
+ActiveSupport::Notifications.subscribe(/active_record.sql/) do |_, _, _, _, hsh|
   ActiveRecord::Base.logger.info hsh[:sql]
 end
 
