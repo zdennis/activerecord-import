@@ -1,5 +1,4 @@
 ActiveRecord::Schema.define do
-
   create_table :books, options: 'ENGINE=MyISAM', force: true do |t|
     t.column :title, :string, null: false
     t.column :publisher, :string, null: false, default: 'Default Publisher'
@@ -14,5 +13,4 @@ ActiveRecord::Schema.define do
     t.column :status, :integer
   end
   execute "ALTER TABLE books ADD FULLTEXT( `title`, `publisher`, `author_name` )"
-
 end

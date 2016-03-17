@@ -1,6 +1,5 @@
 module ActiveRecord # :nodoc:
   class Base # :nodoc:
-
     # Synchronizes the passed in ActiveRecord instances with data
     # from the database. This is like calling reload on an individual
     # ActiveRecord instance but it is intended for use on multiple instances.
@@ -21,7 +20,7 @@ module ActiveRecord # :nodoc:
     # Post.synchronize posts, [:name] # queries on the :name column and not the :id column
     # posts.first.address # => "1245 Foo Ln" instead of whatever it was
     #
-    def self.synchronize(instances, keys=[self.primary_key])
+    def self.synchronize(instances, keys = [self.primary_key])
       return if instances.empty?
 
       conditions = {}
@@ -29,14 +28,14 @@ module ActiveRecord # :nodoc:
 
       key_values = keys.map { |key| instances.map(&"#{key}".to_sym) }
       keys.zip(key_values).each { |key, values| conditions[key] = values }
-      order = keys.map{ |key| "#{key} ASC" }.join(",")
+      order = keys.map { |key| "#{key} ASC" }.join(",")
 
       klass = instances.first.class
 
       fresh_instances = klass.where(conditions).order(order)
       instances.each do |instance|
         matched_instance = fresh_instances.detect do |fresh_instance|
-          keys.all?{ |key| fresh_instance.send(key) == instance.send(key) }
+          keys.all? { |key| fresh_instance.send(key) == instance.send(key) }
         end
 
         if matched_instance
@@ -59,7 +58,7 @@ module ActiveRecord # :nodoc:
     end
 
     # See ActiveRecord::ConnectionAdapters::AbstractAdapter.synchronize
-    def synchronize(instances, key=[ActiveRecord::Base.primary_key])
+    def synchronize(instances, key = [ActiveRecord::Base.primary_key])
       self.class.synchronize(instances, key)
     end
   end

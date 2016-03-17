@@ -47,6 +47,4 @@ describe "#import" do
       assert_equal 2500, Topic.count, "Failed to insert all records. Make sure you have a supported version of SQLite3 (3.7.11 or higher) installed"
     end
   end
-
 end
-

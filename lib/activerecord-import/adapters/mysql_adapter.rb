@@ -3,7 +3,7 @@ module ActiveRecord::Import::MysqlAdapter
   include ActiveRecord::Import::OnDuplicateKeyUpdateSupport
 
   NO_MAX_PACKET = 0
-  QUERY_OVERHEAD = 8 #This was shown to be true for MySQL, but it's not clear where the overhead is from.
+  QUERY_OVERHEAD = 8 # This was shown to be true for MySQL, but it's not clear where the overhead is from.
 
   # +sql+ can be a single string or an array. If it is an array all
   # elements that are in position >= 1 will be appended to the final SQL.
@@ -11,19 +11,19 @@ module ActiveRecord::Import::MysqlAdapter
     # the number of inserts default
     number_of_inserts = 0
 
-    base_sql,post_sql = if sql.is_a?( String )
-      [ sql, '' ]
+    base_sql, post_sql = if sql.is_a?( String )
+      [sql, '']
     elsif sql.is_a?( Array )
-      [ sql.shift, sql.join( ' ' ) ]
+      [sql.shift, sql.join( ' ' )]
     end
 
     sql_size = QUERY_OVERHEAD + base_sql.size + post_sql.size
 
     # the number of bytes the requested insert statement values will take up
-    values_in_bytes = values.sum {|value| value.bytesize }
+    values_in_bytes = values.sum { |value| value.bytesize }
 
     # the number of bytes (commas) it will take to comma separate our values
-    comma_separated_bytes = values.size-1
+    comma_separated_bytes = values.size - 1
 
     # the total number of bytes required if this statement is one statement
     total_bytes = sql_size + values_in_bytes + comma_separated_bytes
@@ -46,7 +46,7 @@ module ActiveRecord::Import::MysqlAdapter
       end
     end
 
-    [number_of_inserts,[]]
+    [number_of_inserts, []]
   end
 
   # Returns the maximum number of bytes that the server will allow
@@ -61,7 +61,7 @@ module ActiveRecord::Import::MysqlAdapter
   end
 
   # Add a column to be updated on duplicate key update
-  def add_column_for_on_duplicate_key_update( column, options={} ) # :nodoc:
+  def add_column_for_on_duplicate_key_update( column, options = {} ) # :nodoc:
     if options.include?(:on_duplicate_key_update)
       columns = options[:on_duplicate_key_update]
       case columns
@@ -69,7 +69,7 @@ module ActiveRecord::Import::MysqlAdapter
       when Hash then columns[column.to_sym] = column.to_sym
       end
     else
-      options[:on_duplicate_key_update] = [ column.to_sym ]
+      options[:on_duplicate_key_update] = [column.to_sym]
     end
   end
 
@@ -108,7 +108,7 @@ module ActiveRecord::Import::MysqlAdapter
   end
 
   # Return true if the statement is a duplicate key record error
-  def duplicate_key_update_error?(exception)# :nodoc:
+  def duplicate_key_update_error?(exception) # :nodoc:
     exception.is_a?(ActiveRecord::StatementInvalid) && exception.to_s.include?('Duplicate entry')
   end
 end

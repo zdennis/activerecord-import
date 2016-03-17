@@ -22,7 +22,6 @@ gem "factory_girl", "~> 4.2.0"
 gem "timecop"
 gem "chronic"
 
-
 # Debugging
 platforms :jruby do
   gem "ruby-debug-base", "= 0.10.4"

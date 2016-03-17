@@ -7,10 +7,10 @@ module ActiveRecord::Import::PostgreSQLAdapter
   def insert_many( sql, values, *args ) # :nodoc:
     number_of_inserts = 1
 
-    base_sql,post_sql = if sql.is_a?( String )
-      [ sql, '' ]
+    base_sql, post_sql = if sql.is_a?( String )
+      [sql, '']
     elsif sql.is_a?( Array )
-      [ sql.shift, sql.join( ' ' ) ]
+      [sql.shift, sql.join( ' ' )]
     end
 
     sql2insert = base_sql + values.join( ',' ) + post_sql
@@ -18,7 +18,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
     ActiveRecord::Base.connection.query_cache.clear
 
-    [number_of_inserts,ids]
+    [number_of_inserts, ids]
   end
 
   def next_value_for_sequence(sequence_name)
@@ -34,7 +34,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
   end
 
   # Add a column to be updated on duplicate key update
-  def add_column_for_on_duplicate_key_update( column, options={} ) # :nodoc:
+  def add_column_for_on_duplicate_key_update( column, options = {} ) # :nodoc:
     arg = options[:on_duplicate_key_update]
     if arg.is_a?( Hash )
       columns = arg.fetch( :columns ) { arg[:columns] = [] }
@@ -109,7 +109,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
     results.join( ',' )
   end
 
-  def sql_for_conflict_target( args={} )
+  def sql_for_conflict_target( args = {} )
     if constraint_name = args[:constraint_name]
       "ON CONSTRAINT #{constraint_name} "
     elsif conflict_target = args[:conflict_target]
@@ -122,15 +122,15 @@ module ActiveRecord::Import::PostgreSQLAdapter
   end
 
   # Return true if the statement is a duplicate key record error
-  def duplicate_key_update_error?(exception)# :nodoc:
+  def duplicate_key_update_error?(exception) # :nodoc:
     exception.is_a?(ActiveRecord::StatementInvalid) && exception.to_s.include?('duplicate key')
   end
 
-  def supports_on_duplicate_key_update?(current_version=self.postgresql_version)
+  def supports_on_duplicate_key_update?(current_version = self.postgresql_version)
     current_version >= MIN_VERSION_FOR_UPSERT
   end
 
-  def supports_on_duplicate_key_ignore?(current_version=self.postgresql_version)
+  def supports_on_duplicate_key_ignore?(current_version = self.postgresql_version)
     supports_on_duplicate_key_update?(current_version)
   end
 

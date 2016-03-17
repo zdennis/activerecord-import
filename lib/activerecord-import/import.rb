@@ -1,6 +1,6 @@
 require "ostruct"
 
-module ActiveRecord::Import::ConnectionAdapters ; end
+module ActiveRecord::Import::ConnectionAdapters; end
 
 module ActiveRecord::Import #:nodoc:
   class Result < Struct.new(:failed_instances, :num_inserts, :ids)
@@ -92,16 +92,15 @@ end
 
 class ActiveRecord::Base
   class << self
-
     # use tz as set in ActiveRecord::Base
     tproc = lambda do
       ActiveRecord::Base.default_timezone == :utc ? Time.now.utc : Time.now
     end
 
     AREXT_RAILS_COLUMNS = {
-      create: { "created_on" => tproc ,
+      create: { "created_on" => tproc,
                    "created_at" => tproc },
-      update: { "updated_on" => tproc ,
+      update: { "updated_on" => tproc,
                    "updated_at" => tproc }
     }
     AREXT_RAILS_COLUMN_NAMES = AREXT_RAILS_COLUMNS[:create].keys + AREXT_RAILS_COLUMNS[:update].keys
@@ -336,8 +335,8 @@ class ActiveRecord::Base
         end
 
         array_of_attributes = models.map do |model|
-          # this next line breaks sqlite.so with a segmentation fault
-          # if model.new_record? || options[:on_duplicate_key_update]
+            # this next line breaks sqlite.so with a segmentation fault
+            # if model.new_record? || options[:on_duplicate_key_update]
             column_names.map do |name|
               name = name.to_s
               if respond_to?(:defined_enums) && defined_enums.has_key?(name) # ActiveRecord 5
@@ -414,7 +413,7 @@ class ActiveRecord::Base
     # +num_inserts+ is the number of inserts it took to import the data. See
     # ActiveRecord::Base.import for more information on
     # +column_names+, +array_of_attributes+ and +options+.
-    def import_with_validations( column_names, array_of_attributes, options={} )
+    def import_with_validations( column_names, array_of_attributes, options = {} )
       failed_instances = []
 
       # create instances for each of our column/value sets
@@ -422,20 +421,20 @@ class ActiveRecord::Base
 
       # keep track of the instance and the position it is currently at. if this fails
       # validation we'll use the index to remove it from the array_of_attributes
-      arr.each_with_index do |hsh,i|
+      arr.each_with_index do |hsh, i|
         instance = new do |model|
-          hsh.each_pair{ |k,v| model.send("#{k}=", v) }
+          hsh.each_pair { |k, v| model.send("#{k}=", v) }
         end
 
         if not instance.valid?(options[:validate_with_context])
-          array_of_attributes[ i ] = nil
+          array_of_attributes[i] = nil
           failed_instances << instance
         end
       end
       array_of_attributes.compact!
 
       (num_inserts, ids) = if array_of_attributes.empty? || options[:all_or_none] && failed_instances.any?
-                      [0,[]]
+                      [0, []]
                     else
                       import_without_validations_or_callbacks( column_names, array_of_attributes, options )
                     end
@@ -448,7 +447,7 @@ class ActiveRecord::Base
     # validations or callbacks. See ActiveRecord::Base.import for more
     # information on +column_names+, +array_of_attributes_ and
     # +options+.
-    def import_without_validations_or_callbacks( column_names, array_of_attributes, options={} )
+    def import_without_validations_or_callbacks( column_names, array_of_attributes, options = {} )
       column_names = column_names.map(&:to_sym)
       scope_columns, scope_values = scope_attributes.to_a.transpose
 
@@ -473,8 +472,8 @@ class ActiveRecord::Base
         column
       end
 
-      columns_sql = "(#{column_names.map{|name| connection.quote_column_name(name) }.join(',')})"
-      insert_sql = "INSERT #{options[:ignore] ? 'IGNORE ':''}INTO #{quoted_table_name} #{columns_sql} VALUES "
+      columns_sql = "(#{column_names.map { |name| connection.quote_column_name(name) }.join(',')})"
+      insert_sql = "INSERT #{options[:ignore] ? 'IGNORE ' : ''}INTO #{quoted_table_name} #{columns_sql} VALUES "
       values_sql = values_sql_for_columns_and_attributes(columns, array_of_attributes)
       ids = []
       if not supports_import?
@@ -488,7 +487,7 @@ class ActiveRecord::Base
         post_sql_statements = connection.post_sql_statements( quoted_table_name, options )
 
         # perform the inserts
-        (number_inserted,ids) = connection.insert_many( [ insert_sql, post_sql_statements ].flatten,
+        (number_inserted, ids) = connection.insert_many( [insert_sql, post_sql_statements].flatten,
                                                   values_sql,
                                                   "#{self.class.name} Create Many Without Validations Or Callbacks" )
       end
@@ -517,8 +516,8 @@ class ActiveRecord::Base
       # notes:
       #    does not handle associations that reference themselves
       #    should probably take a hash to associations to follow.
-      associated_objects_by_class={}
-      models.each {|model| find_associated_objects_for_import(associated_objects_by_class, model) }
+      associated_objects_by_class = {}
+      models.each { |model| find_associated_objects_for_import(associated_objects_by_class, model) }
 
       associated_objects_by_class.each_pair do |class_name, associations|
         associations.each_pair do |association_name, associated_records|
@@ -530,13 +529,13 @@ class ActiveRecord::Base
     # We are eventually going to call Class.import <objects> so we build up a hash
     # of class => objects to import.
     def find_associated_objects_for_import(associated_objects_by_class, model)
-      associated_objects_by_class[model.class.name]||={}
+      associated_objects_by_class[model.class.name] ||= {}
 
       association_reflections =
         model.class.reflect_on_all_associations(:has_one) +
         model.class.reflect_on_all_associations(:has_many)
       association_reflections.each do |association_reflection|
-        associated_objects_by_class[model.class.name][association_reflection.name]||=[]
+        associated_objects_by_class[model.class.name][association_reflection.name] ||= []
 
         association = model.association(association_reflection.name)
         association.loaded!
@@ -544,7 +543,7 @@ class ActiveRecord::Base
         # Wrap target in an array if not already
         association = Array(association.target)
 
-        changed_objects = association.select {|a| a.new_record? || a.changed?}
+        changed_objects = association.select { |a| a.new_record? || a.changed? }
         changed_objects.each do |child|
           child.send("#{association_reflection.foreign_key}=", model.id)
         end
@@ -560,7 +559,7 @@ class ActiveRecord::Base
       # Reuse the same one w/in the loop, otherwise it would keep being re-retreived (= lots of time for large imports)
       connection_memo = connection
       array_of_attributes.map do |arr|
-        my_values = arr.each_with_index.map do |val,j|
+        my_values = arr.each_with_index.map do |val, j|
           column = columns[j]
 
           # be sure to query sequence_name *last*, only if cheaper tests fail, because it's costly
@@ -584,9 +583,9 @@ class ActiveRecord::Base
       AREXT_RAILS_COLUMNS[:create].each_pair do |key, blk|
         if self.column_names.include?(key)
           value = blk.call
-          if index=column_names.index(key) || index=column_names.index(key.to_sym)
+          if index = column_names.index(key) || index = column_names.index(key.to_sym)
             # replace every instance of the array of attributes with our value
-            array_of_attributes.each{ |arr| arr[index] = value if arr[index].nil? }
+            array_of_attributes.each { |arr| arr[index] = value if arr[index].nil? }
           else
             column_names << key
             array_of_attributes.each { |arr| arr << value }
@@ -597,9 +596,9 @@ class ActiveRecord::Base
       AREXT_RAILS_COLUMNS[:update].each_pair do |key, blk|
         if self.column_names.include?(key)
           value = blk.call
-          if index=column_names.index(key) || index=column_names.index(key.to_sym)
+          if index = column_names.index(key) || index = column_names.index(key.to_sym)
              # replace every instance of the array of attributes with our value
-             array_of_attributes.each{ |arr| arr[index] = value }
+             array_of_attributes.each { |arr| arr[index] = value }
           else
             column_names << key
             array_of_attributes.each { |arr| arr << value }
@@ -615,9 +614,8 @@ class ActiveRecord::Base
     # Returns an Array of Hashes for the passed in +column_names+ and +array_of_attributes+.
     def validations_array_for_column_names_and_attributes( column_names, array_of_attributes ) # :nodoc:
       array_of_attributes.map do |attributes|
-        Hash[attributes.each_with_index.map {|attr, c| [column_names[c], attr] }]
+        Hash[attributes.each_with_index.map { |attr, c| [column_names[c], attr] }]
       end
     end
-
   end
 end

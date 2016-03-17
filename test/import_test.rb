@@ -23,13 +23,13 @@ describe "#import" do
     it "should not modify the passed in columns array" do
       assert_nothing_raised do
         columns = %w(title author_name).freeze
-        Topic.import columns, [["foo", "bar"]]
+        Topic.import columns, [%w(foo bar)]
       end
     end
 
     it "should not modify the passed in values array" do
       assert_nothing_raised do
-        values = [["foo", "bar"]].freeze
+        values = [%w(foo bar)].freeze
         Topic.import %w(title author_name), values
       end
     end
@@ -47,9 +47,9 @@ describe "#import" do
 
   context "with :validation option" do
     let(:columns) { %w(title author_name) }
-    let(:valid_values) { [[ "LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
-    let(:valid_values_with_context) { [[ 1111, "Jerry Carter"], [2222, "Chad Fowler"]] }
-    let(:invalid_values) { [[ "The RSpec Book", ""], ["Agile+UX", ""]] }
+    let(:valid_values) { [["LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
+    let(:valid_values_with_context) { [[1111, "Jerry Carter"], [2222, "Chad Fowler"]] }
+    let(:invalid_values) { [["The RSpec Book", ""], ["Agile+UX", ""]] }
 
     context "with validation checks turned off" do
       it "should import valid data" do
@@ -99,7 +99,7 @@ describe "#import" do
       it "should report the failed instances" do
         results = Topic.import columns, invalid_values, validate: true
         assert_equal invalid_values.size, results.failed_instances.size
-        results.failed_instances.each{ |e| assert_kind_of Topic, e }
+        results.failed_instances.each { |e| assert_kind_of Topic, e }
       end
 
       it "should import valid data when mixed with invalid data" do
@@ -113,8 +113,8 @@ describe "#import" do
 
   context "with :all_or_none option" do
     let(:columns) { %w(title author_name) }
-    let(:valid_values) { [[ "LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
-    let(:invalid_values) { [[ "The RSpec Book", ""], ["Agile+UX", ""]] }
+    let(:valid_values) { [["LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
+    let(:invalid_values) { [["The RSpec Book", ""], ["Agile+UX", ""]] }
     let(:mixed_values) { valid_values + invalid_values }
 
     context "with validation checks turned on" do
@@ -184,9 +184,9 @@ describe "#import" do
   end
 
   context "with an array of unsaved model instances" do
-    let(:topic) { Build(:topic, title: "The RSpec Book", author_name: "David Chelimsky")}
+    let(:topic) { Build(:topic, title: "The RSpec Book", author_name: "David Chelimsky") }
     let(:topics) { Build(9, :topics) }
-    let(:invalid_topics){ Build(7, :invalid_topics)}
+    let(:invalid_topics) { Build(7, :invalid_topics) }
 
     it "should import records based on those model's attributes" do
       assert_difference "Topic.count", +9 do
@@ -273,7 +273,7 @@ describe "#import" do
         ActiveRecord::Base.default_timezone = :utc
         Timecop.freeze Chronic.parse("5 minutes ago") do
           assert_difference "Book.count", +2 do
-            result = Book.import ["title", "author_name", "publisher", "created_at", "created_on"], [["LDAP", "Big Bird", "Del Rey", nil, nil], [@existing_book.title, @existing_book.author_name, @existing_book.publisher, @existing_book.created_at, @existing_book.created_on]]
+            result = Book.import %w(title author_name publisher created_at created_on), [["LDAP", "Big Bird", "Del Rey", nil, nil], [@existing_book.title, @existing_book.author_name, @existing_book.publisher, @existing_book.created_at, @existing_book.created_on]]
           end
         end
         @new_book, @existing_book = Book.last 2
@@ -305,7 +305,7 @@ describe "#import" do
     end
 
     context "when a custom time zone is set" do
-      let(:time){ Chronic.parse("5 minutes ago")  }
+      let(:time) { Chronic.parse("5 minutes ago")  }
 
       setup do
         Timecop.freeze(time) do
@@ -347,12 +347,12 @@ describe "#import" do
   end
 
   context "importing through an association scope" do
-    [ true, false ].each do |b|
+    [true, false].each do |b|
       context "when validation is " + (b ? "enabled" : "disabled") do
         it "should automatically set the foreign key column" do
-          books = [[ "David Chelimsky", "The RSpec Book" ], [ "Chad Fowler", "Rails Recipes" ]]
+          books = [["David Chelimsky", "The RSpec Book"], ["Chad Fowler", "Rails Recipes"]]
           topic = FactoryGirl.create :topic
-          topic.books.import [ :author_name, :title ], books, validate: b
+          topic.books.import [:author_name, :title], books, validate: b
           assert_equal 2, topic.books.count
           assert topic.books.all? { |b| b.topic_id == topic.id }
         end
@@ -382,7 +382,6 @@ describe "#import" do
       assert topic.books.detect { |b| b.title == "Book #1" && b.author_name == "Author #1" }
       assert topic.books.detect { |b| b.title == "Book #2" && b.author_name == "Author #2" }
     end
-
   end
 
   context 'When importing models with Enum fields' do
@@ -447,17 +446,17 @@ describe "#import" do
   describe "importing serialized fields" do
     it "imports values for serialized fields" do
       assert_difference "Widget.unscoped.count", +1 do
-        Widget.import [:w_id, :data], [[1, {a: :b}]]
+        Widget.import [:w_id, :data], [[1, { a: :b }]]
       end
-      assert_equal({a: :b}, Widget.find_by_w_id(1).data)
+      assert_equal({ a: :b }, Widget.find_by_w_id(1).data)
     end
 
     requires_active_record_version ">= 4" do
       it "imports values for serialized JSON fields" do
         assert_difference "Widget.unscoped.count", +1 do
-          Widget.import [:w_id, :json_data], [[9, {a: :b}]]
+          Widget.import [:w_id, :json_data], [[9, { a: :b }]]
         end
-        assert_equal({a: :b}.as_json, Widget.find_by_w_id(9).json_data)
+        assert_equal({ a: :b }.as_json, Widget.find_by_w_id(9).json_data)
       end
     end
   end

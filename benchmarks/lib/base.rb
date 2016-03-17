@@ -1,5 +1,4 @@
 class BenchmarkBase
-
   attr_reader :results
 
   # The main benchmark method dispatcher. This dispatches the benchmarks
@@ -50,7 +49,7 @@ class BenchmarkBase
     puts
     puts "------ Benchmarking #{model_clazz.name} -------"
 
-    cols,vals = array_of_cols_and_vals
+    cols, vals = array_of_cols_and_vals
     num_inserts = vals.size
 
     # add a new result group for this particular benchmark
@@ -61,7 +60,8 @@ class BenchmarkBase
     group << bm( description ) {
       vals.each do |values|
         model_clazz.create create_hash_for_cols_and_vals( cols, values )
-      end  }
+      end
+    }
 
     description = "#{model_clazz.name}.import(column, values) for #{num_inserts} records with validations"
     group << bm( description ) { model_clazz.import cols, vals, validate: true }
@@ -73,10 +73,10 @@ class BenchmarkBase
     array_of_attrs = []
 
     vals.each do |arr|
-      array_of_attrs << (attrs={})
+      array_of_attrs << (attrs = {})
       arr.each_with_index { |value, i| attrs[cols[i]] = value }
     end
-    array_of_attrs.each{ |attrs| models << model_clazz.new(attrs) }
+    array_of_attrs.each { |attrs| models << model_clazz.new(attrs) }
 
     description = "#{model_clazz.name}.import(models) for #{num_inserts} records with validations"
     group << bm( description ) { model_clazz.import models, validate: true }
@@ -103,10 +103,10 @@ class BenchmarkBase
   # == PARAMETER
   #  * num - the number of records to create
   def build_array_of_cols_and_vals( num )
-    cols = [ :my_name, :description ]
+    cols = [:my_name, :description]
     value_sets = []
-    num.times { |i| value_sets << [ "My Name #{i}", "My Description #{i}" ] }
-    [ cols, value_sets ]
+    num.times { |i| value_sets << ["My Name #{i}", "My Description #{i}"] }
+    [cols, value_sets]
   end
 
   # Returns a hash of column identifier to value mappings giving the passed in
@@ -119,7 +119,7 @@ class BenchmarkBase
   #   # hsh => { 'id'=>1, 'name'=>'John Doe', 'description'=>'A plumber' }
   def create_hash_for_cols_and_vals( cols, vals )
     h = {}
-    cols.zip( vals ){ |col,val| h[col] = val }
+    cols.zip( vals ) { |col, val| h[col] = val }
     h
   end
 
@@ -133,5 +133,4 @@ class BenchmarkBase
   def initialize   # :nodoc:
     @results = []
   end
-
 end

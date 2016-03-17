@@ -28,9 +28,9 @@ module BenchmarkOptionParser
   end
 
   # TODO IMPLEMENT THIS
-  def self.print_valid_table_types( options, hsh={prefix: ''} )
+  def self.print_valid_table_types( options, hsh = { prefix: '' } )
     if options.table_types.keys.size > 0
-      options.table_types.keys.sort.each{ |type| puts hsh[:prefix].to_s + type.to_s }
+      options.table_types.keys.sort.each { |type| puts hsh[:prefix].to_s + type.to_s }
     else
       puts 'No table types defined.'
     end
@@ -55,7 +55,7 @@ module BenchmarkOptionParser
 
       # parse do_not_delete flag
       opts.on( "d", "--do-not-delete",
-        "By default all records in the benchmark tables will be deleted at the end of the benchmark. " +
+        "By default all records in the benchmark tables will be deleted at the end of the benchmark. " \
         "This flag indicates not to delete the benchmark data." ) do |arg|
         options.delete_on_finish = false
       end
@@ -85,7 +85,7 @@ module BenchmarkOptionParser
       opts.on( "--to-html [String]", "Print results in HTML format" ) do |filename|
         options.outputs << OpenStruct.new( format: 'html', filename: filename )
       end
-    end #end opt.parse!
+    end # end opt.parse!
 
     begin
       opts.parse!( args )
@@ -97,11 +97,10 @@ module BenchmarkOptionParser
     end
 
     options.number_of_objects = [1000] if options.number_of_objects.empty?
-    options.outputs = [ OpenStruct.new( format: 'html', filename: 'benchmark.html')] if options.outputs.empty?
+    options.outputs = [OpenStruct.new( format: 'html', filename: 'benchmark.html')] if options.outputs.empty?
 
     print_options( options )
 
     options
   end
-
 end

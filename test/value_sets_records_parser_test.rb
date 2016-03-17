@@ -4,9 +4,9 @@ require 'activerecord-import/value_sets_parser'
 
 describe "ActiveRecord::Import::ValueSetsRecordsParser" do
   context "#parse - computing insert value sets" do
-    let(:parser){ ActiveRecord::Import::ValueSetsRecordsParser }
-    let(:base_sql){ "INSERT INTO atable (a,b,c)" }
-    let(:values){ [ "(1,2,3)", "(2,3,4)", "(3,4,5)" ] }
+    let(:parser) { ActiveRecord::Import::ValueSetsRecordsParser }
+    let(:base_sql) { "INSERT INTO atable (a,b,c)" }
+    let(:values) { ["(1,2,3)", "(2,3,4)", "(3,4,5)"] }
 
     context "when the max number of records is 1" do
       it "should return 3 value sets when given 3 values sets" do

@@ -4,13 +4,13 @@ class ActiveSupport::TestCase
 
   class << self
     def requires_active_record_version(version_string, &blk)
-      if Gem::Dependency.new("expected",version_string).match?("actual", ActiveRecord::VERSION::STRING)
+      if Gem::Dependency.new("expected", version_string).match?("actual", ActiveRecord::VERSION::STRING)
         instance_eval(&blk)
       end
     end
 
     def assertion(name, &block)
-      mc = class << self ; self ; end
+      mc = class << self; self; end
       mc.class_eval do
         define_method(name) do
           it(name, &block)
@@ -19,7 +19,7 @@ class ActiveSupport::TestCase
     end
 
     def asssertion_group(name, &block)
-      mc = class << self ; self ; end
+      mc = class << self; self; end
       mc.class_eval do
         define_method(name, &block)
       end
@@ -31,7 +31,7 @@ class ActiveSupport::TestCase
       end
     end
 
-    def describe(description, toplevel=nil, &blk)
+    def describe(description, toplevel = nil, &blk)
       text = toplevel ? description : "#{name} #{description}"
       klass = Class.new(self)
 
@@ -64,10 +64,8 @@ class ActiveSupport::TestCase
       define_method("test_#{name}_#{description}", &blk)
     end
   end
-
 end
 
 def describe(description, &blk)
   ActiveSupport::TestCase.describe(description, true, &blk)
 end
-
