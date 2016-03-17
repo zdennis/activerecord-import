@@ -125,6 +125,12 @@ ActiveRecord::Schema.define do
 
   add_index :promotions, [:code], unique: true, name: 'uk_code'
 
+  create_table :discounts, force: :cascade do |t|
+    t.decimal :amount
+    t.integer :discountable_id
+    t.string :discountable_type
+  end
+
   create_table :rules, force: :cascade do |t|
     t.string :condition_text
     t.integer :question_id
