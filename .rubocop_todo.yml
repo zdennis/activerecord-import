@@ -35,12 +35,6 @@ Style/CommentAnnotation:
     - 'benchmarks/lib/cli_parser.rb'
     - 'lib/activerecord-import/import.rb'
 
-# Offense count: 1
-# Configuration parameters: ExpectMatchingDefinition, Regex, IgnoreExecutableScripts.
-Style/FileName:
-  Exclude:
-    - 'lib/activerecord-import.rb'
-
 # Offense count: 6
 # Cop supports --auto-correct.
 # Configuration parameters: Width.
