@@ -36,11 +36,6 @@ Style/CommentAnnotation:
     - 'lib/activerecord-import/import.rb'
 
 # Offense count: 1
-Style/ConstantName:
-  Exclude:
-    - 'lib/activerecord-import/base.rb'
-
-# Offense count: 1
 # Configuration parameters: ExpectMatchingDefinition, Regex, IgnoreExecutableScripts.
 Style/FileName:
   Exclude:
