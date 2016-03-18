@@ -26,12 +26,6 @@ Lint/UnusedMethodArgument:
     - 'lib/activerecord-import/adapters/postgresql_adapter.rb'
     - 'lib/activerecord-import/import.rb'
 
-# Offense count: 23
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: nested, compact
-Style/ClassAndModuleChildren:
-  Enabled: false
-
 # Offense count: 2
 # Cop supports --auto-correct.
 # Configuration parameters: Keywords.
@@ -40,14 +34,6 @@ Style/CommentAnnotation:
   Exclude:
     - 'benchmarks/lib/cli_parser.rb'
     - 'lib/activerecord-import/import.rb'
-
-# Offense count: 2
-# Cop supports --auto-correct.
-# Configuration parameters: SingleLineConditionsOnly.
-Style/ConditionalAssignment:
-  Exclude:
-    - 'benchmarks/benchmark.rb'
-    - 'benchmarks/lib/output_to_html.rb'
 
 # Offense count: 1
 Style/ConstantName:

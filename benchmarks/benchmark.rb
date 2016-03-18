@@ -39,10 +39,10 @@ Dir[File.dirname(__FILE__) + "/models/*.rb"].each { |file| require file }
 require File.join( benchmark_dir, 'lib', "#{options.adapter}_benchmark" )
 
 table_types = nil
-if options.benchmark_all_types
-  table_types = ["all"]
+table_types = if options.benchmark_all_types
+  ["all"]
 else
-  table_types = options.table_types.keys
+  options.table_types.keys
 end
 
 letter = options.adapter[0].chr
