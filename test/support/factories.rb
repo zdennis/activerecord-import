@@ -1,28 +1,28 @@
 FactoryGirl.define do
-  sequence(:book_title) {|n| "Book #{n}"}
-  sequence(:chapter_title) {|n| "Chapter #{n}"}
-  sequence(:end_note) {|n| "Endnote #{n}"}
+  sequence(:book_title) { |n| "Book #{n}" }
+  sequence(:chapter_title) { |n| "Chapter #{n}" }
+  sequence(:end_note) { |n| "Endnote #{n}" }
 
   factory :group do
     sequence(:order) { |n| "Order #{n}" }
   end
 
-  factory :invalid_topic, :class => "Topic" do
-    sequence(:title){ |n| "Title #{n}"}
+  factory :invalid_topic, class: "Topic" do
+    sequence(:title) { |n| "Title #{n}" }
     author_name nil
   end
 
   factory :topic do
-    sequence(:title){ |n| "Title #{n}"}
-    sequence(:author_name){ |n| "Author #{n}"}
+    sequence(:title) { |n| "Title #{n}" }
+    sequence(:author_name) { |n| "Author #{n}" }
   end
 
   factory :widget do
-    sequence(:w_id){ |n| n}
+    sequence(:w_id) { |n| n }
   end
 
   factory :question do
-    sequence(:body) { |n| "Text #{n}"}
+    sequence(:body) { |n| "Text #{n}" }
 
     trait :with_rule do
       after(:build) do |question|
@@ -30,24 +30,23 @@ FactoryGirl.define do
       end
     end
   end
-  
+
   factory :rule do
-    sequence(:condition_text){ |n| "q_#{n}_#{n}"} 
+    sequence(:condition_text) { |n| "q_#{n}_#{n}" }
   end
 
-  factory :topic_with_book, :parent=>:topic do |m|
+  factory :topic_with_book, parent: :topic do
     after(:build) do |topic|
       2.times do
-        book = topic.books.build(:title=>FactoryGirl.generate(:book_title), :author_name=>'Stephen King')
+        book = topic.books.build(title: FactoryGirl.generate(:book_title), author_name: 'Stephen King')
         3.times do
-          book.chapters.build(:title => FactoryGirl.generate(:chapter_title))
+          book.chapters.build(title: FactoryGirl.generate(:chapter_title))
         end
 
         4.times do
-          book.end_notes.build(:note => FactoryGirl.generate(:end_note))
+          book.end_notes.build(note: FactoryGirl.generate(:end_note))
         end
       end
     end
   end
-
 end

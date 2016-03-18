@@ -30,7 +30,7 @@ class ActiveSupport::TestCase
 
         assertion(:should_not_update_timestamps) do
           Timecop.freeze Chronic.parse("5 minutes from now") do
-            perform_import :timestamps => false
+            perform_import timestamps: false
             assert_in_delta @topic.created_at.to_i, updated_topic.created_at.to_i, 1
             assert_in_delta @topic.created_on.to_i, updated_topic.created_on.to_i, 1
             assert_in_delta @topic.updated_at.to_i, updated_topic.updated_at.to_i, 1

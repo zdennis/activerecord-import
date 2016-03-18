@@ -1,8 +1,8 @@
 require File.expand_path('../test_helper', __FILE__)
 
 describe ".synchronize" do
-  let(:topics){ Generate(3, :topics) }
-  let(:titles){ %w(one two three) }
+  let(:topics) { Generate(3, :topics) }
+  let(:titles) { %w(one two three) }
 
   setup do
     # update records outside of ActiveRecord knowing about it

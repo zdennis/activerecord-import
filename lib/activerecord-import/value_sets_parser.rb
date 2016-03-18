@@ -14,8 +14,8 @@ module ActiveRecord::Import
 
     def parse
       value_sets = []
-      arr, current_arr_values_size, current_size = [], 0, 0
-      values.each_with_index do |val,i|
+      arr, current_size = [], 0
+      values.each_with_index do |val, i|
         comma_bytes = arr.size
         bytes_thus_far = reserved_bytes + current_size + val.bytesize + comma_bytes
         if bytes_thus_far <= max_bytes
@@ -23,15 +23,15 @@ module ActiveRecord::Import
           arr << val
         else
           value_sets << arr
-          arr = [ val ]
+          arr = [val]
           current_size = val.bytesize
         end
 
         # if we're on the last iteration push whatever we have in arr to value_sets
-        value_sets << arr if i == (values.size-1)
+        value_sets << arr if i == (values.size - 1)
       end
 
-      [ *value_sets ]
+      [*value_sets]
     end
   end
 
@@ -48,7 +48,7 @@ module ActiveRecord::Import
     end
 
     def parse
-      @values.in_groups_of(max_records, with_fill=false)
+      @values.in_groups_of(max_records, false)
     end
   end
 end

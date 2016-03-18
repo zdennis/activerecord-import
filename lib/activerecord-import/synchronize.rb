@@ -1,6 +1,5 @@
 module ActiveRecord # :nodoc:
   class Base # :nodoc:
-
     # Synchronizes the passed in ActiveRecord instances with data
     # from the database. This is like calling reload on an individual
     # ActiveRecord instance but it is intended for use on multiple instances.
@@ -21,45 +20,44 @@ module ActiveRecord # :nodoc:
     # Post.synchronize posts, [:name] # queries on the :name column and not the :id column
     # posts.first.address # => "1245 Foo Ln" instead of whatever it was
     #
-    def self.synchronize(instances, keys=[self.primary_key])
+    def self.synchronize(instances, keys = [self.primary_key])
       return if instances.empty?
 
       conditions = {}
-      order = ""
 
       key_values = keys.map { |key| instances.map(&"#{key}".to_sym) }
       keys.zip(key_values).each { |key, values| conditions[key] = values }
-      order = keys.map{ |key| "#{key} ASC" }.join(",")
+      order = keys.map { |key| "#{key} ASC" }.join(",")
 
       klass = instances.first.class
 
       fresh_instances = klass.where(conditions).order(order)
       instances.each do |instance|
         matched_instance = fresh_instances.detect do |fresh_instance|
-          keys.all?{ |key| fresh_instance.send(key) == instance.send(key) }
+          keys.all? { |key| fresh_instance.send(key) == instance.send(key) }
         end
 
-        if matched_instance
-          instance.send :clear_aggregation_cache
-          instance.send :clear_association_cache
-          instance.instance_variable_set :@attributes, matched_instance.instance_variable_get(:@attributes)
+        next unless matched_instance
 
-          if instance.respond_to?(:clear_changes_information)
-            instance.clear_changes_information                  # Rails 4.1 and higher
-          else
-            instance.changed_attributes.clear                   # Rails 3.1, 3.2
-          end
+        instance.send :clear_aggregation_cache
+        instance.send :clear_association_cache
+        instance.instance_variable_set :@attributes, matched_instance.instance_variable_get(:@attributes)
 
-          # Since the instance now accurately reflects the record in
-          # the database, ensure that instance.persisted? is true.
-          instance.instance_variable_set '@new_record', false
-          instance.instance_variable_set '@destroyed', false
+        if instance.respond_to?(:clear_changes_information)
+          instance.clear_changes_information                  # Rails 4.1 and higher
+        else
+          instance.changed_attributes.clear                   # Rails 3.1, 3.2
         end
+
+        # Since the instance now accurately reflects the record in
+        # the database, ensure that instance.persisted? is true.
+        instance.instance_variable_set '@new_record', false
+        instance.instance_variable_set '@destroyed', false
       end
     end
 
     # See ActiveRecord::ConnectionAdapters::AbstractAdapter.synchronize
-    def synchronize(instances, key=[ActiveRecord::Base.primary_key])
+    def synchronize(instances, key = [ActiveRecord::Base.primary_key])
       self.class.synchronize(instances, key)
     end
   end

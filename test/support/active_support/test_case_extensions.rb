@@ -1,25 +1,24 @@
 class ActiveSupport::TestCase
   include ActiveRecord::TestFixtures
   self.use_transactional_fixtures = true
-  
+
   class << self
     def requires_active_record_version(version_string, &blk)
-      if Gem::Dependency.new("expected",version_string).match?("actual", ActiveRecord::VERSION::STRING)
-        instance_eval(&blk)
-      end
+      return unless Gem::Dependency.new("expected", version_string).match?("actual", ActiveRecord::VERSION::STRING)
+      instance_eval(&blk)
     end
 
     def assertion(name, &block)
-      mc = class << self ; self ; end
+      mc = class << self; self; end
       mc.class_eval do
         define_method(name) do
           it(name, &block)
         end
       end
     end
-    
+
     def asssertion_group(name, &block)
-      mc = class << self ; self ; end
+      mc = class << self; self; end
       mc.class_eval do
         define_method(name, &block)
       end
@@ -30,8 +29,8 @@ class ActiveSupport::TestCase
         define_method(name, &block)
       end
     end
-    
-    def describe(description, toplevel=nil, &blk)
+
+    def describe(description, toplevel = nil, &blk)
       text = toplevel ? description : "#{name} #{description}"
       klass = Class.new(self)
 
@@ -48,10 +47,10 @@ class ActiveSupport::TestCase
         end
       end
 
-      klass.instance_eval &blk
+      klass.instance_eval(&blk)
     end
     alias_method :context, :describe
-    
+
     def let(name, &blk)
       define_method(name) do
         instance_variable_name = "@__let_#{name}"
@@ -59,15 +58,13 @@ class ActiveSupport::TestCase
         instance_variable_set(instance_variable_name, instance_eval(&blk))
       end
     end
-    
+
     def it(description, &blk)
       define_method("test_#{name}_#{description}", &blk)
     end
   end
-  
 end
 
 def describe(description, &blk)
   ActiveSupport::TestCase.describe(description, true, &blk)
 end
-

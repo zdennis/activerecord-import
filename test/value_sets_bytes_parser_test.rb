@@ -4,48 +4,48 @@ require 'activerecord-import/value_sets_parser'
 
 describe ActiveRecord::Import::ValueSetsBytesParser do
   context "#parse - computing insert value sets" do
-    let(:parser){ ActiveRecord::Import::ValueSetsBytesParser }
-    let(:base_sql){ "INSERT INTO atable (a,b,c)" }
-    let(:values){ [ "(1,2,3)", "(2,3,4)", "(3,4,5)" ] }
+    let(:parser) { ActiveRecord::Import::ValueSetsBytesParser }
+    let(:base_sql) { "INSERT INTO atable (a,b,c)" }
+    let(:values) { ["(1,2,3)", "(2,3,4)", "(3,4,5)"] }
 
     context "when the max allowed bytes is 33 and the base SQL is 26 bytes" do
       it "should return 3 value sets when given 3 value sets of 7 bytes a piece" do
-        value_sets = parser.parse values, :reserved_bytes => base_sql.size, :max_bytes => 33
+        value_sets = parser.parse values, reserved_bytes: base_sql.size, max_bytes: 33
         assert_equal 3, value_sets.size
       end
     end
 
     context "when the max allowed bytes is 40 and the base SQL is 26 bytes" do
       it "should return 3 value sets when given 3 value sets of 7 bytes a piece" do
-        value_sets = parser.parse values, :reserved_bytes => base_sql.size, :max_bytes => 40
+        value_sets = parser.parse values, reserved_bytes: base_sql.size, max_bytes: 40
         assert_equal 3, value_sets.size
       end
     end
 
     context "when the max allowed bytes is 41 and the base SQL is 26 bytes" do
       it "should return 2 value sets when given 2 value sets of 7 bytes a piece" do
-        value_sets = parser.parse values, :reserved_bytes => base_sql.size, :max_bytes => 41
+        value_sets = parser.parse values, reserved_bytes: base_sql.size, max_bytes: 41
         assert_equal 2, value_sets.size
       end
     end
 
     context "when the max allowed bytes is 48 and the base SQL is 26 bytes" do
       it "should return 2 value sets when given 2 value sets of 7 bytes a piece" do
-        value_sets = parser.parse values, :reserved_bytes => base_sql.size, :max_bytes => 48
+        value_sets = parser.parse values, reserved_bytes: base_sql.size, max_bytes: 48
         assert_equal 2, value_sets.size
       end
     end
 
     context "when the max allowed bytes is 49 and the base SQL is 26 bytes" do
       it "should return 1 value sets when given 1 value sets of 7 bytes a piece" do
-        value_sets = parser.parse values, :reserved_bytes => base_sql.size, :max_bytes => 49
+        value_sets = parser.parse values, reserved_bytes: base_sql.size, max_bytes: 49
         assert_equal 1, value_sets.size
       end
     end
 
     context "when the max allowed bytes is 999999 and the base SQL is 26 bytes" do
       it "should return 1 value sets when given 1 value sets of 7 bytes a piece" do
-        value_sets = parser.parse values, :reserved_bytes => base_sql.size, :max_bytes => 999999
+        value_sets = parser.parse values, reserved_bytes: base_sql.size, max_bytes: 999_999
         assert_equal 1, value_sets.size
       end
     end
@@ -54,9 +54,8 @@ describe ActiveRecord::Import::ValueSetsBytesParser do
       values = [
         "('1','2','3')",
         "('4','5','6')",
-        "('7','8','9')" ]
+        "('7','8','9')"]
 
-      values_size_in_bytes = values.sum {|value| value.bytesize }
       base_sql_size_in_bytes = 15
       max_bytes = 30
 
@@ -64,8 +63,9 @@ describe ActiveRecord::Import::ValueSetsBytesParser do
       assert_equal 3, value_sets.size, 'Three value sets were expected!'
 
       # Each element in the value_sets array must be an array
-      value_sets.each_with_index { |e,i|
-        assert_kind_of Array, e, "Element #{i} was expected to be an Array!" }
+      value_sets.each_with_index do |e, i|
+        assert_kind_of Array, e, "Element #{i} was expected to be an Array!"
+      end
 
       # Each element in the values array should have a 1:1 correlation to the elements
       # in the returned value_sets arrays
@@ -79,18 +79,15 @@ describe ActiveRecord::Import::ValueSetsBytesParser do
         # each accented e should be 2 bytes, so each entry is 6 bytes instead of 5
         values = [
           "('é')",
-          "('é')" ]
+          "('é')"]
 
         base_sql_size_in_bytes = 15
         max_bytes = 26
 
-        values_size_in_bytes = values.sum {|value| value.bytesize }
         value_sets = parser.parse values, reserved_bytes: base_sql_size_in_bytes, max_bytes: max_bytes
 
         assert_equal 2, value_sets.size, 'Two value sets were expected!'
       end
     end
   end
-
 end
-

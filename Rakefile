@@ -11,7 +11,7 @@ namespace :display do
     puts
   end
 end
-task :default => ["display:notice"]
+task default: ["display:notice"]
 
 ADAPTERS = %w(mysql2 jdbcmysql jdbcpostgresql postgresql sqlite3 seamless_database_pool mysql2spatial spatialite postgis)
 ADAPTERS.each do |adapter|

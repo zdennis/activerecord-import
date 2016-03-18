@@ -1,7 +1,6 @@
 require 'erb'
 
 module OutputToHTML
-
 TEMPLATE_HEADER =<<"EOT"
   <div>
     All times are rounded to the nearest thousandth for display purposes. Speedups next to each time are computed
@@ -40,30 +39,30 @@ TEMPLATE =<<"EOT"
    </table>
 EOT
 
-  def self.output_results( filename, results )
-    html = ''
-    results.each do |result_set|
-      columns, times = [], []
-      result_set.each do |result|
-        columns << result.description
-        if result.failed
-          times << "failed"
-        else
-          time = result.tms.real.round_to( 3 )
-          speedup = ( result_set.first.tms.real / result.tms.real ).round 
+def self.output_results( filename, results )
+  html = ''
+  results.each do |result_set|
+    columns, times = [], []
+    result_set.each do |result|
+      columns << result.description
+      if result.failed
+        times << "failed"
+      else
+        time = result.tms.real.round_to( 3 )
+        speedup = ( result_set.first.tms.real / result.tms.real ).round
 
-          if result == result_set.first
-            times << "#{time}"
-          else
-            times << "#{time} (#{speedup}x speedup)"
-          end
+        if result == result_set.first
+          times << "#{time}"
+        else
+          times << "#{time} (#{speedup}x speedup)"
         end
       end
-
-      template = ERB.new( TEMPLATE, 0, "%<>")
-      html << template.result( binding )
     end
-    
-    File.open( filename, 'w' ){ |file| file.write( TEMPLATE_HEADER + html ) }
+
+    template = ERB.new( TEMPLATE, 0, "%<>")
+    html << template.result( binding )
   end
+
+  File.open( filename, 'w' ) { |file| file.write( TEMPLATE_HEADER + html ) }
+end
 end

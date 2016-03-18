@@ -1,138 +1,136 @@
 ActiveRecord::Schema.define do
-
-  create_table :schema_info, :force=>true do |t|
-    t.column :version, :integer, :unique=>true
+  create_table :schema_info, force: :cascade do |t|
+    t.integer :version, unique: true
   end
-  SchemaInfo.create :version=>SchemaInfo::VERSION
+  SchemaInfo.create version: SchemaInfo::VERSION
 
-  create_table :group, :force => true do |t|
-    t.column :order, :string
+  create_table :group, force: :cascade do |t|
+    t.string :order
     t.timestamps null: true
   end
 
-  create_table :topics, :force=>true do |t|
-    t.column :title, :string, :null => false
-    t.column :author_name, :string
-    t.column :author_email_address, :string
-    t.column :written_on, :datetime
-    t.column :bonus_time, :time
-    t.column :last_read, :datetime
-    t.column :content, :text
-    t.column :approved, :boolean, :default=>'1'
-    t.column :replies_count, :integer
-    t.column :parent_id, :integer
-    t.column :type, :string
-    t.column :created_at, :datetime
-    t.column :created_on, :datetime
-    t.column :updated_at, :datetime
-    t.column :updated_on, :datetime
+  create_table :topics, force: :cascade do |t|
+    t.string :title, null: false
+    t.string :author_name
+    t.string :author_email_address
+    t.datetime :written_on
+    t.time :bonus_time
+    t.datetime :last_read
+    t.text :content
+    t.boolean :approved, default: '1'
+    t.integer :replies_count
+    t.integer :parent_id
+    t.string :type
+    t.datetime :created_at
+    t.datetime :created_on
+    t.datetime :updated_at
+    t.datetime :updated_on
   end
 
-  create_table :projects, :force=>true do |t|
-    t.column :name, :string
-    t.column :type, :string
+  create_table :projects, force: :cascade do |t|
+    t.string :name
+    t.string :type
   end
 
-  create_table :developers, :force=>true do |t|
-    t.column :name, :string
-    t.column :salary, :integer, :default=>'70000'
-    t.column :created_at, :datetime
-    t.column :team_id, :integer
-    t.column :updated_at, :datetime
+  create_table :developers, force: :cascade do |t|
+    t.string :name
+    t.integer :salary, default: '70000'
+    t.datetime :created_at
+    t.integer :team_id
+    t.datetime :updated_at
   end
 
-  create_table :addresses, :force=>true do |t|
-    t.column :address, :string
-    t.column :city, :string
-    t.column :state, :string
-    t.column :zip, :string
-    t.column :developer_id, :integer
+  create_table :addresses, force: :cascade do |t|
+    t.string :address
+    t.string :city
+    t.string :state
+    t.string :zip
+    t.integer :developer_id
   end
 
-  create_table :teams, :force=>true do |t|
-    t.column :name, :string
+  create_table :teams, force: :cascade do |t|
+    t.string :name
   end
 
-  create_table :books, :force=>true do |t|
-    t.column :title, :string, :null=>false
-    t.column :publisher, :string, :null=>false, :default => 'Default Publisher'
-    t.column :author_name, :string, :null=>false
-    t.column :created_at, :datetime
-    t.column :created_on, :datetime
-    t.column :updated_at, :datetime
-    t.column :updated_on, :datetime
-    t.column :publish_date, :date
-    t.column :topic_id, :integer
-    t.column :for_sale, :boolean, :default => true
-    t.column :status, :integer, :default => 0
+  create_table :books, force: :cascade do |t|
+    t.string :title, null: false
+    t.string :publisher, null: false, default: 'Default Publisher'
+    t.string :author_name, null: false
+    t.datetime :created_at
+    t.datetime :created_on
+    t.datetime :updated_at
+    t.datetime :updated_on
+    t.date :publish_date
+    t.integer :topic_id
+    t.boolean :for_sale, default: true
+    t.integer :status, default: 0
   end
 
-  create_table :chapters, :force => true do |t|
-    t.column :title, :string
-    t.column :book_id, :integer, :null => false
-    t.column :created_at, :datetime
-    t.column :updated_at, :datetime
+  create_table :chapters, force: :cascade do |t|
+    t.string :title
+    t.integer :book_id, null: false
+    t.datetime :created_at
+    t.datetime :updated_at
   end
 
-  create_table :end_notes, :force => true do |t|
-    t.column :note, :string
-    t.column :book_id, :integer, :null => false
-    t.column :created_at, :datetime
-    t.column :updated_at, :datetime
+  create_table :end_notes, force: :cascade do |t|
+    t.string :note
+    t.integer :book_id, null: false
+    t.datetime :created_at
+    t.datetime :updated_at
   end
 
-
-  create_table :languages, :force=>true do |t|
-    t.column :name, :string
-    t.column :developer_id, :integer
+  create_table :languages, force: :cascade do |t|
+    t.string :name
+    t.integer :developer_id
   end
 
-  create_table :shopping_carts, :force=>true do |t|
-    t.column :name, :string, :null => true
-    t.column :created_at, :datetime
-    t.column :updated_at, :datetime
+  create_table :shopping_carts, force: :cascade do |t|
+    t.string :name, null: true
+    t.datetime :created_at
+    t.datetime :updated_at
   end
 
-  create_table :cart_items, :force => true do |t|
-    t.column :shopping_cart_id, :string, :null => false
-    t.column :book_id, :string, :null => false
-    t.column :copies, :integer, :default => 1
-    t.column :created_at, :datetime
-    t.column :updated_at, :datetime
+  create_table :cart_items, force: :cascade do |t|
+    t.string :shopping_cart_id, null: false
+    t.string :book_id, null: false
+    t.integer :copies, default: 1
+    t.datetime :created_at
+    t.datetime :updated_at
   end
 
-  add_index :cart_items, [:shopping_cart_id, :book_id], :unique => true, :name => 'uk_shopping_cart_books'
+  add_index :cart_items, [:shopping_cart_id, :book_id], unique: true, name: 'uk_shopping_cart_books'
 
-  create_table :animals, :force => true do |t|
-    t.column :name, :string, :null => false
-    t.column :size, :string, :default => nil
-    t.column :created_at, :datetime
-    t.column :updated_at, :datetime
+  create_table :animals, force: :cascade do |t|
+    t.string :name, null: false
+    t.string :size, default: nil
+    t.datetime :created_at
+    t.datetime :updated_at
   end
 
-  add_index :animals, [:name], :unique => true, :name => 'uk_animals'
+  add_index :animals, [:name], unique: true, name: 'uk_animals'
 
-  create_table :widgets, :id => false, :force => true do |t|
+  create_table :widgets, id: false, force: :cascade do |t|
     t.integer :w_id
-    t.boolean :active, :default => false
-    t.text    :data
-    t.text    :json_data
+    t.boolean :active, default: false
+    t.text :data
+    t.text :json_data
   end
 
-  create_table "promotions", primary_key: "promotion_id", force: :cascade do |t|
-    t.string   :code
-    t.string   :description
-    t.decimal  :discount
+  create_table :promotions, primary_key: :promotion_id, force: :cascade do |t|
+    t.string :code
+    t.string :description
+    t.decimal :discount
   end
 
-  add_index :promotions, [:code], :unique => true, :name => 'uk_code'
+  add_index :promotions, [:code], unique: true, name: 'uk_code'
 
-  create_table :rules, force: true do |t|
-    t.column :condition_text, :string
-    t.column :question_id, :integer
+  create_table :rules, force: :cascade do |t|
+    t.string :condition_text
+    t.integer :question_id
   end
 
-  create_table :questions, force: true do |t|
-    t.column :body, :string
+  create_table :questions, force: :cascade do |t|
+    t.string :body
   end
 end

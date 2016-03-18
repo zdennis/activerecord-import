@@ -38,24 +38,22 @@ ActiveRecord::Base.default_timezone = :utc
 require "activerecord-import"
 ActiveRecord::Base.establish_connection :test
 
-ActiveSupport::Notifications.subscribe(/active_record.sql/) do |event, _, _, _, hsh|
+ActiveSupport::Notifications.subscribe(/active_record.sql/) do |_, _, _, _, hsh|
   ActiveRecord::Base.logger.info hsh[:sql]
 end
 
 require "factory_girl"
-Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each{ |file| require file }
+Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each { |file| require file }
 
 # Load base/generic schema
 require test_dir.join("schema/version")
 require test_dir.join("schema/generic_schema")
 adapter_schema = test_dir.join("schema/#{adapter}_schema.rb")
-require adapter_schema if File.exists?(adapter_schema)
+require adapter_schema if File.exist?(adapter_schema)
 
-Dir[File.dirname(__FILE__) + "/models/*.rb"].each{ |file| require file }
+Dir[File.dirname(__FILE__) + "/models/*.rb"].each { |file| require file }
 
 # Prevent this deprecation warning from breaking the tests.
 Rake::FileList.send(:remove_method, :import)
 
-if ENV['AR_VERSION'].to_f >= 4.2
-  ActiveSupport::TestCase.test_order = :random
-end
+ActiveSupport::TestCase.test_order = :random if ENV['AR_VERSION'].to_f >= 4.2

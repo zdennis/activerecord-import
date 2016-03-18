@@ -5,7 +5,7 @@ class ActiveSupport::TestCase
     factory_girl_args = args.shift || {}
 
     if n
-      Array.new.tap do |collection|
+      [].tap do |collection|
         n.times.each { collection << FactoryGirl.build(factory.to_s.singularize.to_sym, factory_girl_args) }
       end
     else
@@ -19,7 +19,7 @@ class ActiveSupport::TestCase
     factory_girl_args = args.shift || {}
 
     if n
-      Array.new.tap do |collection|
+      [].tap do |collection|
         n.times.each { collection << FactoryGirl.create(factory.to_s.singularize.to_sym, factory_girl_args) }
       end
     else
