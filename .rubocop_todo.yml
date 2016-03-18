@@ -18,13 +18,6 @@ Lint/RescueException:
     - 'benchmarks/lib/cli_parser.rb'
     - 'test/import_test.rb'
 
-# Offense count: 3
-Lint/ShadowingOuterLocalVariable:
-  Exclude:
-    - 'benchmarks/lib/cli_parser.rb'
-    - 'lib/activerecord-import/adapters/mysql_adapter.rb'
-    - 'lib/activerecord-import/adapters/sqlite3_adapter.rb'
-
 # Offense count: 4
 # Cop supports --auto-correct.
 # Configuration parameters: AllowUnusedKeywordArguments, IgnoreEmptyMethods.

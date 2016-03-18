@@ -28,9 +28,9 @@ module ActiveRecord::Import::SQLite3Adapter
     value_sets = ::ActiveRecord::Import::ValueSetsRecordsParser.parse(values,
       max_records: SQLITE_LIMIT_COMPOUND_SELECT)
 
-    value_sets.each do |values|
+    value_sets.each do |value_set|
       number_of_inserts += 1
-      sql2insert = base_sql + values.join( ',' ) + post_sql
+      sql2insert = base_sql + value_set.join( ',' ) + post_sql
       insert( sql2insert, *args )
     end
 

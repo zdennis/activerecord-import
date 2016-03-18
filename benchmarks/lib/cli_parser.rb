@@ -44,7 +44,7 @@ module BenchmarkOptionParser
       number_of_objects: [],
       outputs: [] )
 
-    opts = OptionParser.new do |opts|
+    opt_parser = OptionParser.new do |opts|
       opts.banner = BANNER
 
       # parse the database adapter
@@ -88,7 +88,7 @@ module BenchmarkOptionParser
     end # end opt.parse!
 
     begin
-      opts.parse!( args )
+      opt_parser.parse!( args )
       if options.table_types.size == 0
         options.table_types['all'] = options.benchmark_all_types = true
       end
