@@ -245,13 +245,6 @@ Style/TrailingCommaInLiteral:
     - 'test/import_test.rb'
 
 # Offense count: 2
-# Cop supports --auto-correct.
-Style/UnneededInterpolation:
-  Exclude:
-    - 'benchmarks/lib/output_to_html.rb'
-    - 'lib/activerecord-import/synchronize.rb'
-
-# Offense count: 2
 Style/ZeroLengthPredicate:
   Exclude:
     - 'benchmarks/lib/cli_parser.rb'

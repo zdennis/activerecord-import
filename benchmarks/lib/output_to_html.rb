@@ -52,7 +52,7 @@ EOT
           speedup = ( result_set.first.tms.real / result.tms.real ).round
 
           if result == result_set.first
-            times << "#{time}"
+            times << time.to_s
           else
             times << "#{time} (#{speedup}x speedup)"
           end
