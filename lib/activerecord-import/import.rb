@@ -3,8 +3,7 @@ require "ostruct"
 module ActiveRecord::Import::ConnectionAdapters; end
 
 module ActiveRecord::Import #:nodoc:
-  class Result < Struct.new(:failed_instances, :num_inserts, :ids)
-  end
+  Result = Struct.new(:failed_instances, :num_inserts, :ids)
 
   module ImportSupport #:nodoc:
     def supports_import? #:nodoc:
