@@ -49,12 +49,6 @@ Lint/UnusedMethodArgument:
 
 # Offense count: 1
 # Cop supports --auto-correct.
-Performance/RedundantBlockCall:
-  Exclude:
-    - 'benchmarks/lib/base.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 # SupportedStyles: prefer_alias, prefer_alias_method
 Style/Alias:
