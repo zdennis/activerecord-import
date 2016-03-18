@@ -26,7 +26,7 @@ class BenchmarkBase
   #   * description - the description of the benchmark ran
   #   * tms - a Benchmark::Tms containing the results of the benchmark
   def bm( description )
-    tms  = nil
+    tms = nil
     puts "Benchmarking #{description}"
 
     Benchmark.bm { |x| tms = x.report { yield } }

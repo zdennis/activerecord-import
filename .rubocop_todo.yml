@@ -35,14 +35,6 @@ Style/CommentAnnotation:
     - 'benchmarks/lib/cli_parser.rb'
     - 'lib/activerecord-import/import.rb'
 
-# Offense count: 3
-# Cop supports --auto-correct.
-# Configuration parameters: AllowForAlignment.
-Style/SpaceAroundOperators:
-  Exclude:
-    - 'benchmarks/lib/base.rb'
-    - 'benchmarks/lib/output_to_html.rb'
-
 # Offense count: 1
 Style/StructInheritance:
   Exclude:
