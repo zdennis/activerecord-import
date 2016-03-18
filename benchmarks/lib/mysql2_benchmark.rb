@@ -2,7 +2,7 @@ class Mysql2Benchmark < BenchmarkBase
   def benchmark_all( array_of_cols_and_vals )
     methods = self.methods.find_all { |m| m =~ /benchmark_/ }
     methods.delete_if { |m| m =~ /benchmark_(all|model)/ }
-    methods.each { |method| self.send( method, array_of_cols_and_vals ) }
+    methods.each { |method| send( method, array_of_cols_and_vals ) }
   end
 
   def benchmark_myisam( array_of_cols_and_vals )
