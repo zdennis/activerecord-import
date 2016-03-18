@@ -85,7 +85,7 @@ module ActiveRecord::Import::MysqlAdapter
     elsif arg.is_a?( String )
       sql << arg
     else
-      raise ArgumentError.new( "Expected Array or Hash" )
+      raise ArgumentError, "Expected Array or Hash"
     end
     sql
   end

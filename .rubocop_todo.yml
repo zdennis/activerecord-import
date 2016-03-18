@@ -36,12 +36,6 @@ Style/CommentAnnotation:
     - 'lib/activerecord-import/import.rb'
 
 # Offense count: 3
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: compact, exploded
-Style/RaiseArgs:
-  Enabled: false
-
-# Offense count: 3
 # Cop supports --auto-correct.
 # Configuration parameters: AllowForAlignment.
 Style/SpaceAroundOperators:

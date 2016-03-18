@@ -85,7 +85,7 @@ class ActiveRecord::Associations::CollectionAssociation
 
       return model_klass.import column_names, array_of_attributes, options
     else
-      raise ArgumentError.new( "Invalid arguments!" )
+      raise ArgumentError, "Invalid arguments!"
     end
   end
 end
@@ -367,7 +367,7 @@ class ActiveRecord::Base
       elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
         column_names, array_of_attributes = args
       else
-        raise ArgumentError.new( "Invalid arguments!" )
+        raise ArgumentError, "Invalid arguments!"
       end
 
       # dup the passed in array so we don't modify it unintentionally
