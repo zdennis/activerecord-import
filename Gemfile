@@ -2,6 +2,10 @@ source 'https://rubygems.org'
 
 gemspec
 
+group :development, :test do
+  gem 'rubocop', '~> 0.38.0'
+end
+
 # Database Adapters
 platforms :ruby do
   gem "mysql2",                 "~> 0.3.0"
