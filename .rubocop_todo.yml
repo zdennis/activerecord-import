@@ -47,14 +47,6 @@ Lint/UnusedMethodArgument:
     - 'lib/activerecord-import/adapters/postgresql_adapter.rb'
     - 'lib/activerecord-import/import.rb'
 
-# Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: prefer_alias, prefer_alias_method
-Style/Alias:
-  Exclude:
-    - 'test/support/active_support/test_case_extensions.rb'
-
 # Offense count: 2
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedHashRocketStyle, EnforcedColonStyle, EnforcedLastArgumentHashStyle, SupportedLastArgumentHashStyles.

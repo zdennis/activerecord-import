@@ -49,7 +49,7 @@ class ActiveSupport::TestCase
 
       klass.instance_eval(&blk)
     end
-    alias_method :context, :describe
+    alias context describe
 
     def let(name, &blk)
       define_method(name) do
