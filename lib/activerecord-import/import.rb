@@ -99,9 +99,9 @@ class ActiveRecord::Base
 
     AREXT_RAILS_COLUMNS = {
       create: { "created_on" => tproc,
-                   "created_at" => tproc },
+                "created_at" => tproc },
       update: { "updated_on" => tproc,
-                   "updated_at" => tproc }
+                "updated_at" => tproc }
     }
     AREXT_RAILS_COLUMN_NAMES = AREXT_RAILS_COLUMNS[:create].keys + AREXT_RAILS_COLUMNS[:update].keys
 
