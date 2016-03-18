@@ -1,5 +1,8 @@
 inherit_from: .rubocop_todo.yml
 
+Lint/EndAlignment:
+  AlignWith: variable
+
 Metrics/AbcSize:
   Enabled: false
 
