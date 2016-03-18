@@ -47,7 +47,7 @@ class ActiveRecord::Associations::CollectionAssociation
     owner_primary_key_value = owner.send(owner_primary_key)
 
     # assume array of model objects
-    if args.last.is_a?( Array ) and args.last.first.is_a? ActiveRecord::Base
+    if args.last.is_a?( Array ) && args.last.first.is_a?(ActiveRecord::Base)
       if args.length == 2
         models = args.last
         column_names = args.first
@@ -67,11 +67,11 @@ class ActiveRecord::Associations::CollectionAssociation
       return model_klass.import column_names, models, options
 
     # supports empty array
-    elsif args.last.is_a?( Array ) and args.last.empty?
+    elsif args.last.is_a?( Array ) && args.last.empty?
       return ActiveRecord::Import::Result.new([], 0, []) if args.last.empty?
 
     # supports 2-element array and array
-    elsif args.size == 2 and args.first.is_a?( Array ) and args.last.is_a?( Array )
+    elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
       column_names, array_of_attributes = args
       symbolized_column_names = column_names.map(&:to_s)
 
@@ -303,7 +303,7 @@ class ActiveRecord::Base
     # * num_inserts - the number of insert statements it took to import the data
     # * ids - the primary keys of the imported ids, if the adpater supports it, otherwise and empty array.
     def import(*args)
-      if args.first.is_a?( Array ) and args.first.first.is_a? ActiveRecord::Base
+      if args.first.is_a?( Array ) && args.first.first.is_a?(ActiveRecord::Base)
         options = {}
         options.merge!( args.pop ) if args.last.is_a?(Hash)
 
@@ -337,7 +337,7 @@ class ActiveRecord::Base
       is_validating = true unless options[:validate_with_context].nil?
 
       # assume array of model objects
-      if args.last.is_a?( Array ) and args.last.first.is_a? ActiveRecord::Base
+      if args.last.is_a?( Array ) && args.last.first.is_a?(ActiveRecord::Base)
         if args.length == 2
           models = args.last
           column_names = args.first
@@ -360,10 +360,10 @@ class ActiveRecord::Base
           # end
         end
         # supports empty array
-      elsif args.last.is_a?( Array ) and args.last.empty?
+      elsif args.last.is_a?( Array ) && args.last.empty?
         return ActiveRecord::Import::Result.new([], 0, []) if args.last.empty?
         # supports 2-element array and array
-      elsif args.size == 2 and args.first.is_a?( Array ) and args.last.is_a?( Array )
+      elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
         column_names, array_of_attributes = args
       else
         raise ArgumentError.new( "Invalid arguments!" )

@@ -24,6 +24,9 @@ Metrics/PerceivedComplexity:
 Style/Documentation:
   Enabled: false
 
+Style/ElseAlignment:
+  Enabled: false
+
 Style/SpaceInsideParens:
   Enabled: false
 

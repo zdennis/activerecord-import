@@ -89,15 +89,6 @@ Style/AlignParameters:
     - 'lib/activerecord-import/import.rb'
     - 'test/support/mysql/import_examples.rb'
 
-# Offense count: 10
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: always, conditionals
-Style/AndOr:
-  Exclude:
-    - 'lib/activerecord-import/adapters/mysql_adapter.rb'
-    - 'lib/activerecord-import/import.rb'
-
 # Offense count: 23
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 # SupportedStyles: nested, compact
@@ -125,16 +116,6 @@ Style/ConditionalAssignment:
 Style/ConstantName:
   Exclude:
     - 'lib/activerecord-import/base.rb'
-
-# Offense count: 6
-# Cop supports --auto-correct.
-Style/ElseAlignment:
-  Exclude:
-    - 'lib/activerecord-import/adapters/abstract_adapter.rb'
-    - 'lib/activerecord-import/adapters/mysql_adapter.rb'
-    - 'lib/activerecord-import/adapters/postgresql_adapter.rb'
-    - 'lib/activerecord-import/adapters/sqlite3_adapter.rb'
-    - 'lib/activerecord-import/import.rb'
 
 # Offense count: 1
 # Configuration parameters: ExpectMatchingDefinition, Regex, IgnoreExecutableScripts.

@@ -31,7 +31,7 @@ module ActiveRecord::Import::MysqlAdapter
     max = max_allowed_packet
 
     # if we can insert it all as one statement
-    if NO_MAX_PACKET == max or total_bytes < max
+    if NO_MAX_PACKET == max || total_bytes < max
       number_of_inserts += 1
       sql2insert = base_sql + values.join( ',' ) + post_sql
       insert( sql2insert, *args )
