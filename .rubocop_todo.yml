@@ -136,20 +136,6 @@ Style/ElseAlignment:
     - 'lib/activerecord-import/adapters/sqlite3_adapter.rb'
     - 'lib/activerecord-import/import.rb'
 
-# Offense count: 18
-# Cop supports --auto-correct.
-# Configuration parameters: AllowForAlignment, ForceEqualSignAlignment.
-Style/ExtraSpacing:
-  Exclude:
-    - 'benchmarks/lib/base.rb'
-    - 'lib/activerecord-import/adapters/mysql_adapter.rb'
-    - 'lib/activerecord-import/adapters/postgresql_adapter.rb'
-    - 'lib/activerecord-import/import.rb'
-    - 'test/import_test.rb'
-    - 'test/support/mysql/import_examples.rb'
-    - 'test/support/postgresql/import_examples.rb'
-    - 'test/support/shared_examples/on_duplicate_key_update.rb'
-
 # Offense count: 1
 # Configuration parameters: ExpectMatchingDefinition, Regex, IgnoreExecutableScripts.
 Style/FileName:

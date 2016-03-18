@@ -90,7 +90,7 @@ module ActiveRecord::Import::MysqlAdapter
     sql
   end
 
-  def sql_for_on_duplicate_key_update_as_array( table_name, arr )  # :nodoc:
+  def sql_for_on_duplicate_key_update_as_array( table_name, arr ) # :nodoc:
     results = arr.map do |column|
       qc = quote_column_name( column )
       "#{table_name}.#{qc}=VALUES(#{qc})"

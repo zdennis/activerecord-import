@@ -130,7 +130,7 @@ class BenchmarkBase
     end
   end
 
-  def initialize   # :nodoc:
+  def initialize # :nodoc:
     @results = []
   end
 end

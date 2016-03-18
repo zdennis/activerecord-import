@@ -309,7 +309,7 @@ describe "#import" do
         assert_in_delta time.to_i, @new_book.created_on.to_i, 1.second
       end
 
-      it "should not set the created_at column for existing records"  do
+      it "should not set the created_at column for existing records" do
         assert_equal 2.years.ago.utc.strftime("%Y:%d"), @existing_book.created_at.strftime("%Y:%d")
       end
 
@@ -336,7 +336,7 @@ describe "#import" do
         @book = Book.last
       end
 
-      it "should set the created_at and created_on timestamps for new records"  do
+      it "should set the created_at and created_on timestamps for new records" do
         assert_in_delta time.to_i, @book.created_at.to_i, 1.second
         assert_in_delta time.to_i, @book.created_on.to_i, 1.second
       end

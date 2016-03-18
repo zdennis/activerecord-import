@@ -517,7 +517,7 @@ class ActiveRecord::Base
         model.id = id.to_i
         if model.respond_to?(:clear_changes_information) # Rails 4.0 and higher
           model.clear_changes_information
-        else  # Rails 3.1
+        else # Rails 3.1
           model.instance_variable_get(:@changed_attributes).clear
         end
         model.instance_variable_set(:@new_record, false)
@@ -574,7 +574,7 @@ class ActiveRecord::Base
 
     # Returns SQL the VALUES for an INSERT statement given the passed in +columns+
     # and +array_of_attributes+.
-    def values_sql_for_columns_and_attributes(columns, array_of_attributes)   # :nodoc:
+    def values_sql_for_columns_and_attributes(columns, array_of_attributes) # :nodoc:
       # connection gets called a *lot* in this high intensity loop.
       # Reuse the same one w/in the loop, otherwise it would keep being re-retreived (= lots of time for large imports)
       connection_memo = connection
