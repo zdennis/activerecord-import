@@ -5,7 +5,8 @@ module OutputToCSV
     CSV.open( filename, 'w' ) do |csv|
       # Iterate over each result set, which contains many results
       results.each do |result_set|
-        columns, times = [], []
+        columns = []
+        times = []
         result_set.each do |result|
           columns << result.description
           times << result.tms.real

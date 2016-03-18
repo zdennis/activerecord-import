@@ -14,7 +14,8 @@ module ActiveRecord::Import
 
     def parse
       value_sets = []
-      arr, current_size = [], 0
+      arr = []
+      current_size = 0
       values.each_with_index do |val, i|
         comma_bytes = arr.size
         bytes_thus_far = reserved_bytes + current_size + val.bytesize + comma_bytes

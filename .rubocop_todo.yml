@@ -188,14 +188,6 @@ Style/MutableConstant:
     - 'lib/activerecord-import/version.rb'
 
 # Offense count: 3
-# Cop supports --auto-correct.
-Style/ParallelAssignment:
-  Exclude:
-    - 'benchmarks/lib/output_to_csv.rb'
-    - 'benchmarks/lib/output_to_html.rb'
-    - 'lib/activerecord-import/value_sets_parser.rb'
-
-# Offense count: 3
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 # SupportedStyles: compact, exploded
 Style/RaiseArgs:

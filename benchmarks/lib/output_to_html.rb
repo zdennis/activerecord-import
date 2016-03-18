@@ -42,7 +42,8 @@ EOT
   def self.output_results( filename, results )
     html = ''
     results.each do |result_set|
-      columns, times = [], []
+      columns = []
+      times = []
       result_set.each do |result|
         columns << result.description
         if result.failed
