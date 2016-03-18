@@ -207,15 +207,6 @@ Style/RedundantParentheses:
   Exclude:
     - 'lib/activerecord-import/adapters/postgresql_adapter.rb'
 
-# Offense count: 9
-# Cop supports --auto-correct.
-Style/RedundantSelf:
-  Exclude:
-    - 'lib/activerecord-import/adapters/postgresql_adapter.rb'
-    - 'lib/activerecord-import/adapters/sqlite3_adapter.rb'
-    - 'lib/activerecord-import/import.rb'
-    - 'lib/activerecord-import/synchronize.rb'
-
 # Offense count: 3
 # Cop supports --auto-correct.
 # Configuration parameters: AllowForAlignment.
@@ -224,25 +215,10 @@ Style/SpaceAroundOperators:
     - 'benchmarks/lib/base.rb'
     - 'benchmarks/lib/output_to_html.rb'
 
-# Offense count: 3
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: use_perl_names, use_english_names
-Style/SpecialGlobalVars:
-  Enabled: false
-
 # Offense count: 1
 Style/StructInheritance:
   Exclude:
     - 'lib/activerecord-import/import.rb'
-
-# Offense count: 3
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyleForMultiline, SupportedStyles.
-# SupportedStyles: comma, consistent_comma, no_comma
-Style/TrailingCommaInLiteral:
-  Exclude:
-    - 'test/import_test.rb'
 
 # Offense count: 2
 Style/ZeroLengthPredicate:

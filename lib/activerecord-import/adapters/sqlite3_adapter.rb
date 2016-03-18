@@ -7,7 +7,7 @@ module ActiveRecord::Import::SQLite3Adapter
   # Override our conformance to ActiveRecord::Import::ImportSupport interface
   # to ensure that we only support import in supported version of SQLite.
   # Which INSERT statements with multiple value sets was introduced in 3.7.11.
-  def supports_import?(current_version = self.sqlite_version)
+  def supports_import?(current_version = sqlite_version)
     if current_version >= MIN_VERSION_FOR_IMPORT
       true
     else

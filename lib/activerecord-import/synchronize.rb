@@ -20,7 +20,7 @@ module ActiveRecord # :nodoc:
     # Post.synchronize posts, [:name] # queries on the :name column and not the :id column
     # posts.first.address # => "1245 Foo Ln" instead of whatever it was
     #
-    def self.synchronize(instances, keys = [self.primary_key])
+    def self.synchronize(instances, keys = [primary_key])
       return if instances.empty?
 
       conditions = {}

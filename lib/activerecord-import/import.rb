@@ -39,12 +39,12 @@ class ActiveRecord::Associations::CollectionAssociation
 
     options = args.last.is_a?(Hash) ? args.pop : {}
 
-    model_klass = self.reflection.klass
-    symbolized_foreign_key = self.reflection.foreign_key.to_sym
+    model_klass = reflection.klass
+    symbolized_foreign_key = reflection.foreign_key.to_sym
     symbolized_column_names = model_klass.column_names.map(&:to_sym)
 
-    owner_primary_key = self.owner.class.primary_key
-    owner_primary_key_value = self.owner.public_send(owner_primary_key)
+    owner_primary_key = owner.class.primary_key
+    owner_primary_key_value = owner.send(owner_primary_key)
 
     # assume array of model objects
     if args.last.is_a?( Array ) and args.last.first.is_a? ActiveRecord::Base
@@ -394,7 +394,7 @@ class ActiveRecord::Base
       end
 
       if options[:synchronize]
-        sync_keys = options[:synchronize_keys] || [self.primary_key]
+        sync_keys = options[:synchronize_keys] || [primary_key]
         synchronize( options[:synchronize], sync_keys)
       end
       return_obj.num_inserts = 0 if return_obj.num_inserts.nil?

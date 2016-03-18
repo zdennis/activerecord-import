@@ -122,11 +122,11 @@ module ActiveRecord::Import::PostgreSQLAdapter
     exception.is_a?(ActiveRecord::StatementInvalid) && exception.to_s.include?('duplicate key')
   end
 
-  def supports_on_duplicate_key_update?(current_version = self.postgresql_version)
+  def supports_on_duplicate_key_update?(current_version = postgresql_version)
     current_version >= MIN_VERSION_FOR_UPSERT
   end
 
-  def supports_on_duplicate_key_ignore?(current_version = self.postgresql_version)
+  def supports_on_duplicate_key_ignore?(current_version = postgresql_version)
     supports_on_duplicate_key_update?(current_version)
   end
 

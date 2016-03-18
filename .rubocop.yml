@@ -27,5 +27,11 @@ Style/Documentation:
 Style/SpaceInsideParens:
   Enabled: false
 
+Style/SpecialGlobalVars:
+  Enabled: false
+
 Style/StringLiterals:
+  Enabled: false
+
+Style/TrailingCommaInLiteral:
   Enabled: false
