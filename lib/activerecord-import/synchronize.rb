@@ -47,7 +47,7 @@ module ActiveRecord # :nodoc:
           instance.clear_changes_information                      # Rails 4.2 and higher
         else
           instance.instance_variable_set :@attributes_cache, {}   # Rails 4.0, 4.1
-          instance.changed_attributes.clear                       # Rails 3.1, 3.2
+          instance.changed_attributes.clear                       # Rails 3.2
           instance.previous_changes.clear
         end
 
