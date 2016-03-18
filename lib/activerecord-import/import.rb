@@ -319,7 +319,8 @@ class ActiveRecord::Base
     # with the failed instance.
     def import!(*args)
       options = args.last.is_a?( Hash ) ? args.pop : {}
-      options.merge!( { validate: true, raise_error: true } )
+      options[:validate] = true
+      options[:raise_error] = true
 
       import(*args, options)
     end
@@ -434,11 +435,10 @@ class ActiveRecord::Base
           hsh.each_pair { |k, v| model[k] = v }
         end
 
-        unless instance.valid?(options[:validate_with_context])
-          raise ActiveRecord::RecordInvalid.new(instance) if options[:raise_error]
-          array_of_attributes[i] = nil
-          failed_instances << instance
-        end
+        next if instance.valid?(options[:validate_with_context])
+        raise ActiveRecord::RecordInvalid.new(instance) if options[:raise_error]
+        array_of_attributes[i] = nil
+        failed_instances << instance
       end
       array_of_attributes.compact!
 
@@ -485,7 +485,8 @@ class ActiveRecord::Base
       insert_sql = "INSERT #{options[:ignore] ? 'IGNORE ' : ''}INTO #{quoted_table_name} #{columns_sql} VALUES "
       values_sql = values_sql_for_columns_and_attributes(columns, array_of_attributes)
 
-      number_inserted, ids = 0, []
+      number_inserted = 0
+      ids = []
       if supports_import?
         # generate the sql
         post_sql_statements = connection.post_sql_statements( quoted_table_name, options )
@@ -493,9 +494,9 @@ class ActiveRecord::Base
         batch_size = options[:batch_size] || values_sql.size
         values_sql.each_slice(batch_size) do |batch_values|
           # perform the inserts
-          result = connection.insert_many( [ insert_sql, post_sql_statements ].flatten,
-                                           batch_values,
-                                           "#{self.class.name} Create Many Without Validations Or Callbacks" )
+          result = connection.insert_many( [insert_sql, post_sql_statements].flatten,
+            batch_values,
+            "#{self.class.name} Create Many Without Validations Or Callbacks" )
           number_inserted += result[0]
           ids += result[1]
         end

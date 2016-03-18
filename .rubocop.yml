@@ -24,6 +24,9 @@ Metrics/ModuleLength:
 Metrics/PerceivedComplexity:
   Enabled: false
 
+Style/AlignParameters:
+  EnforcedStyle: with_fixed_indentation
+
 Style/Documentation:
   Enabled: false
 

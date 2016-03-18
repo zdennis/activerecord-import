@@ -26,18 +26,6 @@ Lint/UnusedMethodArgument:
     - 'lib/activerecord-import/adapters/postgresql_adapter.rb'
     - 'lib/activerecord-import/import.rb'
 
-# Offense count: 9
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: with_first_parameter, with_fixed_indentation
-Style/AlignParameters:
-  Exclude:
-    - 'benchmarks/lib/cli_parser.rb'
-    - 'lib/activerecord-import/adapters/mysql_adapter.rb'
-    - 'lib/activerecord-import/adapters/sqlite3_adapter.rb'
-    - 'lib/activerecord-import/import.rb'
-    - 'test/support/mysql/import_examples.rb'
-
 # Offense count: 23
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 # SupportedStyles: nested, compact
