@@ -39,14 +39,6 @@ Lint/ShadowingOuterLocalVariable:
     - 'lib/activerecord-import/adapters/mysql_adapter.rb'
     - 'lib/activerecord-import/adapters/sqlite3_adapter.rb'
 
-# Offense count: 3
-# Cop supports --auto-correct.
-# Configuration parameters: IgnoreEmptyBlocks.
-Lint/UnusedBlockArgument:
-  Exclude:
-    - 'benchmarks/lib/cli_parser.rb'
-    - 'lib/activerecord-import/import.rb'
-
 # Offense count: 4
 # Cop supports --auto-correct.
 # Configuration parameters: AllowUnusedKeywordArguments, IgnoreEmptyMethods.

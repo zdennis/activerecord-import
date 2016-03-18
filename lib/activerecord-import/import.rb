@@ -535,8 +535,8 @@ class ActiveRecord::Base
       # :on_duplicate_key_update not supported for associations
       options.delete(:on_duplicate_key_update)
 
-      associated_objects_by_class.each_pair do |class_name, associations|
-        associations.each_pair do |association_name, associated_records|
+      associated_objects_by_class.each_value do |associations|
+        associations.each_value do |associated_records|
           associated_records.first.class.import(associated_records, options) unless associated_records.empty?
         end
       end

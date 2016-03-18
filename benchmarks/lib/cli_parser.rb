@@ -56,7 +56,7 @@ module BenchmarkOptionParser
       # parse do_not_delete flag
       opts.on( "d", "--do-not-delete",
         "By default all records in the benchmark tables will be deleted at the end of the benchmark. " \
-        "This flag indicates not to delete the benchmark data." ) do |arg|
+        "This flag indicates not to delete the benchmark data." ) do |_|
         options.delete_on_finish = false
       end
 
