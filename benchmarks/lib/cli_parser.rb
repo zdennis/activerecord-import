@@ -8,7 +8,7 @@ require 'ostruct'
 # * t - the table types to test. ie: myisam, innodb, memory, temporary, etc.
 #
 module BenchmarkOptionParser
-  BANNER = "Usage: ruby #{$0} [options]\nSee ruby #{$0} -h for more options."
+  BANNER = "Usage: ruby #{$0} [options]\nSee ruby #{$0} -h for more options.".freeze
 
   def self.print_banner
     puts BANNER

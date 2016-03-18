@@ -1,7 +1,7 @@
 module ActiveRecord::Import::SQLite3Adapter
   include ActiveRecord::Import::ImportSupport
 
-  MIN_VERSION_FOR_IMPORT = "3.7.11"
+  MIN_VERSION_FOR_IMPORT = "3.7.11".freeze
   SQLITE_LIMIT_COMPOUND_SELECT = 500
 
   # Override our conformance to ActiveRecord::Import::ImportSupport interface

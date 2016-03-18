@@ -102,7 +102,7 @@ class ActiveRecord::Base
                 "created_at" => tproc },
       update: { "updated_on" => tproc,
                 "updated_at" => tproc }
-    }
+    }.freeze
     AREXT_RAILS_COLUMN_NAMES = AREXT_RAILS_COLUMNS[:create].keys + AREXT_RAILS_COLUMNS[:update].keys
 
     # Returns true if the current database connection adapter

@@ -35,18 +35,6 @@ Style/CommentAnnotation:
     - 'benchmarks/lib/cli_parser.rb'
     - 'lib/activerecord-import/import.rb'
 
-# Offense count: 8
-# Cop supports --auto-correct.
-Style/MutableConstant:
-  Exclude:
-    - 'Rakefile'
-    - 'benchmarks/lib/cli_parser.rb'
-    - 'benchmarks/lib/output_to_html.rb'
-    - 'lib/activerecord-import/adapters/sqlite3_adapter.rb'
-    - 'lib/activerecord-import/base.rb'
-    - 'lib/activerecord-import/import.rb'
-    - 'lib/activerecord-import/version.rb'
-
 # Offense count: 3
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 # SupportedStyles: compact, exploded
