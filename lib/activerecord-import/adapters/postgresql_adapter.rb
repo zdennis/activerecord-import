@@ -106,9 +106,11 @@ module ActiveRecord::Import::PostgreSQLAdapter
   end
 
   def sql_for_conflict_target( args = {} )
-    if constraint_name = args[:constraint_name]
+    constraint_name = args[:constraint_name]
+    conflict_target = args[:conflict_target]
+    if constraint_name
       "ON CONSTRAINT #{constraint_name} "
-    elsif conflict_target = args[:conflict_target]
+    elsif conflict_target
       '(' << Array( conflict_target ).join( ', ' ) << ') '
     end
   end

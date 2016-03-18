@@ -606,7 +606,8 @@ class ActiveRecord::Base
       AREXT_RAILS_COLUMNS[:create].each_pair do |key, blk|
         next unless self.column_names.include?(key)
         value = blk.call
-        if index = column_names.index(key) || index = column_names.index(key.to_sym)
+        index = column_names.index(key) || column_names.index(key.to_sym)
+        if index
           # replace every instance of the array of attributes with our value
           array_of_attributes.each { |arr| arr[index] = value if arr[index].nil? }
         else
@@ -618,7 +619,8 @@ class ActiveRecord::Base
       AREXT_RAILS_COLUMNS[:update].each_pair do |key, blk|
         next unless self.column_names.include?(key)
         value = blk.call
-        if index = column_names.index(key) || index = column_names.index(key.to_sym)
+        index = column_names.index(key) || column_names.index(key.to_sym)
+        if index
           # replace every instance of the array of attributes with our value
           array_of_attributes.each { |arr| arr[index] = value }
         else
