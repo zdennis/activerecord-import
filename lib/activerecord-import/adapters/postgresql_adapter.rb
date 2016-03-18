@@ -29,7 +29,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
     if options[:primary_key].blank?
       super(table_name, options)
     else
-      super(table_name, options) << ("RETURNING #{options[:primary_key]}")
+      super(table_name, options) << "RETURNING #{options[:primary_key]}"
     end
   end
 
