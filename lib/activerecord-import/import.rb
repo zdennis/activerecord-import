@@ -394,7 +394,7 @@ class ActiveRecord::Base
         set_ids_and_mark_clean(models, return_obj)
 
         # if there are auto-save associations on the models we imported that are new, import them as well
-        import_associations(models, options) if options[:recursive]
+        import_associations(models, options.dup) if options[:recursive]
       end
 
       return_obj
@@ -515,6 +515,9 @@ class ActiveRecord::Base
       #    should probably take a hash to associations to follow.
       associated_objects_by_class = {}
       models.each { |model| find_associated_objects_for_import(associated_objects_by_class, model) }
+
+      # :on_duplicate_key_update not supported for associations
+      options.delete(:on_duplicate_key_update)
 
       associated_objects_by_class.each_pair do |class_name, associations|
         associations.each_pair do |association_name, associated_records|
