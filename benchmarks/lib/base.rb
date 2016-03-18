@@ -10,7 +10,7 @@ class BenchmarkBase
   def benchmark( table_types, num )
     array_of_cols_and_vals = build_array_of_cols_and_vals( num )
     table_types.each do |table_type|
-      self.send( "benchmark_#{table_type}", array_of_cols_and_vals )
+      send( "benchmark_#{table_type}", array_of_cols_and_vals )
     end
   end
 
