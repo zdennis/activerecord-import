@@ -21,9 +21,9 @@ def should_support_postgresql_import_functionality
     describe "importing objects with associations" do
       let(:new_topics) { Build(num_topics, :topic_with_book) }
       let(:new_topics_with_invalid_chapter) do
-         chapter = new_topics.first.books.first.chapters.first
-         chapter.title = nil
-         new_topics
+        chapter = new_topics.first.books.first.chapters.first
+        chapter.title = nil
+        new_topics
       end
       let(:num_topics) { 3 }
       let(:num_books) { 6 }

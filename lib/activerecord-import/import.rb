@@ -377,13 +377,13 @@ class ActiveRecord::Base
       # on the list and we are using a sequence and stuff a nil
       # value for it into each row so the sequencer will fire later
       if !column_names.include?(primary_key) && connection.prefetch_primary_key? && sequence_name
-         column_names << primary_key
-         array_of_attributes.each { |a| a << nil }
+        column_names << primary_key
+        array_of_attributes.each { |a| a << nil }
       end
 
       # record timestamps unless disabled in ActiveRecord::Base
       if record_timestamps && options.delete( :timestamps )
-         add_special_rails_stamps column_names, array_of_attributes, options
+        add_special_rails_stamps column_names, array_of_attributes, options
       end
 
       return_obj = if is_validating
@@ -584,7 +584,7 @@ class ActiveRecord::Base
 
           # be sure to query sequence_name *last*, only if cheaper tests fail, because it's costly
           if val.nil? && column.name == primary_key && !sequence_name.blank?
-             connection_memo.next_value_for_sequence(sequence_name)
+            connection_memo.next_value_for_sequence(sequence_name)
           elsif column
             if respond_to?(:type_caster) && type_caster.respond_to?(:type_cast_for_database) # Rails 5.0 and higher
               connection_memo.quote(type_caster.type_cast_for_database(column.name, val))
@@ -619,8 +619,8 @@ class ActiveRecord::Base
         next unless self.column_names.include?(key)
         value = blk.call
         if index = column_names.index(key) || index = column_names.index(key.to_sym)
-           # replace every instance of the array of attributes with our value
-           array_of_attributes.each { |arr| arr[index] = value }
+          # replace every instance of the array of attributes with our value
+          array_of_attributes.each { |arr| arr[index] = value }
         else
           column_names << key
           array_of_attributes.each { |arr| arr << value }
