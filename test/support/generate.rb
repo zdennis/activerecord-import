@@ -1,5 +1,5 @@
 class ActiveSupport::TestCase
-  def Build(*args)
+  def Build(*args) # rubocop:disable Style/MethodName
     n = args.shift if args.first.is_a?(Numeric)
     factory = args.shift
     factory_girl_args = args.shift || {}
@@ -13,7 +13,7 @@ class ActiveSupport::TestCase
     end
   end
 
-  def Generate(*args)
+  def Generate(*args) # rubocop:disable Style/MethodName
     n = args.shift if args.first.is_a?(Numeric)
     factory = args.shift
     factory_girl_args = args.shift || {}

@@ -35,23 +35,6 @@ Style/CommentAnnotation:
     - 'benchmarks/lib/cli_parser.rb'
     - 'lib/activerecord-import/import.rb'
 
-# Offense count: 6
-# Cop supports --auto-correct.
-# Configuration parameters: Width.
-Style/IndentationWidth:
-  Exclude:
-    - 'lib/activerecord-import/adapters/abstract_adapter.rb'
-    - 'lib/activerecord-import/adapters/mysql_adapter.rb'
-    - 'lib/activerecord-import/adapters/postgresql_adapter.rb'
-    - 'lib/activerecord-import/adapters/sqlite3_adapter.rb'
-    - 'lib/activerecord-import/import.rb'
-
-# Offense count: 2
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: snake_case, camelCase
-Style/MethodName:
-  Enabled: false
-
 # Offense count: 8
 # Cop supports --auto-correct.
 Style/MutableConstant:
