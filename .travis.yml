@@ -24,6 +24,13 @@ before_script:
   - psql -U postgres -c "create extension postgis"
   - cp test/travis/database.yml test/database.yml
 
+addons:
+  apt:
+    sources:
+      - travis-ci/sqlite3
+    packages:
+      - sqlite3
+
 script:
   - bundle exec rake test:mysql2
   - bundle exec rake test:mysql2spatial
@@ -31,7 +38,6 @@ script:
   - bundle exec rake test:postgresql
   - bundle exec rake test:seamless_database_pool
   - bundle exec rake test:spatialite
-  # so far the version installed in travis seems < 3.7.11 so we cannot test sqlite3 on it
-  # bundle exec rake test:sqlite3
+  - bundle exec rake test:sqlite3
 
 sudo: false
