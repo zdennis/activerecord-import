@@ -34,8 +34,3 @@ Style/CommentAnnotation:
   Exclude:
     - 'benchmarks/lib/cli_parser.rb'
     - 'lib/activerecord-import/import.rb'
-
-# Offense count: 2
-Style/ZeroLengthPredicate:
-  Exclude:
-    - 'benchmarks/lib/cli_parser.rb'

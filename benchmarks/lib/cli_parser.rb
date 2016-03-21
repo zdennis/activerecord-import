@@ -29,7 +29,7 @@ module BenchmarkOptionParser
 
   # TODO IMPLEMENT THIS
   def self.print_valid_table_types( options, hsh = { prefix: '' } )
-    if options.table_types.keys.size > 0
+    if !options.table_types.keys.empty?
       options.table_types.keys.sort.each { |type| puts hsh[:prefix].to_s + type.to_s }
     else
       puts 'No table types defined.'
@@ -89,7 +89,7 @@ module BenchmarkOptionParser
 
     begin
       opt_parser.parse!( args )
-      if options.table_types.size == 0
+      if options.table_types.empty?
         options.table_types['all'] = options.benchmark_all_types = true
       end
     rescue Exception
