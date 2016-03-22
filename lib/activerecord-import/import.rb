@@ -44,7 +44,7 @@ class ActiveRecord::Associations::CollectionAssociation
     symbolized_column_names = model_klass.column_names.map(&:to_sym)
 
     owner_primary_key = self.owner.class.primary_key
-    owner_primary_key_value = self.owner.send(owner_primary_key)
+    owner_primary_key_value = self.owner.public_send(owner_primary_key)
 
     # assume array of model objects
     if args.last.is_a?( Array ) and args.last.first.is_a? ActiveRecord::Base
@@ -61,7 +61,7 @@ class ActiveRecord::Associations::CollectionAssociation
       end
 
       models.each do |m|
-        m.send "#{symbolized_foreign_key}=", owner_primary_key_value
+        m.public_send "#{symbolized_foreign_key}=", owner_primary_key_value
       end
 
       return model_klass.import column_names, models, options
@@ -431,7 +431,7 @@ class ActiveRecord::Base
       # validation we'll use the index to remove it from the array_of_attributes
       arr.each_with_index do |hsh, i|
         instance = new do |model|
-          hsh.each_pair { |k, v| model.send("#{k}=", v) }
+          hsh.each_pair { |k, v| model.public_send("#{k}=", v) }
         end
 
         unless instance.valid?(options[:validate_with_context])
@@ -556,7 +556,11 @@ class ActiveRecord::Base
 
         changed_objects = association.select { |a| a.new_record? || a.changed? }
         changed_objects.each do |child|
-          child.send("#{association_reflection.foreign_key}=", model.id)
+          child.public_send("#{association_reflection.foreign_key}=", model.id)
+          # For polymorphic associations
+          association_reflection.type.try do |type|
+            child.public_send("#{type}=", model.class.name)
+          end
         end
         associated_objects_by_class[model.class.name][association_reflection.name].concat changed_objects
       end
