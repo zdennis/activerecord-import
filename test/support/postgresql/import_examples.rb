@@ -279,6 +279,19 @@ def should_support_postgresql_upsert_functionality
           should_update_updated_at_on_timestamp_columns
         end
       end
+
+      context "with recursive: true" do
+        let(:new_topics) { Build(1, :topic_with_book) }
+
+        it "imports objects with associations" do
+          assert_difference "Topic.count", +1 do
+            Topic.import new_topics, recursive: true, on_duplicate_key_update: [:updated_at], validate: false
+            new_topics.each do |topic|
+              assert_not_nil topic.id
+            end
+          end
+        end
+      end
     end
   end
 end
