@@ -456,4 +456,28 @@ describe "#import" do
       end
     end
   end
+
+  describe "#import!" do
+    let(:columns) { %w(title author_name) }
+    let(:valid_values) { [[ "LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
+    let(:invalid_values) { [["Rails Recipes", "Chad Fowler"], [ "The RSpec Book", ""], ["Agile+UX", ""]] }
+
+    context "with invalid data" do
+      it "should raise ActiveRecord::RecordInvalid" do
+        assert_no_difference "Topic.count" do
+          assert_raise ActiveRecord::RecordInvalid do
+            Topic.import! columns, invalid_values
+          end
+        end
+      end
+    end
+
+    context "with valid data" do
+      it "should import data" do
+        assert_difference "Topic.count", +2 do
+          Topic.import! columns, valid_values
+        end
+      end
+    end
+  end
 end

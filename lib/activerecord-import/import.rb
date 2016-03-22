@@ -312,6 +312,16 @@ class ActiveRecord::Base
       end
     end
 
+    # Imports a collection of values if all values are valid. Import fails at the
+    # first encountered validation error and raises ActiveRecord::RecordInvalid
+    # with the failed instance.
+    def import!(*args)
+      options = args.last.is_a?( Hash ) ? args.pop : {}
+      options.merge!( { validate: true, raise_error: true } )
+
+      import(*args, options)
+    end
+
     def import_helper( *args )
       options = { validate: true, timestamps: true, primary_key: primary_key }
       options.merge!( args.pop ) if args.last.is_a? Hash
@@ -425,6 +435,7 @@ class ActiveRecord::Base
         end
 
         unless instance.valid?(options[:validate_with_context])
+          raise ActiveRecord::RecordInvalid.new(instance) if options[:raise_error]
           array_of_attributes[i] = nil
           failed_instances << instance
         end
