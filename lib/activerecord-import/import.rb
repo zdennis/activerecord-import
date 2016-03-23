@@ -583,9 +583,12 @@ class ActiveRecord::Base
           elsif column
             if respond_to?(:type_caster) && type_caster.respond_to?(:type_cast_for_database) # Rails 5.0 and higher
               connection_memo.quote(type_caster.type_cast_for_database(column.name, val))
-            elsif column.respond_to?(:type_cast_from_user)                      # Rails 4.2 and higher
+            elsif column.respond_to?(:type_cast_from_user)                                   # Rails 4.2 and higher
               connection_memo.quote(column.type_cast_from_user(val), column)
-            else                                                                # Rails 3.1, 3.2, and 4.1
+            else                                                                             # Rails 3.1, 3.2, 4.0 and 4.1
+              if serialized_attributes.include?(column.name)
+                val = serialized_attributes[column.name].dump(val)
+              end
               connection_memo.quote(column.type_cast(val), column)
             end
           end
