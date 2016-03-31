@@ -178,9 +178,11 @@ class ActiveRecord::Base
     #   existing model instances in memory with updates from the import.
     # * +timestamps+ - true|false, tells import to not add timestamps
     #   (if false) even if record timestamps is disabled in ActiveRecord::Base
-    # * +recursive - true|false, tells import to import all has_many/has_one
+    # * +recursive+ - true|false, tells import to import all has_many/has_one
     #   associations if the adapter supports setting the primary keys of the
     #   newly imported objects.
+    # * +batch_size+ - an integer value to specify the max number of records to
+    #   include per insert. Defaults to the total number of records to import.
     #
     # == Examples
     #  class BlogPost < ActiveRecord::Base ; end
@@ -484,17 +486,22 @@ class ActiveRecord::Base
       columns_sql = "(#{column_names.map { |name| connection.quote_column_name(name) }.join(',')})"
       insert_sql = "INSERT #{options[:ignore] ? 'IGNORE ' : ''}INTO #{quoted_table_name} #{columns_sql} VALUES "
       values_sql = values_sql_for_columns_and_attributes(columns, array_of_attributes)
-      ids = []
+
+      number_inserted, ids = 0, []
       if supports_import?
         # generate the sql
         post_sql_statements = connection.post_sql_statements( quoted_table_name, options )
 
-        # perform the inserts
-        (number_inserted, ids) = connection.insert_many( [insert_sql, post_sql_statements].flatten,
-                                                  values_sql,
-                                                  "#{self.class.name} Create Many Without Validations Or Callbacks" )
+        batch_size = options[:batch_size] || values_sql.size
+        values_sql.each_slice(batch_size) do |batch_values|
+          # perform the inserts
+          result = connection.insert_many( [ insert_sql, post_sql_statements ].flatten,
+                                           batch_values,
+                                           "#{self.class.name} Create Many Without Validations Or Callbacks" )
+          number_inserted += result[0]
+          ids += result[1]
+        end
       else
-        number_inserted = 0
         values_sql.each do |values|
           connection.execute(insert_sql + values)
           number_inserted += 1
