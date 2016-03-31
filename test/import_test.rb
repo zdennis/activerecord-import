@@ -267,11 +267,13 @@ describe "#import" do
   end
 
   context "ActiveRecord timestamps" do
+    let(:time) { Chronic.parse("5 minutes ago")  }
+
     context "when the timestamps columns are present" do
       setup do
         @existing_book = Book.create(title: "Fell", author_name: "Curry", publisher: "Bayer", created_at: 2.years.ago.utc, created_on: 2.years.ago.utc)
         ActiveRecord::Base.default_timezone = :utc
-        Timecop.freeze Chronic.parse("5 minutes ago") do
+        Timecop.freeze(time) do
           assert_difference "Book.count", +2 do
             Book.import %w(title author_name publisher created_at created_on), [["LDAP", "Big Bird", "Del Rey", nil, nil], [@existing_book.title, @existing_book.author_name, @existing_book.publisher, @existing_book.created_at, @existing_book.created_on]]
           end
@@ -280,11 +282,11 @@ describe "#import" do
       end
 
       it "should set the created_at column for new records"  do
-        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @new_book.created_at.strftime("%H:%M")
+        assert_in_delta time.to_i, @new_book.created_at.to_i, 1.second
       end
 
       it "should set the created_on column for new records" do
-        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @new_book.created_on.strftime("%H:%M")
+        assert_in_delta time.to_i, @new_book.created_on.to_i, 1.second
       end
 
       it "should not set the created_at column for existing records"  do
@@ -296,17 +298,15 @@ describe "#import" do
       end
 
       it "should set the updated_at column for new records" do
-        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @new_book.updated_at.strftime("%H:%M")
+        assert_in_delta time.to_i, @new_book.updated_at.to_i, 1.second
       end
 
       it "should set the updated_on column for new records" do
-        assert_equal 5.minutes.ago.utc.strftime("%H:%M"), @new_book.updated_on.strftime("%H:%M")
+        assert_in_delta time.to_i, @new_book.updated_on.to_i, 1.second
       end
     end
 
     context "when a custom time zone is set" do
-      let(:time) { Chronic.parse("5 minutes ago")  }
-
       setup do
         Timecop.freeze(time) do
           assert_difference "Book.count", +1 do
@@ -447,12 +447,13 @@ describe "#import" do
       assert_equal({ a: :b }, Widget.find_by_w_id(1).data)
     end
 
-    requires_active_record_version ">= 4" do
+    if ENV['AR_VERSION'].to_f >= 3.1
+      let(:data) { { a: :b } }
       it "imports values for serialized JSON fields" do
         assert_difference "Widget.unscoped.count", +1 do
-          Widget.import [:w_id, :json_data], [[9, { a: :b }]]
+          Widget.import [:w_id, :json_data], [[9, data]]
         end
-        assert_equal({ a: :b }.as_json, Widget.find_by_w_id(9).json_data)
+        assert_equal(data.as_json, Widget.find_by_w_id(9).json_data)
       end
     end
   end

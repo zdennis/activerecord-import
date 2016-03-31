@@ -16,7 +16,7 @@ require "active_record"
 require "active_record/fixtures"
 require "active_support/test_case"
 
-if ActiveSupport::VERSION::STRING < "4.1"
+if ActiveSupport::VERSION::STRING < "4.0"
   require 'test/unit'
 else
   require 'active_support/testing/autorun'

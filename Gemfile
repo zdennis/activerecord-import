@@ -41,7 +41,7 @@ end
 
 version = ENV['AR_VERSION'] || "4.2"
 
-if version > "4.0"
+if version >= "4.0"
   gem "minitest"
 else
   gem "test-unit"
