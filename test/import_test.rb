@@ -153,18 +153,14 @@ describe "#import" do
     it "should import with a single insert" do
       assert_difference "Topic.count", +10 do
         result = Topic.import Build(10, :topics), batch_size: 10
-        if Topic.supports_import?
-          assert_equal 1, result.num_inserts
-        end
+        assert_equal 1, result.num_inserts if Topic.supports_import?
       end
     end
 
     it "should import with multiple inserts" do
       assert_difference "Topic.count", +10 do
         result = Topic.import Build(10, :topics), batch_size: 4
-        if Topic.supports_import?
-          assert_equal 3, result.num_inserts
-        end
+        assert_equal 3, result.num_inserts if Topic.supports_import?
       end
     end
   end
@@ -287,7 +283,7 @@ describe "#import" do
   end
 
   context "ActiveRecord timestamps" do
-    let(:time) { Chronic.parse("5 minutes ago")  }
+    let(:time) { Chronic.parse("5 minutes ago") }
 
     context "when the timestamps columns are present" do
       setup do
@@ -301,7 +297,7 @@ describe "#import" do
         @new_book, @existing_book = Book.last 2
       end
 
-      it "should set the created_at column for new records"  do
+      it "should set the created_at column for new records" do
         assert_in_delta time.to_i, @new_book.created_at.to_i, 1.second
       end
 
@@ -309,7 +305,7 @@ describe "#import" do
         assert_in_delta time.to_i, @new_book.created_on.to_i, 1.second
       end
 
-      it "should not set the created_at column for existing records"  do
+      it "should not set the created_at column for existing records" do
         assert_equal 2.years.ago.utc.strftime("%Y:%d"), @existing_book.created_at.strftime("%Y:%d")
       end
 
@@ -336,7 +332,7 @@ describe "#import" do
         @book = Book.last
       end
 
-      it "should set the created_at and created_on timestamps for new records"  do
+      it "should set the created_at and created_on timestamps for new records" do
         assert_in_delta time.to_i, @book.created_at.to_i, 1.second
         assert_in_delta time.to_i, @book.created_on.to_i, 1.second
       end
@@ -495,8 +491,8 @@ describe "#import" do
 
   describe "#import!" do
     let(:columns) { %w(title author_name) }
-    let(:valid_values) { [[ "LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
-    let(:invalid_values) { [["Rails Recipes", "Chad Fowler"], [ "The RSpec Book", ""], ["Agile+UX", ""]] }
+    let(:valid_values) { [["LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
+    let(:invalid_values) { [["Rails Recipes", "Chad Fowler"], ["The RSpec Book", ""], ["Agile+UX", ""]] }
 
     context "with invalid data" do
       it "should raise ActiveRecord::RecordInvalid" do

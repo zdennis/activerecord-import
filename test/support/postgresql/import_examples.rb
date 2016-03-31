@@ -21,9 +21,9 @@ def should_support_postgresql_import_functionality
     describe "importing objects with associations" do
       let(:new_topics) { Build(num_topics, :topic_with_book) }
       let(:new_topics_with_invalid_chapter) do
-         chapter = new_topics.first.books.first.chapters.first
-         chapter.title = nil
-         new_topics
+        chapter = new_topics.first.books.first.chapters.first
+        chapter.title = nil
+        new_topics
       end
       let(:num_topics) { 3 }
       let(:num_books) { 6 }
@@ -54,7 +54,7 @@ def should_support_postgresql_import_functionality
 
       it 'imports polymorphic associations' do
         discounts = Array.new(1) { |i| Discount.new(amount: i) }
-        books = Array.new(1) { |i| Book.new(:author_name => "Author ##{i}", :title => "Book ##{i}") }
+        books = Array.new(1) { |i| Book.new(author_name: "Author ##{i}", title: "Book ##{i}") }
         books.each do |book|
           book.discounts << discounts
         end
@@ -160,7 +160,7 @@ def should_support_postgresql_upsert_functionality
     macro(:updated_topic) { Topic.find(@topic.id) }
 
     context "with :on_duplicate_key_ignore and validation checks turned off" do
-      let(:columns) {  %w( id title author_name author_email_address parent_id ) }
+      let(:columns) { %w( id title author_name author_email_address parent_id ) }
       let(:values) { [[99, "Book", "John Doe", "john@doe.com", 17]] }
       let(:updated_values) { [[99, "Book - 2nd Edition", "Author Should Not Change", "johndoe@example.com", 57]] }
 
@@ -199,7 +199,7 @@ def should_support_postgresql_upsert_functionality
 
       context "using a hash" do
         context "with :columns a hash" do
-          let(:columns) {  %w( id title author_name author_email_address parent_id ) }
+          let(:columns) { %w( id title author_name author_email_address parent_id ) }
           let(:values) { [[99, "Book", "John Doe", "john@doe.com", 17]] }
           let(:updated_values) { [[99, "Book - 2nd Edition", "Author Should Not Change", "johndoe@example.com", 57]] }
 
@@ -238,7 +238,7 @@ def should_support_postgresql_upsert_functionality
         end
 
         context "with :constraint_name" do
-          let(:columns) {  %w( id title author_name author_email_address parent_id ) }
+          let(:columns) { %w( id title author_name author_email_address parent_id ) }
           let(:values) { [[100, "Book", "John Doe", "john@doe.com", 17]] }
           let(:updated_values) { [[100, "Book - 2nd Edition", "Author Should Not Change", "johndoe@example.com", 57]] }
 
@@ -257,7 +257,7 @@ def should_support_postgresql_upsert_functionality
         end
 
         context "with no :conflict_target or :constraint_name" do
-          let(:columns) {  %w( id title author_name author_email_address parent_id ) }
+          let(:columns) { %w( id title author_name author_email_address parent_id ) }
           let(:values) { [[100, "Book", "John Doe", "john@doe.com", 17]] }
           let(:updated_values) { [[100, "Book - 2nd Edition", "Author Should Not Change", "johndoe@example.com", 57]] }
 
@@ -278,7 +278,7 @@ def should_support_postgresql_upsert_functionality
         end
 
         context "with no :columns" do
-          let(:columns) {  %w( id title author_name author_email_address ) }
+          let(:columns) { %w( id title author_name author_email_address ) }
           let(:values) { [[100, "Book", "John Doe", "john@doe.com"]] }
           let(:updated_values) { [[100, "Title Should Not Change", "Author Should Not Change", "john@nogo.com"]] }
 

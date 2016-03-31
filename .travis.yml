@@ -39,5 +39,6 @@ script:
   - bundle exec rake test:seamless_database_pool
   - bundle exec rake test:spatialite
   - bundle exec rake test:sqlite3
+  - bundle exec rubocop
 
 sudo: false

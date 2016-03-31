@@ -3,8 +3,7 @@ require "ostruct"
 module ActiveRecord::Import::ConnectionAdapters; end
 
 module ActiveRecord::Import #:nodoc:
-  class Result < Struct.new(:failed_instances, :num_inserts, :ids)
-  end
+  Result = Struct.new(:failed_instances, :num_inserts, :ids)
 
   module ImportSupport #:nodoc:
     def supports_import? #:nodoc:
@@ -39,15 +38,15 @@ class ActiveRecord::Associations::CollectionAssociation
 
     options = args.last.is_a?(Hash) ? args.pop : {}
 
-    model_klass = self.reflection.klass
-    symbolized_foreign_key = self.reflection.foreign_key.to_sym
+    model_klass = reflection.klass
+    symbolized_foreign_key = reflection.foreign_key.to_sym
     symbolized_column_names = model_klass.column_names.map(&:to_sym)
 
-    owner_primary_key = self.owner.class.primary_key
-    owner_primary_key_value = self.owner.public_send(owner_primary_key)
+    owner_primary_key = owner.class.primary_key
+    owner_primary_key_value = owner.send(owner_primary_key)
 
     # assume array of model objects
-    if args.last.is_a?( Array ) and args.last.first.is_a? ActiveRecord::Base
+    if args.last.is_a?( Array ) && args.last.first.is_a?(ActiveRecord::Base)
       if args.length == 2
         models = args.last
         column_names = args.first
@@ -67,11 +66,11 @@ class ActiveRecord::Associations::CollectionAssociation
       return model_klass.import column_names, models, options
 
     # supports empty array
-    elsif args.last.is_a?( Array ) and args.last.empty?
+    elsif args.last.is_a?( Array ) && args.last.empty?
       return ActiveRecord::Import::Result.new([], 0, []) if args.last.empty?
 
     # supports 2-element array and array
-    elsif args.size == 2 and args.first.is_a?( Array ) and args.last.is_a?( Array )
+    elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
       column_names, array_of_attributes = args
       symbolized_column_names = column_names.map(&:to_s)
 
@@ -85,7 +84,7 @@ class ActiveRecord::Associations::CollectionAssociation
 
       return model_klass.import column_names, array_of_attributes, options
     else
-      raise ArgumentError.new( "Invalid arguments!" )
+      raise ArgumentError, "Invalid arguments!"
     end
   end
 end
@@ -99,10 +98,10 @@ class ActiveRecord::Base
 
     AREXT_RAILS_COLUMNS = {
       create: { "created_on" => tproc,
-                   "created_at" => tproc },
+                "created_at" => tproc },
       update: { "updated_on" => tproc,
-                   "updated_at" => tproc }
-    }
+                "updated_at" => tproc }
+    }.freeze
     AREXT_RAILS_COLUMN_NAMES = AREXT_RAILS_COLUMNS[:create].keys + AREXT_RAILS_COLUMNS[:update].keys
 
     # Returns true if the current database connection adapter
@@ -303,7 +302,7 @@ class ActiveRecord::Base
     # * num_inserts - the number of insert statements it took to import the data
     # * ids - the primary keys of the imported ids, if the adpater supports it, otherwise and empty array.
     def import(*args)
-      if args.first.is_a?( Array ) and args.first.first.is_a? ActiveRecord::Base
+      if args.first.is_a?( Array ) && args.first.first.is_a?(ActiveRecord::Base)
         options = {}
         options.merge!( args.pop ) if args.last.is_a?(Hash)
 
@@ -319,7 +318,8 @@ class ActiveRecord::Base
     # with the failed instance.
     def import!(*args)
       options = args.last.is_a?( Hash ) ? args.pop : {}
-      options.merge!( { validate: true, raise_error: true } )
+      options[:validate] = true
+      options[:raise_error] = true
 
       import(*args, options)
     end
@@ -337,7 +337,7 @@ class ActiveRecord::Base
       is_validating = true unless options[:validate_with_context].nil?
 
       # assume array of model objects
-      if args.last.is_a?( Array ) and args.last.first.is_a? ActiveRecord::Base
+      if args.last.is_a?( Array ) && args.last.first.is_a?(ActiveRecord::Base)
         if args.length == 2
           models = args.last
           column_names = args.first
@@ -360,13 +360,13 @@ class ActiveRecord::Base
           # end
         end
         # supports empty array
-      elsif args.last.is_a?( Array ) and args.last.empty?
+      elsif args.last.is_a?( Array ) && args.last.empty?
         return ActiveRecord::Import::Result.new([], 0, []) if args.last.empty?
         # supports 2-element array and array
-      elsif args.size == 2 and args.first.is_a?( Array ) and args.last.is_a?( Array )
+      elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
         column_names, array_of_attributes = args
       else
-        raise ArgumentError.new( "Invalid arguments!" )
+        raise ArgumentError, "Invalid arguments!"
       end
 
       # dup the passed in array so we don't modify it unintentionally
@@ -377,13 +377,13 @@ class ActiveRecord::Base
       # on the list and we are using a sequence and stuff a nil
       # value for it into each row so the sequencer will fire later
       if !column_names.include?(primary_key) && connection.prefetch_primary_key? && sequence_name
-         column_names << primary_key
-         array_of_attributes.each { |a| a << nil }
+        column_names << primary_key
+        array_of_attributes.each { |a| a << nil }
       end
 
       # record timestamps unless disabled in ActiveRecord::Base
       if record_timestamps && options.delete( :timestamps )
-         add_special_rails_stamps column_names, array_of_attributes, options
+        add_special_rails_stamps column_names, array_of_attributes, options
       end
 
       return_obj = if is_validating
@@ -394,7 +394,7 @@ class ActiveRecord::Base
       end
 
       if options[:synchronize]
-        sync_keys = options[:synchronize_keys] || [self.primary_key]
+        sync_keys = options[:synchronize_keys] || [primary_key]
         synchronize( options[:synchronize], sync_keys)
       end
       return_obj.num_inserts = 0 if return_obj.num_inserts.nil?
@@ -434,19 +434,18 @@ class ActiveRecord::Base
           hsh.each_pair { |k, v| model[k] = v }
         end
 
-        unless instance.valid?(options[:validate_with_context])
-          raise ActiveRecord::RecordInvalid.new(instance) if options[:raise_error]
-          array_of_attributes[i] = nil
-          failed_instances << instance
-        end
+        next if instance.valid?(options[:validate_with_context])
+        raise(ActiveRecord::RecordInvalid, instance) if options[:raise_error]
+        array_of_attributes[i] = nil
+        failed_instances << instance
       end
       array_of_attributes.compact!
 
-      (num_inserts, ids) = if array_of_attributes.empty? || options[:all_or_none] && failed_instances.any?
-                      [0, []]
-                    else
-                      import_without_validations_or_callbacks( column_names, array_of_attributes, options )
-                    end
+      num_inserts, ids = if array_of_attributes.empty? || options[:all_or_none] && failed_instances.any?
+        [0, []]
+      else
+        import_without_validations_or_callbacks( column_names, array_of_attributes, options )
+      end
       ActiveRecord::Import::Result.new(failed_instances, num_inserts, ids)
     end
 
@@ -485,7 +484,8 @@ class ActiveRecord::Base
       insert_sql = "INSERT #{options[:ignore] ? 'IGNORE ' : ''}INTO #{quoted_table_name} #{columns_sql} VALUES "
       values_sql = values_sql_for_columns_and_attributes(columns, array_of_attributes)
 
-      number_inserted, ids = 0, []
+      number_inserted = 0
+      ids = []
       if supports_import?
         # generate the sql
         post_sql_statements = connection.post_sql_statements( quoted_table_name, options )
@@ -493,9 +493,9 @@ class ActiveRecord::Base
         batch_size = options[:batch_size] || values_sql.size
         values_sql.each_slice(batch_size) do |batch_values|
           # perform the inserts
-          result = connection.insert_many( [ insert_sql, post_sql_statements ].flatten,
-                                           batch_values,
-                                           "#{self.class.name} Create Many Without Validations Or Callbacks" )
+          result = connection.insert_many( [insert_sql, post_sql_statements].flatten,
+            batch_values,
+            "#{self.class.name} Create Many Without Validations Or Callbacks" )
           number_inserted += result[0]
           ids += result[1]
         end
@@ -517,7 +517,7 @@ class ActiveRecord::Base
         model.id = id.to_i
         if model.respond_to?(:clear_changes_information) # Rails 4.0 and higher
           model.clear_changes_information
-        else  # Rails 3.1
+        else # Rails 3.1
           model.instance_variable_get(:@changed_attributes).clear
         end
         model.instance_variable_set(:@new_record, false)
@@ -535,8 +535,8 @@ class ActiveRecord::Base
       # :on_duplicate_key_update not supported for associations
       options.delete(:on_duplicate_key_update)
 
-      associated_objects_by_class.each_pair do |class_name, associations|
-        associations.each_pair do |association_name, associated_records|
+      associated_objects_by_class.each_value do |associations|
+        associations.each_value do |associated_records|
           associated_records.first.class.import(associated_records, options) unless associated_records.empty?
         end
       end
@@ -574,7 +574,7 @@ class ActiveRecord::Base
 
     # Returns SQL the VALUES for an INSERT statement given the passed in +columns+
     # and +array_of_attributes+.
-    def values_sql_for_columns_and_attributes(columns, array_of_attributes)   # :nodoc:
+    def values_sql_for_columns_and_attributes(columns, array_of_attributes) # :nodoc:
       # connection gets called a *lot* in this high intensity loop.
       # Reuse the same one w/in the loop, otherwise it would keep being re-retreived (= lots of time for large imports)
       connection_memo = connection
@@ -584,7 +584,7 @@ class ActiveRecord::Base
 
           # be sure to query sequence_name *last*, only if cheaper tests fail, because it's costly
           if val.nil? && column.name == primary_key && !sequence_name.blank?
-             connection_memo.next_value_for_sequence(sequence_name)
+            connection_memo.next_value_for_sequence(sequence_name)
           elsif column
             if respond_to?(:type_caster) && type_caster.respond_to?(:type_cast_for_database) # Rails 5.0 and higher
               connection_memo.quote(type_caster.type_cast_for_database(column.name, val))
@@ -606,7 +606,8 @@ class ActiveRecord::Base
       AREXT_RAILS_COLUMNS[:create].each_pair do |key, blk|
         next unless self.column_names.include?(key)
         value = blk.call
-        if index = column_names.index(key) || index = column_names.index(key.to_sym)
+        index = column_names.index(key) || column_names.index(key.to_sym)
+        if index
           # replace every instance of the array of attributes with our value
           array_of_attributes.each { |arr| arr[index] = value if arr[index].nil? }
         else
@@ -618,9 +619,10 @@ class ActiveRecord::Base
       AREXT_RAILS_COLUMNS[:update].each_pair do |key, blk|
         next unless self.column_names.include?(key)
         value = blk.call
-        if index = column_names.index(key) || index = column_names.index(key.to_sym)
-           # replace every instance of the array of attributes with our value
-           array_of_attributes.each { |arr| arr[index] = value }
+        index = column_names.index(key) || column_names.index(key.to_sym)
+        if index
+          # replace every instance of the array of attributes with our value
+          array_of_attributes.each { |arr| arr[index] = value }
         else
           column_names << key
           array_of_attributes.each { |arr| arr << value }

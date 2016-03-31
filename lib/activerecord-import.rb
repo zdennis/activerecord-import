@@ -1,3 +1,5 @@
+# rubocop:disable Style/FileName
+
 ActiveSupport.on_load(:active_record) do
   class ActiveRecord::Base
     class << self

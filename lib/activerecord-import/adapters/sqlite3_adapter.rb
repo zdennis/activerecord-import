@@ -1,13 +1,13 @@
 module ActiveRecord::Import::SQLite3Adapter
   include ActiveRecord::Import::ImportSupport
 
-  MIN_VERSION_FOR_IMPORT = "3.7.11"
+  MIN_VERSION_FOR_IMPORT = "3.7.11".freeze
   SQLITE_LIMIT_COMPOUND_SELECT = 500
 
   # Override our conformance to ActiveRecord::Import::ImportSupport interface
   # to ensure that we only support import in supported version of SQLite.
   # Which INSERT statements with multiple value sets was introduced in 3.7.11.
-  def supports_import?(current_version = self.sqlite_version)
+  def supports_import?(current_version = sqlite_version)
     if current_version >= MIN_VERSION_FOR_IMPORT
       true
     else
@@ -28,9 +28,9 @@ module ActiveRecord::Import::SQLite3Adapter
     value_sets = ::ActiveRecord::Import::ValueSetsRecordsParser.parse(values,
       max_records: SQLITE_LIMIT_COMPOUND_SELECT)
 
-    value_sets.each do |values|
+    value_sets.each do |value_set|
       number_of_inserts += 1
-      sql2insert = base_sql + values.join( ',' ) + post_sql
+      sql2insert = base_sql + value_set.join( ',' ) + post_sql
       insert( sql2insert, *args )
     end
 

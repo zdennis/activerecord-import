@@ -24,7 +24,7 @@ ActiveRecord::Base.default_timezone = :utc
 require "activerecord-import"
 ActiveRecord::Base.establish_connection(:test)
 
-ActiveSupport::Notifications.subscribe(/active_record.sql/) do |event, _, _, _, hsh|
+ActiveSupport::Notifications.subscribe(/active_record.sql/) do |_, _, _, _, hsh|
   ActiveRecord::Base.logger.info hsh[:sql]
 end
 
@@ -39,10 +39,10 @@ Dir[File.dirname(__FILE__) + "/models/*.rb"].each { |file| require file }
 require File.join( benchmark_dir, 'lib', "#{options.adapter}_benchmark" )
 
 table_types = nil
-if options.benchmark_all_types
-  table_types = ["all"]
+table_types = if options.benchmark_all_types
+  ["all"]
 else
-  table_types = options.table_types.keys
+  options.table_types.keys
 end
 
 letter = options.adapter[0].chr

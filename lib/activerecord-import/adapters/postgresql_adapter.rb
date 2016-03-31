@@ -29,7 +29,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
     if options[:primary_key].blank?
       super(table_name, options)
     else
-      super(table_name, options) << ("RETURNING #{options[:primary_key]}")
+      super(table_name, options) << "RETURNING #{options[:primary_key]}"
     end
   end
 
@@ -88,7 +88,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
     sql
   end
 
-  def sql_for_on_duplicate_key_update_as_array( table_name, arr )  # :nodoc:
+  def sql_for_on_duplicate_key_update_as_array( table_name, arr ) # :nodoc:
     results = arr.map do |column|
       qc = quote_column_name( column )
       "#{qc}=EXCLUDED.#{qc}"
@@ -106,9 +106,11 @@ module ActiveRecord::Import::PostgreSQLAdapter
   end
 
   def sql_for_conflict_target( args = {} )
-    if constraint_name = args[:constraint_name]
+    constraint_name = args[:constraint_name]
+    conflict_target = args[:conflict_target]
+    if constraint_name
       "ON CONSTRAINT #{constraint_name} "
-    elsif conflict_target = args[:conflict_target]
+    elsif conflict_target
       '(' << Array( conflict_target ).join( ', ' ) << ') '
     end
   end
@@ -122,11 +124,11 @@ module ActiveRecord::Import::PostgreSQLAdapter
     exception.is_a?(ActiveRecord::StatementInvalid) && exception.to_s.include?('duplicate key')
   end
 
-  def supports_on_duplicate_key_update?(current_version = self.postgresql_version)
+  def supports_on_duplicate_key_update?(current_version = postgresql_version)
     current_version >= MIN_VERSION_FOR_UPSERT
   end
 
-  def supports_on_duplicate_key_ignore?(current_version = self.postgresql_version)
+  def supports_on_duplicate_key_ignore?(current_version = postgresql_version)
     supports_on_duplicate_key_update?(current_version)
   end
 

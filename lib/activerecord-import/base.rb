@@ -3,7 +3,7 @@ require "active_record"
 require "active_record/version"
 
 module ActiveRecord::Import
-  AdapterPath = "activerecord-import/active_record/adapters"
+  ADAPTER_PATH = "activerecord-import/active_record/adapters".freeze
 
   def self.base_adapter(adapter)
     case adapter
@@ -16,9 +16,9 @@ module ActiveRecord::Import
 
   # Loads the import functionality for a specific database adapter
   def self.require_adapter(adapter)
-    require File.join(AdapterPath, "/abstract_adapter")
+    require File.join(ADAPTER_PATH, "/abstract_adapter")
     begin
-      require File.join(AdapterPath, "/#{base_adapter(adapter)}_adapter")
+      require File.join(ADAPTER_PATH, "/#{base_adapter(adapter)}_adapter")
     rescue LoadError
       # fallback
     end

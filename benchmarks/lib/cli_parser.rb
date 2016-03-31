@@ -8,7 +8,7 @@ require 'ostruct'
 # * t - the table types to test. ie: myisam, innodb, memory, temporary, etc.
 #
 module BenchmarkOptionParser
-  BANNER = "Usage: ruby #{$0} [options]\nSee ruby #{$0} -h for more options."
+  BANNER = "Usage: ruby #{$0} [options]\nSee ruby #{$0} -h for more options.".freeze
 
   def self.print_banner
     puts BANNER
@@ -29,7 +29,7 @@ module BenchmarkOptionParser
 
   # TODO IMPLEMENT THIS
   def self.print_valid_table_types( options, hsh = { prefix: '' } )
-    if options.table_types.keys.size > 0
+    if !options.table_types.keys.empty?
       options.table_types.keys.sort.each { |type| puts hsh[:prefix].to_s + type.to_s }
     else
       puts 'No table types defined.'
@@ -44,7 +44,7 @@ module BenchmarkOptionParser
       number_of_objects: [],
       outputs: [] )
 
-    opts = OptionParser.new do |opts|
+    opt_parser = OptionParser.new do |opts|
       opts.banner = BANNER
 
       # parse the database adapter
@@ -56,7 +56,7 @@ module BenchmarkOptionParser
       # parse do_not_delete flag
       opts.on( "d", "--do-not-delete",
         "By default all records in the benchmark tables will be deleted at the end of the benchmark. " \
-        "This flag indicates not to delete the benchmark data." ) do |arg|
+        "This flag indicates not to delete the benchmark data." ) do |_|
         options.delete_on_finish = false
       end
 
@@ -88,8 +88,8 @@ module BenchmarkOptionParser
     end # end opt.parse!
 
     begin
-      opts.parse!( args )
-      if options.table_types.size == 0
+      opt_parser.parse!( args )
+      if options.table_types.empty?
         options.table_types['all'] = options.benchmark_all_types = true
       end
     rescue Exception

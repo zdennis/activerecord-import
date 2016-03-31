@@ -10,7 +10,7 @@ class BenchmarkBase
   def benchmark( table_types, num )
     array_of_cols_and_vals = build_array_of_cols_and_vals( num )
     table_types.each do |table_type|
-      self.send( "benchmark_#{table_type}", array_of_cols_and_vals )
+      send( "benchmark_#{table_type}", array_of_cols_and_vals )
     end
   end
 
@@ -25,11 +25,11 @@ class BenchmarkBase
   # An OpenStruct object with the following attributes:
   #   * description - the description of the benchmark ran
   #   * tms - a Benchmark::Tms containing the results of the benchmark
-  def bm( description, &blk )
-    tms  = nil
+  def bm( description )
+    tms = nil
     puts "Benchmarking #{description}"
 
-    Benchmark.bm { |x| tms = x.report { blk.call } }
+    Benchmark.bm { |x| tms = x.report { yield } }
     delete_all
     failed = false
 
@@ -130,7 +130,7 @@ class BenchmarkBase
     end
   end
 
-  def initialize   # :nodoc:
+  def initialize # :nodoc:
     @results = []
   end
 end

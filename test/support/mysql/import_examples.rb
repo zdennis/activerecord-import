@@ -19,7 +19,7 @@ def should_support_mysql_import_functionality
       macro(:perform_import) { raise "supply your own #perform_import in a context below" }
       macro(:updated_topic) { Topic.find(@topic.id) }
 
-      let(:columns) {  %w( id title author_name author_email_address parent_id ) }
+      let(:columns) { %w( id title author_name author_email_address parent_id ) }
       let(:values) { [[99, "Book", "John Doe", "john@doe.com", 17]] }
       let(:updated_values) { [[99, "Book - 2nd Edition", "Author Should Not Change", "johndoe@example.com", 57]] }
 
@@ -77,7 +77,7 @@ def should_support_mysql_import_functionality
           synchronize: topics )
 
         assert_equal expected_count, Topic.count, "no new records should have been created!"
-        assert_equal "Jerry Carter",  topics.first.author_name, "wrong author!"
+        assert_equal "Jerry Carter", topics.first.author_name, "wrong author!"
         assert_equal "Chad Fowler", topics.last.author_name, "wrong author!"
       end
     end

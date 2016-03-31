@@ -20,12 +20,12 @@ module ActiveRecord # :nodoc:
     # Post.synchronize posts, [:name] # queries on the :name column and not the :id column
     # posts.first.address # => "1245 Foo Ln" instead of whatever it was
     #
-    def self.synchronize(instances, keys = [self.primary_key])
+    def self.synchronize(instances, keys = [primary_key])
       return if instances.empty?
 
       conditions = {}
 
-      key_values = keys.map { |key| instances.map(&"#{key}".to_sym) }
+      key_values = keys.map { |key| instances.map(&key.to_sym) }
       keys.zip(key_values).each { |key, values| conditions[key] = values }
       order = keys.map { |key| "#{key} ASC" }.join(",")
 

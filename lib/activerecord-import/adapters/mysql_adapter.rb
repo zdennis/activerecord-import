@@ -31,7 +31,7 @@ module ActiveRecord::Import::MysqlAdapter
     max = max_allowed_packet
 
     # if we can insert it all as one statement
-    if NO_MAX_PACKET == max or total_bytes < max
+    if NO_MAX_PACKET == max || total_bytes < max
       number_of_inserts += 1
       sql2insert = base_sql + values.join( ',' ) + post_sql
       insert( sql2insert, *args )
@@ -39,9 +39,9 @@ module ActiveRecord::Import::MysqlAdapter
       value_sets = ::ActiveRecord::Import::ValueSetsBytesParser.parse(values,
         reserved_bytes: sql_size,
         max_bytes: max)
-      value_sets.each do |values|
+      value_sets.each do |value_set|
         number_of_inserts += 1
-        sql2insert = base_sql + values.join( ',' ) + post_sql
+        sql2insert = base_sql + value_set.join( ',' ) + post_sql
         insert( sql2insert, *args )
       end
     end
@@ -85,12 +85,12 @@ module ActiveRecord::Import::MysqlAdapter
     elsif arg.is_a?( String )
       sql << arg
     else
-      raise ArgumentError.new( "Expected Array or Hash" )
+      raise ArgumentError, "Expected Array or Hash"
     end
     sql
   end
 
-  def sql_for_on_duplicate_key_update_as_array( table_name, arr )  # :nodoc:
+  def sql_for_on_duplicate_key_update_as_array( table_name, arr ) # :nodoc:
     results = arr.map do |column|
       qc = quote_column_name( column )
       "#{table_name}.#{qc}=VALUES(#{qc})"
