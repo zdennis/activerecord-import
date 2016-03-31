@@ -435,7 +435,7 @@ class ActiveRecord::Base
         end
 
         next if instance.valid?(options[:validate_with_context])
-        raise ActiveRecord::RecordInvalid.new(instance) if options[:raise_error]
+        raise(ActiveRecord::RecordInvalid, instance) if options[:raise_error]
         array_of_attributes[i] = nil
         failed_instances << instance
       end

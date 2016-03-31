@@ -54,7 +54,7 @@ def should_support_postgresql_import_functionality
 
       it 'imports polymorphic associations' do
         discounts = Array.new(1) { |i| Discount.new(amount: i) }
-        books = Array.new(1) { |i| Book.new(:author_name => "Author ##{i}", :title => "Book ##{i}") }
+        books = Array.new(1) { |i| Book.new(author_name: "Author ##{i}", title: "Book ##{i}") }
         books.each do |book|
           book.discounts << discounts
         end
