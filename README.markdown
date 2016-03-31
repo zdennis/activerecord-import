@@ -89,7 +89,8 @@ Zach Dennis (zach.dennis@gmail.com)
 
 # Contributors
 
-* Jordan Owens
+* Jordan Owens (@jkowens)
+* Erik Michaels-Ober (@sferik)
 * Blythe Dunham
 * Gabe da Silveira
 * Henry Work
