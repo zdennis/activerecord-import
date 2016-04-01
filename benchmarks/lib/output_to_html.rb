@@ -51,7 +51,7 @@ EOT
         else
           time = result.tms.real.round_to( 3 )
           speedup = ( result_set.first.tms.real / result.tms.real ).round
-          times << result == result_set.first ? time.to_s : "#{time} (#{speedup}x speedup)"
+          times << (result == result_set.first ? time.to_s : "#{time} (#{speedup}x speedup)")
         end
       end
 
