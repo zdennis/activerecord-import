@@ -451,6 +451,25 @@ describe "#import" do
     end
   end
 
+  context 'When importing arrays of values with Enum fields' do
+    let(:columns) { [:author_name, :title, :status] }
+    let(:values) { [['Author #1', 'Book #1', 0], ['Author #2', 'Book #2', 1]] }
+
+    it 'should be able to import enum fields' do
+      Book.delete_all if Book.count > 0
+      Book.import columns, values
+      assert_equal 2, Book.count
+
+      if ENV['AR_VERSION'].to_i >= 5.0
+        assert_equal 'draft', Book.first.read_attribute('status')
+        assert_equal 'published', Book.last.read_attribute('status')
+      else
+        assert_equal 0, Book.first.read_attribute('status')
+        assert_equal 1, Book.last.read_attribute('status')
+      end
+    end
+  end
+
   describe "importing when model has default_scope" do
     it "doesn't import the default scope values" do
       assert_difference "Widget.unscoped.count", +2 do
