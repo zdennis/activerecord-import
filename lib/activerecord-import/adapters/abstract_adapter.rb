@@ -47,7 +47,10 @@ module ActiveRecord::Import::AbstractAdapter
 
       if supports_on_duplicate_key_update?
         if options[:on_duplicate_key_ignore] && respond_to?(:sql_for_on_duplicate_key_ignore)
-          post_sql_statements << sql_for_on_duplicate_key_ignore( table_name, options[:on_duplicate_key_ignore] )
+          # Options :recursive and :on_duplicate_key_ignore are mutually exclusive
+          unless options[:recursive]
+            post_sql_statements << sql_for_on_duplicate_key_ignore( table_name, options[:on_duplicate_key_ignore] )
+          end
         elsif options[:on_duplicate_key_update]
           post_sql_statements << sql_for_on_duplicate_key_update( table_name, options[:on_duplicate_key_update] )
         end

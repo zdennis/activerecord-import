@@ -168,7 +168,8 @@ class ActiveRecord::Base
     # * +ignore+ - true|false, tells import to use MySQL's INSERT IGNORE
     #    to discard records that contain duplicate keys.
     # * +on_duplicate_key_ignore+ - true|false, tells import to use
-    #    Postgres 9.5+ ON CONFLICT DO NOTHING.
+    #    Postgres 9.5+ ON CONFLICT DO NOTHING. Cannot be enabled on a
+    #    recursive import.
     # * +on_duplicate_key_update+ - an Array or Hash, tells import to
     #    use MySQL's ON DUPLICATE KEY UPDATE or Postgres 9.5+ ON CONFLICT
     #    DO UPDATE ability. See On Duplicate Key Update below.
