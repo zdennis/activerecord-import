@@ -418,7 +418,7 @@ class ActiveRecord::Base
       return_obj.num_inserts = 0 if return_obj.num_inserts.nil?
 
       # if we have ids, then set the id on the models and mark the models as clean.
-      if support_setting_primary_key_of_imported_objects?
+      if models && support_setting_primary_key_of_imported_objects?
         set_ids_and_mark_clean(models, return_obj)
 
         # if there are auto-save associations on the models we imported that are new, import them as well
@@ -550,6 +550,7 @@ class ActiveRecord::Base
       # notes:
       #    does not handle associations that reference themselves
       #    should probably take a hash to associations to follow.
+      return if models.nil?
       associated_objects_by_class = {}
       models.each { |model| find_associated_objects_for_import(associated_objects_by_class, model) }
 
