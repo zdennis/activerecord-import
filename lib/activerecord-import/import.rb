@@ -67,7 +67,7 @@ class ActiveRecord::Associations::CollectionAssociation
 
     # supports empty array
     elsif args.last.is_a?( Array ) && args.last.empty?
-      return ActiveRecord::Import::Result.new([], 0, []) if args.last.empty?
+      return ActiveRecord::Import::Result.new([], 0, [])
 
     # supports 2-element array and array
     elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
@@ -361,7 +361,7 @@ class ActiveRecord::Base
         end
         # supports empty array
       elsif args.last.is_a?( Array ) && args.last.empty?
-        return ActiveRecord::Import::Result.new([], 0, []) if args.last.empty?
+        return ActiveRecord::Import::Result.new([], 0, [])
         # supports 2-element array and array
       elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
         column_names, array_of_attributes = args
