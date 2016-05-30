@@ -10,6 +10,8 @@ module ActiveRecord::Import::MysqlAdapter
   def insert_many( sql, values, *args ) # :nodoc:
     # the number of inserts default
     number_of_inserts = 0
+    first_inserted_id = nil
+    ids = []
 
     base_sql, post_sql = if sql.is_a?( String )
       [sql, '']
@@ -32,9 +34,9 @@ module ActiveRecord::Import::MysqlAdapter
 
     # if we can insert it all as one statement
     if NO_MAX_PACKET == max || total_bytes < max
-      number_of_inserts += 1
+      number_of_inserts = values.size
       sql2insert = base_sql + values.join( ',' ) + post_sql
-      insert( sql2insert, *args )
+      first_inserted_id = insert( sql2insert, *args )
     else
       value_sets = ::ActiveRecord::Import::ValueSetsBytesParser.parse(values,
         reserved_bytes: sql_size,
@@ -42,11 +44,16 @@ module ActiveRecord::Import::MysqlAdapter
       value_sets.each do |value_set|
         number_of_inserts += 1
         sql2insert = base_sql + value_set.join( ',' ) + post_sql
-        insert( sql2insert, *args )
+        ids << insert( sql2insert, *args )
       end
     end
 
-    [number_of_inserts, []]
+    if first_inserted_id
+      last_inserted_id = first_inserted_id + number_of_inserts - 1
+      ids = (first_inserted_id..last_inserted_id).to_a
+    end
+
+    [number_of_inserts, ids]
   end
 
   # Returns the maximum number of bytes that the server will allow
