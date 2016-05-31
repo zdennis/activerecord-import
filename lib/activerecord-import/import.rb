@@ -501,7 +501,7 @@ class ActiveRecord::Base
         end
       else
         values_sql.each do |values|
-          connection.execute(insert_sql + values)
+          ids << connection.insert(insert_sql + values)
           number_inserted += 1
         end
       end
