@@ -517,7 +517,7 @@ class ActiveRecord::Base
         model.id = id.to_i
         if model.respond_to?(:clear_changes_information) # Rails 4.0 and higher
           model.clear_changes_information
-        else # Rails 3.1
+        else # Rails 3.2
           model.instance_variable_get(:@changed_attributes).clear
         end
         model.instance_variable_set(:@new_record, false)
@@ -590,7 +590,7 @@ class ActiveRecord::Base
               connection_memo.quote(type_caster.type_cast_for_database(column.name, val))
             elsif column.respond_to?(:type_cast_from_user)                                   # Rails 4.2 and higher
               connection_memo.quote(column.type_cast_from_user(val), column)
-            else                                                                             # Rails 3.1, 3.2, 4.0 and 4.1
+            else                                                                             # Rails 3.2, 4.0 and 4.1
               if serialized_attributes.include?(column.name)
                 val = serialized_attributes[column.name].dump(val)
               end
