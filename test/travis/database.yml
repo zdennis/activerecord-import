@@ -15,6 +15,7 @@ mysql2spatial:
 seamless_database_pool:
   <<: *common
   adapter: seamless_database_pool
+  prepared_statements: false
   pool_adapter: mysql2
   master:
     host: localhost
