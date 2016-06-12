@@ -29,6 +29,9 @@ postgresql: &postgresql
   adapter: postgresql
   min_messages: warning
 
+postresql_makara:
+  <<: *postgresql
+
 postgis:
   <<: *postgresql
 
