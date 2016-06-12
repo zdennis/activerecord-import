@@ -60,28 +60,32 @@ def should_support_postgresql_upsert_functionality
       let(:values) { [[99, "Book", "John Doe", "john@doe.com", 17]] }
       let(:updated_values) { [[99, "Book - 2nd Edition", "Author Should Not Change", "johndoe@example.com", 57]] }
 
-      macro(:perform_import) do |*opts|
-        Topic.import columns, updated_values, opts.extract_options!.merge(on_duplicate_key_ignore: value, validate: false)
-      end
-
       setup do
         Topic.import columns, values, validate: false
-        @topic = Topic.find 99
       end
 
-      context "using true" do
-        let(:value) { true }
-        should_not_update_updated_at_on_timestamp_columns
+      it "should not update any records" do
+        result = Topic.import columns, updated_values, on_duplicate_key_ignore: true, validate: false
+        assert_equal [], result.ids
+      end
+    end
+
+    context "with :on_duplicate_key_ignore and :recursive enabled" do
+      let(:new_topic) { Build(1, :topic_with_book) }
+      let(:mixed_topics) { Build(1, :topic_with_book) + new_topic + Build(1, :topic_with_book) }
+
+      setup do
+        Topic.import new_topic, recursive: true
       end
 
-      context "using hash with :conflict_target" do
-        let(:value) { { conflict_target: :id } }
-        should_not_update_updated_at_on_timestamp_columns
-      end
-
-      context "using hash with :constraint_target" do
-        let(:value) { { constraint_name: :topics_pkey } }
-        should_not_update_updated_at_on_timestamp_columns
+      # Recursive import depends on the primary keys of the parent model being returned
+      # on insert. With on_duplicate_key_ignore enabled, not all ids will be returned
+      # and it is possible that a model will be assigned the wrong id and then its children
+      # would be associated with the wrong parent.
+      it ":on_duplicate_key_ignore is ignored" do
+        assert_raise ActiveRecord::RecordNotUnique do
+          Topic.import mixed_topics, recursive: true, on_duplicate_key_ignore: true
+        end
       end
     end
 
