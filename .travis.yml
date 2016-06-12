@@ -36,6 +36,7 @@ script:
   - bundle exec rake test:mysql2spatial
   - bundle exec rake test:postgis
   - bundle exec rake test:postgresql
+  - bundle exec rake test:postgresql_makara
   - bundle exec rake test:seamless_database_pool
   - bundle exec rake test:spatialite
   - bundle exec rake test:sqlite3
