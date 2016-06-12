@@ -12,7 +12,8 @@ ActiveSupport.on_load(:active_record) do
         ActiveRecord::Import.load_from_connection_pool connection_pool
         conn
       end
-      alias_method_chain :establish_connection, :activerecord_import
+      alias establish_connection_without_activerecord_import establish_connection
+      alias establish_connection establish_connection_with_activerecord_import
     end
   end
 end
