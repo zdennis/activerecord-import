@@ -32,6 +32,7 @@ addons:
 
 script:
   - bundle exec rake test:mysql2
+  - bundle exec rake test:mysql2_makara
   - bundle exec rake test:mysql2spatial
   - bundle exec rake test:postgis
   - bundle exec rake test:postgresql

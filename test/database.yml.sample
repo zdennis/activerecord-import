@@ -12,6 +12,9 @@ mysql2: &mysql2
 mysql2spatial:
   <<: *mysql2
 
+mysql2_makara:
+  <<: *mysql2
+
 seamless_database_pool:
   <<: *common
   adapter: seamless_database_pool

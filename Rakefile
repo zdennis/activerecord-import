@@ -13,7 +13,7 @@ namespace :display do
 end
 task default: ["display:notice"]
 
-ADAPTERS = %w(mysql2 jdbcmysql jdbcpostgresql postgresql sqlite3 seamless_database_pool mysql2spatial spatialite postgis).freeze
+ADAPTERS = %w(mysql2 mysql2_makara jdbcmysql jdbcpostgresql postgresql sqlite3 seamless_database_pool mysql2spatial spatialite postgis).freeze
 ADAPTERS.each do |adapter|
   namespace :test do
     desc "Runs #{adapter} database tests."
