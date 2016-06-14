@@ -61,6 +61,7 @@ class ActiveRecord::Associations::CollectionAssociation
 
       models.each do |m|
         m.public_send "#{symbolized_foreign_key}=", owner_primary_key_value
+        m.public_send "#{reflection.type}=", owner.class if reflection.type
       end
 
       return model_klass.import column_names, models, options
@@ -80,6 +81,11 @@ class ActiveRecord::Associations::CollectionAssociation
       else
         column_names << symbolized_foreign_key
         array_of_attributes.each { |attrs| attrs << owner_primary_key_value }
+      end
+
+      if reflection.type
+        column_names << reflection.type
+        array_of_attributes.each { |attrs| attrs << owner.class }
       end
 
       return model_klass.import column_names, array_of_attributes, options

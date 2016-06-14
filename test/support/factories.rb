@@ -49,4 +49,9 @@ FactoryGirl.define do
       end
     end
   end
+
+  factory :book do
+    title 'Tortilla Flat'
+    author_name 'John Steinbeck'
+  end
 end
