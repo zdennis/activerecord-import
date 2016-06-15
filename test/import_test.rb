@@ -378,13 +378,13 @@ describe "#import" do
             klass.new(column => val2)
           ]
 
-          assert [val1, val2], scope.map(&column).sort
+          assert_equal [val1, val2], scope.map(&column).sort
         end
 
         it "works importing array of columns and values" do
           scope.import [column], [[val1], [val2]]
 
-          assert [val1, val2], scope.map(&column).sort
+          assert_equal [val1, val2], scope.map(&column).sort
         end
       end
     end
