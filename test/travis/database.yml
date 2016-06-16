@@ -5,6 +5,16 @@ common: &common
   host:     localhost
   database: activerecord_import_test
 
+jdbcpostgresql: &postgresql
+  <<: *common
+  username: postgres
+  adapter: jdbcpostgresql
+  min_messages: warning
+
+jdbcmysql: &mysql2
+  <<: *common
+  adapter: jdbcmysql
+
 mysql2: &mysql2
   <<: *common
   adapter: mysql2
@@ -15,13 +25,10 @@ mysql2spatial:
 mysql2_makara:
   <<: *mysql2
 
-seamless_database_pool:
+oracle:
   <<: *common
-  adapter: seamless_database_pool
-  prepared_statements: false
-  pool_adapter: mysql2
-  master:
-    host: localhost
+  adapter: oracle
+  min_messages: debug
 
 postgresql: &postgresql
   <<: *common
@@ -35,10 +42,13 @@ postresql_makara:
 postgis:
   <<: *postgresql
 
-oracle:
+seamless_database_pool:
   <<: *common
-  adapter: oracle
-  min_messages: debug
+  adapter: seamless_database_pool
+  pool_adapter: mysql2
+  prepared_statements: false
+  master:
+    host: localhost
 
 sqlite:
   adapter: sqlite
