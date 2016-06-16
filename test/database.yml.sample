@@ -15,14 +15,6 @@ mysql2spatial:
 mysql2_makara:
   <<: *mysql2
 
-seamless_database_pool:
-  <<: *common
-  adapter: seamless_database_pool
-  prepared_statements: false
-  pool_adapter: mysql2
-  master:
-    host: localhost
-
 postgresql: &postgresql
   <<: *common
   username: postgres
@@ -39,6 +31,14 @@ oracle:
   <<: *common
   adapter: oracle
   min_messages: debug
+
+seamless_database_pool:
+  <<: *common
+  adapter: seamless_database_pool
+  prepared_statements: false
+  pool_adapter: mysql2
+  master:
+    host: localhost
 
 sqlite:
   adapter: sqlite

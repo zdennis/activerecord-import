@@ -46,6 +46,7 @@ seamless_database_pool:
   <<: *common
   adapter: seamless_database_pool
   pool_adapter: mysql2
+  prepared_statements: false
   master:
     host: localhost
 
