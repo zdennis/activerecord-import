@@ -43,6 +43,20 @@ def should_support_postgresql_import_functionality
         end
       end
     end
+
+    describe "no_returning" do
+      let(:books) { [Book.new(author_name: "foo", title: "bar")] }
+
+      it "creates records" do
+        assert_difference "Book.count", +1 do
+          Book.import books, no_returning: true
+        end
+      end
+
+      it "returns no ids" do
+        assert_equal [], Book.import(books, no_returning: true).ids
+      end
+    end
   end
 end
 
