@@ -1,3 +1,9 @@
+## Changes in 0.14.1
+
+### Fixes
+
+* JRuby/JDBCDriver with PostgreSQL will no longer raise a JDBCDriver error when using the :no_returning boolean option. Thanks to  @jkowens via \#287
+
 ## Changes in 0.14.0
 
 ### New Features
