@@ -357,12 +357,7 @@ class ActiveRecord::Base
           # this next line breaks sqlite.so with a segmentation fault
           # if model.new_record? || options[:on_duplicate_key_update]
           column_names.map do |name|
-            name = name.to_s
-            if respond_to?(:defined_enums) && defined_enums.key?(name) # ActiveRecord 5
-              model.read_attribute(name)
-            else
-              model.read_attribute_before_type_cast(name)
-            end
+            model.read_attribute_before_type_cast(name.to_s)
           end
           # end
         end
@@ -394,7 +389,19 @@ class ActiveRecord::Base
       end
 
       return_obj = if is_validating
-        import_with_validations( column_names, array_of_attributes, options )
+        if models
+          import_with_validations( column_names, array_of_attributes, options ) do |failed|
+            models.each_with_index do |model, i|
+              model = model.dup if options[:recursive]
+              next if model.valid?(options[:validate_with_context])
+              model.send(:raise_record_invalid) if options[:raise_error]
+              array_of_attributes[i] = nil
+              failed << model
+            end
+          end
+        else
+          import_with_validations( column_names, array_of_attributes, options )
+        end
       else
         (num_inserts, ids) = import_without_validations_or_callbacks( column_names, array_of_attributes, options )
         ActiveRecord::Import::Result.new([], num_inserts, ids)
@@ -431,21 +438,24 @@ class ActiveRecord::Base
     def import_with_validations( column_names, array_of_attributes, options = {} )
       failed_instances = []
 
-      # create instances for each of our column/value sets
-      arr = validations_array_for_column_names_and_attributes( column_names, array_of_attributes )
+      if block_given?
+        yield failed_instances
+      else
+        # create instances for each of our column/value sets
+        arr = validations_array_for_column_names_and_attributes( column_names, array_of_attributes )
 
-      # keep track of the instance and the position it is currently at. if this fails
-      # validation we'll use the index to remove it from the array_of_attributes
-      arr.each_with_index do |hsh, i|
-        instance = new do |model|
+        # keep track of the instance and the position it is currently at. if this fails
+        # validation we'll use the index to remove it from the array_of_attributes
+        model = new
+        arr.each_with_index do |hsh, i|
           hsh.each_pair { |k, v| model[k] = v }
+          next if model.valid?(options[:validate_with_context])
+          raise(ActiveRecord::RecordInvalid, model) if options[:raise_error]
+          array_of_attributes[i] = nil
+          failed_instances << model.dup
         end
-
-        next if instance.valid?(options[:validate_with_context])
-        raise(ActiveRecord::RecordInvalid, instance) if options[:raise_error]
-        array_of_attributes[i] = nil
-        failed_instances << instance
       end
+
       array_of_attributes.compact!
 
       num_inserts, ids = if array_of_attributes.empty? || options[:all_or_none] && failed_instances.any?
@@ -643,9 +653,7 @@ class ActiveRecord::Base
 
     # Returns an Array of Hashes for the passed in +column_names+ and +array_of_attributes+.
     def validations_array_for_column_names_and_attributes( column_names, array_of_attributes ) # :nodoc:
-      array_of_attributes.map do |attributes|
-        Hash[attributes.each_with_index.map { |attr, c| [column_names[c], attr] }]
-      end
+      array_of_attributes.map { |values| Hash[column_names.zip(values)] }
     end
   end
 end
