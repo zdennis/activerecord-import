@@ -126,7 +126,9 @@ class BenchmarkBase
   # Deletes all records from all ActiveRecord subclasses
   def delete_all
     ActiveRecord::Base.send( :subclasses ).each do |subclass|
-      subclass.delete_all if subclass.respond_to? :delete_all
+      if subclass.table_exists? && subclass.respond_to?(:delete_all)
+        subclass.delete_all
+      end
     end
   end
 
