@@ -6,6 +6,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
   def insert_many( sql, values, *args ) # :nodoc:
     number_of_inserts = 1
+    ids = []
 
     base_sql, post_sql = if sql.is_a?( String )
       [sql, '']
@@ -14,7 +15,11 @@ module ActiveRecord::Import::PostgreSQLAdapter
     end
 
     sql2insert = base_sql + values.join( ',' ) + post_sql
-    ids = select_values( sql2insert, *args )
+    if post_sql =~ /RETURNING\s/
+      ids = select_values( sql2insert, *args )
+    else
+      insert( sql2insert, *args )
+    end
 
     ActiveRecord::Base.connection.query_cache.clear
 
