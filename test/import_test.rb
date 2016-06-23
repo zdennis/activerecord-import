@@ -29,7 +29,8 @@ describe "#import" do
 
     it "should not modify the passed in values array" do
       assert_nothing_raised do
-        values = [%w(foo bar)].freeze
+        record = %w(foo bar).freeze
+        values = [record].freeze
         Topic.import %w(title author_name), values
       end
     end
