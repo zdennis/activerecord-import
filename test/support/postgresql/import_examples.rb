@@ -170,24 +170,53 @@ def should_support_postgresql_upsert_functionality
           should_update_fields_mentioned
         end
 
-        context "with no :conflict_target or :constraint_name" do
+        context "default to the primary key" do
           let(:columns) { %w( id title author_name author_email_address parent_id ) }
           let(:values) { [[100, "Book", "John Doe", "john@doe.com", 17]] }
           let(:updated_values) { [[100, "Book - 2nd Edition", "Author Should Not Change", "johndoe@example.com", 57]] }
-
-          macro(:perform_import) do |*opts|
-            Topic.import columns, updated_values, opts.extract_options!.merge(on_duplicate_key_update: { columns: update_columns }, validate: false)
-          end
+          let(:update_columns) { [:title, :author_email_address, :parent_id] }
 
           setup do
             Topic.import columns, values, validate: false
             @topic = Topic.find 100
           end
 
-          context "default to the primary key" do
-            let(:update_columns) { [:title, :author_email_address, :parent_id] }
+          context "with no :conflict_target or :constraint_name" do
+            macro(:perform_import) do |*opts|
+              Topic.import columns, updated_values, opts.extract_options!.merge(on_duplicate_key_update: { columns: update_columns }, validate: false)
+            end
+
             should_support_on_duplicate_key_update
             should_update_fields_mentioned
+          end
+
+          context "with empty value for :conflict_target" do
+            macro(:perform_import) do |*opts|
+              Topic.import columns, updated_values, opts.extract_options!.merge(on_duplicate_key_update: { conflict_target: [], columns: update_columns }, validate: false)
+            end
+
+            should_support_on_duplicate_key_update
+            should_update_fields_mentioned
+          end
+
+          context "with empty value for :constraint_name" do
+            macro(:perform_import) do |*opts|
+              Topic.import columns, updated_values, opts.extract_options!.merge(on_duplicate_key_update: { constraint_name: '', columns: update_columns }, validate: false)
+            end
+
+            should_support_on_duplicate_key_update
+            should_update_fields_mentioned
+          end
+        end
+
+        context "with no :conflict_target or :constraint_name" do
+          context "with no primary key" do
+            it "raises ArgumentError" do
+              error = assert_raises ArgumentError do
+                Widget.import Build(1, :widgets), on_duplicate_key_update: [:data], validate: false
+              end
+              assert_match(/Expected :conflict_target or :constraint_name to be specified/, error.message)
+            end
           end
         end
 

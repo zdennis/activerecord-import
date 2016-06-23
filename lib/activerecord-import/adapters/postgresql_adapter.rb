@@ -113,15 +113,16 @@ module ActiveRecord::Import::PostgreSQLAdapter
   def sql_for_conflict_target( args = {} )
     constraint_name = args[:constraint_name]
     conflict_target = args[:conflict_target]
-    if constraint_name
+    if constraint_name.present?
       "ON CONSTRAINT #{constraint_name} "
-    elsif conflict_target
-      '(' << Array( conflict_target ).join( ', ' ) << ') '
+    elsif conflict_target.present?
+      '(' << Array( conflict_target ).reject( &:empty? ).join( ', ' ) << ') '
     end
   end
 
   def sql_for_default_conflict_target( table_name )
-    "(#{primary_key( table_name )}) "
+    conflict_target = primary_key( table_name )
+    "(#{conflict_target}) " if conflict_target
   end
 
   # Return true if the statement is a duplicate key record error
