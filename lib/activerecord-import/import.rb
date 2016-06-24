@@ -367,13 +367,13 @@ class ActiveRecord::Base
         # supports 2-element array and array
       elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
         column_names, array_of_attributes = args
+        array_of_attributes = array_of_attributes.map(&:dup)
       else
         raise ArgumentError, "Invalid arguments!"
       end
 
       # dup the passed in array so we don't modify it unintentionally
       column_names = column_names.dup
-      array_of_attributes = array_of_attributes.dup
 
       # Force the primary key col into the insert if it's not
       # on the list and we are using a sequence and stuff a nil
