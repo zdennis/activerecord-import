@@ -1,3 +1,7 @@
 platforms :ruby do
   gem 'activerecord', '~> 4.2.0'
 end
+
+platforms :jruby do
+  gem 'activerecord', '~> 4.2.0'
+end
