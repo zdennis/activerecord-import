@@ -394,7 +394,11 @@ class ActiveRecord::Base
             models.each_with_index do |model, i|
               model = model.dup if options[:recursive]
               next if model.valid?(options[:validate_with_context])
-              model.send(:raise_record_invalid) if options[:raise_error]
+              if options[:raise_error] && model.respond_to?(:raise_validation_error, true) # Rails 5.0 and higher
+                model.send(:raise_validation_error)
+              elsif options[:raise_error] # Rails 3.2, 4.0, 4.1 and 4.2
+                model.send(:raise_record_invalid)
+              end
               array_of_attributes[i] = nil
               failed << model
             end
