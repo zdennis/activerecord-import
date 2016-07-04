@@ -1,8 +1,24 @@
+## Changes in 0.15.0
+
+### New Features
+
+* An ArgumentError is now raised if when no `conflict_target` or `conflict_name` is provided or can be determined when using the `on_duplicate_key_update` option for PostgreSQL. Thanks to @jkowens via \#290
+* Support for Rails 5.0 final release for all except the JDBC driver which is not yet updated to support Rails 5.0
+
+### Fixes
+
+* activerecord-import no longer modifies a value array inside of the given values array when called with `import(columns, values)`. Thanks to @jkowens via \#291
+
+### Misc
+
+* `raise_error` is used to raise errors for ActiveRecord 5.0. Thanks to @couragecourag via \#294 `raise_record_invalid` has been
+
+
 ## Changes in 0.14.1
 
 ### Fixes
 
-* JRuby/JDBCDriver with PostgreSQL will no longer raise a JDBCDriver error when using the :no_returning boolean option. Thanks to  @jkowens via \#287
+* JRuby/JDBCDriver with PostgreSQL will no longer raise a JDBCDriver error when using the :no_returning boolean option. Thanks to @jkowens via \#287
 
 ## Changes in 0.14.0
 
@@ -24,7 +40,6 @@
 * seamless_database_pool has been updated to work with AR 5.0. Thanks to @jkowens via \#280
 * Code cleanup, removal of redundant condition checks. Thanks to @pavlik4k via \#273
 * Code cleanup, removal of deprecated `alias_method_chain`. Thanks to @codeodor via \#271
-
 
 
 ## Changes in 0.13.0
