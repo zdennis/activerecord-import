@@ -504,24 +504,49 @@ describe "#import" do
   end
 
   describe "#import!" do
-    let(:columns) { %w(title author_name) }
-    let(:valid_values) { [["LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
-    let(:invalid_values) { [["Rails Recipes", "Chad Fowler"], ["The RSpec Book", ""], ["Agile+UX", ""]] }
+    context "with an array of unsaved model instances" do
+      let(:topics) { Build(2, :topics) }
+      let(:invalid_topics) { Build(2, :invalid_topics) }
 
-    context "with invalid data" do
-      it "should raise ActiveRecord::RecordInvalid" do
-        assert_no_difference "Topic.count" do
-          assert_raise ActiveRecord::RecordInvalid do
-            Topic.import! columns, invalid_values
+      context "with invalid data" do
+        it "should raise ActiveRecord::RecordInvalid" do
+          assert_no_difference "Topic.count" do
+            assert_raise ActiveRecord::RecordInvalid do
+              Topic.import! invalid_topics
+            end
+          end
+        end
+      end
+
+      context "with valid data" do
+        it "should import data" do
+          assert_difference "Topic.count", +2 do
+            Topic.import! topics
           end
         end
       end
     end
 
-    context "with valid data" do
-      it "should import data" do
-        assert_difference "Topic.count", +2 do
-          Topic.import! columns, valid_values
+    context "with array of columns and array of values" do
+      let(:columns) { %w(title author_name) }
+      let(:valid_values) { [["LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
+      let(:invalid_values) { [["Rails Recipes", "Chad Fowler"], ["The RSpec Book", ""], ["Agile+UX", ""]] }
+
+      context "with invalid data" do
+        it "should raise ActiveRecord::RecordInvalid" do
+          assert_no_difference "Topic.count" do
+            assert_raise ActiveRecord::RecordInvalid do
+              Topic.import! columns, invalid_values
+            end
+          end
+        end
+      end
+
+      context "with valid data" do
+        it "should import data" do
+          assert_difference "Topic.count", +2 do
+            Topic.import! columns, valid_values
+          end
         end
       end
     end
