@@ -22,6 +22,44 @@ module ActiveRecord::Import #:nodoc:
       super "Missing column for value <#{name}> at index #{index}"
     end
   end
+
+  class Validator
+    def initialize(validators, options = {})
+      @validators = validators
+      @options    = options
+    end
+
+    def valid_model?(model)
+      validation_context = @options[:validate_with_context]
+      validation_context ||= (model.new_record? ? :create : :update)
+
+      current_context = model.send(:validation_context)
+      model.send(:validation_context=, validation_context)
+      model.errors.clear
+
+      @validators.each do |v|
+        if validation_context == v.options.fetch(:on, validation_context)
+          v.validate(model) if validate?(v, model)
+        end
+      end
+
+      model.send(:validation_context=, current_context)
+      model.errors.empty?
+    end
+
+    def validate?(validator, model)
+      evaluate = lambda do |condition|
+        case condition
+        when String then model.instance_eval(condition)
+        when Symbol then model.send(condition)
+        when Proc then model.instance_eval(&condition)
+        end
+      end
+
+      Array(validator.options[:if]).map(&evaluate).compact.all? &&
+        !Array(validator.options[:unless]).map(&evaluate).compact.any?
+    end
+  end
 end
 
 class ActiveRecord::Associations::CollectionProxy
@@ -453,10 +491,10 @@ class ActiveRecord::Base
 
       return_obj = if is_validating
         if models
-          import_with_validations( column_names, array_of_attributes, options ) do |failed|
+          import_with_validations( column_names, array_of_attributes, options ) do |validator, failed|
             models.each_with_index do |model, i|
               model = model.dup if options[:recursive]
-              next if model.valid?(options[:validate_with_context])
+              next if validator.valid_model? model
               raise(ActiveRecord::RecordInvalid, model) if options[:raise_error]
               array_of_attributes[i] = nil
               failed << model
@@ -501,8 +539,11 @@ class ActiveRecord::Base
     def import_with_validations( column_names, array_of_attributes, options = {} )
       failed_instances = []
 
+      validators = self.validators.reject { |v| v.is_a? ActiveRecord::Validations::UniquenessValidator }
+      validator = ActiveRecord::Import::Validator.new(validators, options)
+
       if block_given?
-        yield failed_instances
+        yield validator, failed_instances
       else
         # create instances for each of our column/value sets
         arr = validations_array_for_column_names_and_attributes( column_names, array_of_attributes )
@@ -512,7 +553,7 @@ class ActiveRecord::Base
         model = new
         arr.each_with_index do |hsh, i|
           hsh.each_pair { |k, v| model[k] = v }
-          next if model.valid?(options[:validate_with_context])
+          next if validator.valid_model? model
           raise(ActiveRecord::RecordInvalid, model) if options[:raise_error]
           array_of_attributes[i] = nil
           failure = model.dup
