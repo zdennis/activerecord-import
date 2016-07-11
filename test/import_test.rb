@@ -281,6 +281,12 @@ describe "#import" do
       Topic.import [:id, :author_name, :title], [[99, "Bob Jones", "Topic 99"]]
       assert_equal 99, Topic.last.id
     end
+
+    it "ignores the recursive option" do
+      assert_difference "Topic.count", +1 do
+        Topic.import [:author_name, :title], [["David Chelimsky", "The RSpec Book"]], recursive: true
+      end
+    end
   end
 
   context "ActiveRecord timestamps" do
