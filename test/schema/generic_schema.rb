@@ -115,6 +115,8 @@ ActiveRecord::Schema.define do
     t.boolean :active, default: false
     t.text :data
     t.text :json_data
+    t.text :unspecified_data
+    t.text :custom_data
   end
 
   create_table :promotions, primary_key: :promotion_id, force: :cascade do |t|
