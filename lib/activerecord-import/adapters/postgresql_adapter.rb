@@ -113,10 +113,13 @@ module ActiveRecord::Import::PostgreSQLAdapter
   def sql_for_conflict_target( args = {} )
     constraint_name = args[:constraint_name]
     conflict_target = args[:conflict_target]
+    conflict_predicate = args[:conflict_predicate]
     if constraint_name.present?
       "ON CONSTRAINT #{constraint_name} "
     elsif conflict_target.present?
-      '(' << Array( conflict_target ).reject( &:empty? ).join( ', ' ) << ') '
+      '(' << Array( conflict_target ).reject( &:empty? ).join( ', ' ) << ') '.tap do |sql|
+        sql << "WHERE #{conflict_predicate} " if conflict_predicate
+      end
     end
   end
 

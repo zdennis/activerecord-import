@@ -260,10 +260,11 @@ class ActiveRecord::Base
     #
     # ====  Using a Hash
     #
-    # The :on_duplicate_update option can be a hash with up to two attributes,
-    # :conflict_target or constraint_name, and :columns. Unlike MySQL, Postgres
-    # requires the conflicting constraint to be explicitly specified. Using this
-    # option allows you to specify a constraint other than the primary key.
+    # The :on_duplicate_update option can be a hash with up to three
+    # attributes, :conflict_target (and optionally :conflict_predicate) or
+    # :constraint_name, and :columns. Unlike MySQL, Postgres requires the
+    # conflicting constraint to be explicitly specified. Using this option
+    # allows you to specify a constraint other than the primary key.
     #
     # ====== :conflict_target
     #
@@ -274,6 +275,15 @@ class ActiveRecord::Base
     # default to the primary key. Below is an example:
     #
     #   BlogPost.import columns, values, on_duplicate_key_update: { conflict_target: [:author_id, :slug], columns: [ :date_modified ] }
+    #
+    # ====== :conflict_predicate
+    #
+    # The :conflict_predicate attribute optionally specifies a WHERE condition
+    # on :conflict_target, which is required for matching against partial
+    # indexes. This attribute is ignored if :constraint_name is included.
+    # Below is an example:
+    #
+    #   BlogPost.import columns, values, on_duplicate_key_update: { conflict_target: :author_id, conflict_predicate: 'active IS TRUE' }
     #
     # ====== :constraint_name
     #
