@@ -3,7 +3,7 @@ ActiveRecord::Schema.define do
     t.column :device_id, :integer, null: false
     t.column :alarm_type, :integer, null: false
     t.column :status, :integer, null: false
-    t.column :metadata, :jsonb, null: false, default: {}
+    t.column :metadata, :json, null: false, default: {}
     t.datetime :created_at
     t.datetime :updated_at
   end
