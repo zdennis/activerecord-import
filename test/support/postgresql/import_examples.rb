@@ -153,8 +153,8 @@ def should_support_postgresql_upsert_functionality
 
         context 'with :index_predicate' do
           let(:columns) { %w( id device_id alarm_type status metadata ) }
-          let(:values) { [[99, 17, 1, 1, {'foo' => 'bar'}]] }
-          let(:updated_values) { [[99, 17, 1, 2, {'bar' => 'baz'}]] }
+          let(:values) { [[99, 17, 1, 1, 'foo']] }
+          let(:updated_values) { [[99, 17, 1, 2, 'bar']] }
 
           macro(:perform_import) do |*opts|
             Alarm.import columns, updated_values, opts.extract_options!.merge(on_duplicate_key_update: { conflict_target: [:device_id, :alarm_type], index_predicate: 'status <> 0', columns: [:status] }, validate: false)
@@ -183,7 +183,7 @@ def should_support_postgresql_upsert_functionality
           end
 
           assertion(:should_not_update_fields_not_mentioned) do
-            assert_equal updated_alarm.metadata, {'foo' => 'bar'}
+            assert_equal 'foo', updated_alarm.metadata
           end
 
           assertion(:should_update_fields_mentioned_with_hash_mappings) do
