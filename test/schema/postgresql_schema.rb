@@ -8,6 +8,5 @@ ActiveRecord::Schema.define do
     t.datetime :updated_at
   end
 
-  add_index :alarms, [:device_id, :alarm_type], unique: true, where: 'status <> 0',
-    name: 'uk_active_by_device_and_type'
+  add_index :alarms, [:device_id, :alarm_type], unique: true, where: 'status <> 0'
 end
