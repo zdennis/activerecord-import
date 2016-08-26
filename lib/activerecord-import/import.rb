@@ -347,10 +347,14 @@ class ActiveRecord::Base
       if args.last.is_a?( Array ) && args.last.first.is_a?(ActiveRecord::Base)
         if args.length == 2
           models = args.last
-          column_names = args.first
+          column_names = args.first.dup
         else
           models = args.first
           column_names = self.column_names.dup
+        end
+
+        if column_names.include?(primary_key) && columns_hash[primary_key].type == :uuid
+          column_names.delete(primary_key)
         end
 
         array_of_attributes = models.map do |model|
@@ -367,13 +371,13 @@ class ActiveRecord::Base
         # supports 2-element array and array
       elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
         column_names, array_of_attributes = args
+
+        # dup the passed args so we don't modify unintentionally
+        column_names = column_names.dup
         array_of_attributes = array_of_attributes.map(&:dup)
       else
         raise ArgumentError, "Invalid arguments!"
       end
-
-      # dup the passed in array so we don't modify it unintentionally
-      column_names = column_names.dup
 
       # Force the primary key col into the insert if it's not
       # on the list and we are using a sequence and stuff a nil
@@ -531,7 +535,7 @@ class ActiveRecord::Base
       return if models.nil?
       import_result.ids.each_with_index do |id, index|
         model = models[index]
-        model.id = id.to_i
+        model.id = id
         if model.respond_to?(:clear_changes_information) # Rails 4.0 and higher
           model.clear_changes_information
         else # Rails 3.2

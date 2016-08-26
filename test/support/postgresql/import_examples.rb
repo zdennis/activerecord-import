@@ -58,6 +58,22 @@ def should_support_postgresql_import_functionality
       end
     end
   end
+
+  describe "with a uuid primary key" do
+    let(:vendor) { Vendor.new(name: "foo") }
+    let(:vendors) { [vendor] }
+
+    it "creates records" do
+      assert_difference "Vendor.count", +1 do
+        Vendor.import vendors
+      end
+    end
+
+    it "assigns an id to the model objects" do
+      Vendor.import vendors
+      assert_not_nil vendor.id
+    end
+  end
 end
 
 def should_support_postgresql_upsert_functionality
