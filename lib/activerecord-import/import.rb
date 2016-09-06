@@ -582,7 +582,8 @@ class ActiveRecord::Base
           child.public_send("#{association_reflection.foreign_key}=", model.id)
           # For polymorphic associations
           association_reflection.type.try do |type|
-            model_class_name = model.class.superclass.name == "ActiveRecord::Base" ? model.class.name : model.class.superclass.name
+            model_class_name = model.class.superclass.name
+            model_class_name = model.class.name if ["ActiveRecord::Base", "ApplicationRecord"].include? model_class_name
             child.public_send("#{type}=", model_class_name)
           end
         end
