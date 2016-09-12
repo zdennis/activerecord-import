@@ -529,7 +529,7 @@ class ActiveRecord::Base
 
     def set_ids_and_mark_clean(models, import_result)
       return if models.nil?
-      models = models - import_result.failed_instances
+      models -= import_result.failed_instances
       import_result.ids.each_with_index do |id, index|
         model = models[index]
         model.id = id.to_i

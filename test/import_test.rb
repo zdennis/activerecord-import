@@ -107,7 +107,7 @@ describe "#import" do
 
       it "should set ids in valid models if adapter supports setting primary key of imported objects" do
         if ActiveRecord::Base.support_setting_primary_key_of_imported_objects?
-          results = Topic.import (invalid_models + valid_models), validate: true
+          Topic.import (invalid_models + valid_models), validate: true
           assert_nil invalid_models[0].id
           assert_nil invalid_models[1].id
           assert_equal valid_models[0].id, Topic.first.id
