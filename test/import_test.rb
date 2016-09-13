@@ -110,8 +110,8 @@ describe "#import" do
           Topic.import (invalid_models + valid_models), validate: true
           assert_nil invalid_models[0].id
           assert_nil invalid_models[1].id
-          assert_equal valid_models[0].id, Topic.first.id
-          assert_equal valid_models[1].id, Topic.second.id
+          assert_equal valid_models[0].id, Topic.all[0].id
+          assert_equal valid_models[1].id, Topic.all[1].id
         end
       end
 
