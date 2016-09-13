@@ -33,8 +33,8 @@ module ActiveRecord::Import::SQLite3Adapter
     value_sets.each do |value_set|
       number_of_inserts += 1
       sql2insert = base_sql + value_set.join( ',' ) + post_sql
-      first_insert_id = insert( sql2insert, *args )
-      last_insert_id = first_insert_id + value_set.size - 1
+      last_insert_id = insert( sql2insert, *args )
+      first_insert_id = last_insert_id - value_set.size + 1
       ids.concat((first_insert_id..last_insert_id).to_a)
     end
 
