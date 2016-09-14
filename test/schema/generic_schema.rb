@@ -73,7 +73,7 @@ ActiveRecord::Schema.define do
     t.datetime :updated_at
   end
 
-  create_table :end_notes, force: :cascade do |t|
+  create_table :end_notes, primary_key: :end_note_id, force: :cascade do |t|
     t.string :note
     t.integer :book_id, null: false
     t.datetime :created_at

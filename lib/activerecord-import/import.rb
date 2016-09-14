@@ -334,6 +334,7 @@ class ActiveRecord::Base
     def import_helper( *args )
       options = { validate: true, timestamps: true }
       options.merge!( args.pop ) if args.last.is_a? Hash
+      # making sure that current model's primary key is used
       options[:primary_key] = primary_key
 
       # Don't modify incoming arguments
