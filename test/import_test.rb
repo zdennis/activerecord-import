@@ -51,6 +51,8 @@ describe "#import" do
     let(:valid_values) { [["LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
     let(:valid_values_with_context) { [[1111, "Jerry Carter"], [2222, "Chad Fowler"]] }
     let(:invalid_values) { [["The RSpec Book", ""], ["Agile+UX", ""]] }
+    let(:valid_models) { valid_values.map { |title, author_name| Topic.new(title: title, author_name: author_name) } }
+    let(:invalid_models) { invalid_values.map { |title, author_name| Topic.new(title: title, author_name: author_name) } }
 
     context "with validation checks turned off" do
       it "should import valid data" do
@@ -101,6 +103,16 @@ describe "#import" do
         results = Topic.import columns, invalid_values, validate: true
         assert_equal invalid_values.size, results.failed_instances.size
         results.failed_instances.each { |e| assert_kind_of Topic, e }
+      end
+
+      it "should set ids in valid models if adapter supports setting primary key of imported objects" do
+        if ActiveRecord::Base.support_setting_primary_key_of_imported_objects?
+          Topic.import (invalid_models + valid_models), validate: true
+          assert_nil invalid_models[0].id
+          assert_nil invalid_models[1].id
+          assert_equal valid_models[0].id, Topic.all[0].id
+          assert_equal valid_models[1].id, Topic.all[1].id
+        end
       end
 
       it "should import valid data when mixed with invalid data" do
