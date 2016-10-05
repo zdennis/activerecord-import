@@ -135,6 +135,18 @@ describe "#import" do
     end
   end
 
+  context "without :validation option" do
+    let(:columns) { %w(title author_name) }
+    let(:invalid_values) { [["The RSpec Book", ""], ["Agile+UX", ""]] }
+
+    it "should not import invalid data" do
+      assert_no_difference "Topic.count" do
+        result = Topic.import columns, invalid_values
+        assert_equal 2, result.failed_instances.size
+      end
+    end
+  end
+
   context "with :all_or_none option" do
     let(:columns) { %w(title author_name) }
     let(:valid_values) { [["LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
