@@ -46,6 +46,17 @@ describe "#import" do
     end
   end
 
+  describe "with STI models" do
+    it "should import models successfully" do
+      dictionaries = [Dictionary.new(author_name: "Noah Webster", title: "Webster's Dictionary")]
+
+      assert_difference "Dictionary.count", +1 do
+        Dictionary.import dictionaries
+      end
+      assert_equal "Dictionary", Dictionary.first.type
+    end
+  end
+
   context "with :validation option" do
     let(:columns) { %w(title author_name) }
     let(:valid_values) { [["LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
