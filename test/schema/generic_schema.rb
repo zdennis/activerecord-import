@@ -134,7 +134,8 @@ ActiveRecord::Schema.define do
     t.string :discountable_type
   end
 
-  create_table :rules, force: :cascade do |t|
+  create_table :rules, id: false, force: :cascade do |t|
+    t.integer :id
     t.string :condition_text
     t.integer :question_id
   end

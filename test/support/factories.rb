@@ -32,6 +32,7 @@ FactoryGirl.define do
   end
 
   factory :rule do
+    sequence(:id) { |n| n }
     sequence(:condition_text) { |n| "q_#{n}_#{n}" }
   end
 
