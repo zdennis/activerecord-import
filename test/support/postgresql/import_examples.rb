@@ -74,6 +74,36 @@ def should_support_postgresql_import_functionality
       assert_not_nil vendor.id
     end
   end
+
+  describe "with store accessor fields" do
+    if ENV['AR_VERSION'].to_f >= 4.0
+      it "imports values for json fields" do
+        vendors = [Vendor.new(name: 'Vendor 1', size: 100)]
+        assert_difference "Vendor.count", +1 do
+          Vendor.import vendors
+        end
+        assert_equal(100, Vendor.first.size)
+      end
+
+      it "imports values for hstore fields" do
+        vendors = [Vendor.new(name: 'Vendor 1', contact: 'John Smith')]
+        assert_difference "Vendor.count", +1 do
+          Vendor.import vendors
+        end
+        assert_equal('John Smith', Vendor.first.contact)
+      end
+    end
+
+    if ENV['AR_VERSION'].to_f >= 4.2
+      it "imports values for jsonb fields" do
+        vendors = [Vendor.new(name: 'Vendor 1', charge_code: '12345')]
+        assert_difference "Vendor.count", +1 do
+          Vendor.import vendors
+        end
+        assert_equal('12345', Vendor.first.charge_code)
+      end
+    end
+  end
 end
 
 def should_support_postgresql_upsert_functionality
