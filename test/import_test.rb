@@ -44,6 +44,14 @@ describe "#import" do
         end
       end
     end
+
+    context "that have no primary key" do
+      it "should import models successfully" do
+        assert_difference "Rule.count", +3 do
+          Rule.import Build(3, :rules)
+        end
+      end
+    end
   end
 
   describe "with STI models" do
