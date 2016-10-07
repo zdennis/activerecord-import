@@ -68,7 +68,7 @@ class ActiveRecord::Associations::CollectionAssociation
 
     # supports empty array
     elsif args.last.is_a?( Array ) && args.last.empty?
-      return ActiveRecord::Import::Result.new([], 0, [])
+      return ActiveRecord::Import::Result.new([], 0, []) if args.last.empty?
 
     # supports 2-element array and array
     elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
@@ -174,8 +174,7 @@ class ActiveRecord::Base
     # * +ignore+ - true|false, tells import to use MySQL's INSERT IGNORE
     #    to discard records that contain duplicate keys.
     # * +on_duplicate_key_ignore+ - true|false, tells import to use
-    #    Postgres 9.5+ ON CONFLICT DO NOTHING. Cannot be enabled on a
-    #    recursive import.
+    #    Postgres 9.5+ ON CONFLICT DO NOTHING.
     # * +on_duplicate_key_update+ - an Array or Hash, tells import to
     #    use MySQL's ON DUPLICATE KEY UPDATE or Postgres 9.5+ ON CONFLICT
     #    DO UPDATE ability. See On Duplicate Key Update below.
@@ -369,7 +368,7 @@ class ActiveRecord::Base
         end
         # supports empty array
       elsif args.last.is_a?( Array ) && args.last.empty?
-        return ActiveRecord::Import::Result.new([], 0, [])
+        return ActiveRecord::Import::Result.new([], 0, []) if args.last.empty?
         # supports 2-element array and array
       elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
         column_names, array_of_attributes = args
@@ -505,7 +504,7 @@ class ActiveRecord::Base
 
       columns_sql = "(#{column_names.map { |name| connection.quote_column_name(name) }.join(',')})"
       insert_sql = "INSERT #{options[:ignore] ? 'IGNORE ' : ''}INTO #{quoted_table_name} #{columns_sql} VALUES "
-      values_sql = values_sql_for_columns_and_attributes(columns, array_of_attributes)
+      values_sql = values_sql_for_columns_and_attributes(columns, array_of_attributes, options)
 
       number_inserted = 0
       ids = []
@@ -524,7 +523,7 @@ class ActiveRecord::Base
         end
       else
         values_sql.each do |values|
-          ids << connection.insert(insert_sql + values)
+          connection.execute(insert_sql + values)
           number_inserted += 1
         end
       end
@@ -541,7 +540,7 @@ class ActiveRecord::Base
         model.id = id
         if model.respond_to?(:clear_changes_information) # Rails 4.0 and higher
           model.clear_changes_information
-        else # Rails 3.2
+        else # Rails 3.1
           model.instance_variable_get(:@changed_attributes).clear
         end
         model.instance_variable_set(:@new_record, false)
@@ -599,7 +598,7 @@ class ActiveRecord::Base
 
     # Returns SQL the VALUES for an INSERT statement given the passed in +columns+
     # and +array_of_attributes+.
-    def values_sql_for_columns_and_attributes(columns, array_of_attributes) # :nodoc:
+    def values_sql_for_columns_and_attributes(columns, array_of_attributes, options = {}) # :nodoc:
       # connection gets called a *lot* in this high intensity loop.
       # Reuse the same one w/in the loop, otherwise it would keep being re-retreived (= lots of time for large imports)
       connection_memo = connection
@@ -615,8 +614,8 @@ class ActiveRecord::Base
               connection_memo.quote(type_caster.type_cast_for_database(column.name, val))
             elsif column.respond_to?(:type_cast_from_user)                                   # Rails 4.2 and higher
               connection_memo.quote(column.type_cast_from_user(val), column)
-            else                                                                             # Rails 3.2, 4.0 and 4.1
-              if serialized_attributes.include?(column.name)
+            else                                                                             # Rails 3.1, 3.2, 4.0 and 4.1
+              if serialized_attributes.include?(column.name) && (options[:serialized] != false )
                 val = serialized_attributes[column.name].dump(val)
               end
               connection_memo.quote(column.type_cast(val), column)
@@ -627,7 +626,7 @@ class ActiveRecord::Base
       end
     end
 
-    def add_special_rails_stamps( column_names, array_of_attributes, options )
+    def add_special_rails_stamps( column_names, array_of_attributes, options = {} )
       AREXT_RAILS_COLUMNS[:create].each_pair do |key, blk|
         next unless self.column_names.include?(key)
         value = blk.call
