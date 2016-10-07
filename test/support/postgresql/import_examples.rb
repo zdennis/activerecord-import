@@ -183,35 +183,31 @@ def should_support_postgresql_upsert_functionality
             @alarm = Alarm.find 99
           end
 
-          assertion(:should_not_update_created_at_timestamp_columns) do
-            Timecop.freeze Chronic.parse("5 minutes from now") do
-              perform_import
-              assert_in_delta @alarm.created_at.to_i, updated_alarm.created_at.to_i, 1
+          context 'supports on duplicate key update for partial indexes' do
+            it 'should not update created_at timestamp columns' do
+              Timecop.freeze Chronic.parse("5 minutes from now") do
+                perform_import
+                assert_in_delta @alarm.created_at.to_i, updated_alarm.created_at.to_i, 1
+              end
             end
-          end
 
-          assertion(:should_update_updated_at_timestamp_columns) do
-            time = Chronic.parse("5 minutes from now")
-            Timecop.freeze time do
-              perform_import
-              assert_in_delta time.to_i, updated_alarm.updated_at.to_i, 1
+            it 'should update updated_at timestamp columns' do
+              time = Chronic.parse("5 minutes from now")
+              Timecop.freeze time do
+                perform_import
+                assert_in_delta time.to_i, updated_alarm.updated_at.to_i, 1
+              end
             end
-          end
 
-          assertion(:should_not_update_fields_not_mentioned) do
-            assert_equal 'foo', updated_alarm.metadata
-          end
+            it 'should not update fields not mentioned' do
+              perform_import
+              assert_equal 'foo', updated_alarm.metadata
+            end
 
-          assertion(:should_update_fields_mentioned_with_hash_mappings) do
-            perform_import
-            assert_equal 2, updated_alarm.status
-          end
-
-          it 'supports on duplicate key update for partial indexes' do
-            should_not_update_fields_not_mentioned
-            should_not_update_created_at_on_timestamp_columns
-            should_update_updated_at_on_timestamp_columns
-            should_update_fields_mentioned_with_hash_mappings
+            it 'should update fields mentioned with hash mappings' do
+              perform_import
+              assert_equal 2, updated_alarm.status
+            end
           end
         end
 
