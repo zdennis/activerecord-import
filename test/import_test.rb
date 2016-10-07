@@ -555,13 +555,21 @@ describe "#import" do
       assert_equal({ a: :b }, Widget.find_by_w_id(1).custom_data)
     end
 
-    if ENV['AR_VERSION'].to_f >= 3.1
-      let(:data) { { a: :b } }
-      it "imports values for serialized JSON fields" do
-        assert_difference "Widget.unscoped.count", +1 do
-          Widget.import [:w_id, :json_data], [[9, data]]
+    let(:data) { { a: :b } }
+    it "imports values for serialized JSON fields" do
+      assert_difference "Widget.unscoped.count", +1 do
+        Widget.import [:w_id, :json_data], [[9, data]]
+      end
+      assert_equal(data.as_json, Widget.find_by_w_id(9).json_data)
+    end
+
+    context "with a store" do
+      it "imports serialized attributes set using accessors" do
+        vendors = [Vendor.new(name: 'Vendor 1', color: 'blue')]
+        assert_difference "Vendor.count", +1 do
+          Vendor.import vendors
         end
-        assert_equal(data.as_json, Widget.find_by_w_id(9).json_data)
+        assert_equal('blue', Vendor.first.color)
       end
     end
   end

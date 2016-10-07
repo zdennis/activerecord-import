@@ -143,4 +143,12 @@ ActiveRecord::Schema.define do
   create_table :questions, force: :cascade do |t|
     t.string :body
   end
+
+  create_table :vendors, force: :cascade do |t|
+    t.string :name, null: true
+    t.text :preferences
+    t.text :data
+    t.text :config
+    t.text :settings
+  end
 end

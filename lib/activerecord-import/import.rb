@@ -318,7 +318,7 @@ class ActiveRecord::Base
     # This returns an object which responds to +failed_instances+ and +num_inserts+.
     # * failed_instances - an array of objects that fails validation and were not committed to the database. An empty array if no validation is performed.
     # * num_inserts - the number of insert statements it took to import the data
-    # * ids - the primary keys of the imported ids, if the adpater supports it, otherwise and empty array.
+    # * ids - the primary keys of the imported ids if the adapter supports it, otherwise an empty array.
     def import(*args)
       if args.first.is_a?( Array ) && args.first.first.is_a?(ActiveRecord::Base)
         options = {}
@@ -374,7 +374,11 @@ class ActiveRecord::Base
           # this next line breaks sqlite.so with a segmentation fault
           # if model.new_record? || options[:on_duplicate_key_update]
           column_names.map do |name|
-            model.read_attribute_before_type_cast(name.to_s)
+            if respond_to?(:stored_attributes) && stored_attributes.include?(name.to_sym)
+              model.send(name.to_s)
+            else
+              model.read_attribute_before_type_cast(name.to_s)
+            end
           end
           # end
         end
