@@ -275,7 +275,7 @@ class ActiveRecord::Base
     # but it is the preferred method of identifying a constraint. It will
     # default to the primary key. Below is an example:
     #
-    #   BlogPost.import columns, values, on_duplicate_key_update: { conflict_target: [:author_id, :slug], columns: [ :date_modified ] }
+    #   BlogPost.import columns, values, on_duplicate_key_update: { conflict_target: [ :author_id, :slug ], columns: [ :date_modified ] }
     #
     # ====== :index_predicate
     #
@@ -284,7 +284,7 @@ class ActiveRecord::Base
     # indexes. This attribute is ignored if :constraint_name is included.
     # Below is an example:
     #
-    #   Alarm.import columns, values, on_duplicate_key_update: { conflict_target: [:device_id, :alarm_type], index_predicate: 'status <> 0' }
+    #   BlogPost.import columns, values, on_duplicate_key_update: { conflict_target: [ :author_id, :slug ], index_predicate: 'status <> 0', columns: [ :date_modified ] }
     #
     # ====== :constraint_name
     #
