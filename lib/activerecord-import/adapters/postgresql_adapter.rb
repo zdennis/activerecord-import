@@ -31,11 +31,24 @@ module ActiveRecord::Import::PostgreSQLAdapter
   end
 
   def post_sql_statements( table_name, options ) # :nodoc:
-    if options[:no_returning] || options[:primary_key].blank?
-      super(table_name, options)
-    else
-      super(table_name, options) << "RETURNING #{options[:primary_key]}"
+    sql = []
+
+    if supports_on_duplicate_key_update?
+      # Options :recursive and :on_duplicate_key_ignore are mutually exclusive
+      if (options[:ignore] || options[:on_duplicate_key_ignore]) && !options[:on_duplicate_key_update] && !options[:recursive]
+        sql << sql_for_on_duplicate_key_ignore( table_name, options[:on_duplicate_key_ignore] )
+      end
+    elsif options[:on_duplicate_key_ignore] && !options[:on_duplicate_key_update]
+      logger.warn "Ignoring on_duplicate_key_ignore because it is not supported by the database."
     end
+
+    sql += super(table_name, options)
+
+    unless options[:no_returning] || options[:primary_key].blank?
+      sql << "RETURNING #{options[:primary_key]}"
+    end
+
+    sql
   end
 
   # Add a column to be updated on duplicate key update
@@ -135,10 +148,6 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
   def supports_on_duplicate_key_update?(current_version = postgresql_version)
     current_version >= MIN_VERSION_FOR_UPSERT
-  end
-
-  def supports_on_duplicate_key_ignore?(current_version = postgresql_version)
-    supports_on_duplicate_key_update?(current_version)
   end
 
   def support_setting_primary_key_of_imported_objects?

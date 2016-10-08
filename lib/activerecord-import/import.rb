@@ -171,10 +171,11 @@ class ActiveRecord::Base
     # == Options
     # * +validate+ - true|false, tells import whether or not to use
     #    ActiveRecord validations. Validations are enforced by default.
-    # * +ignore+ - true|false, tells import to use MySQL's INSERT IGNORE
-    #    to discard records that contain duplicate keys.
-    # * +on_duplicate_key_ignore+ - true|false, tells import to use
-    #    Postgres 9.5+ ON CONFLICT DO NOTHING. Cannot be enabled on a
+    # * +ignore+ - true|false, an alias for on_duplicate_key_ignore.
+    # * +on_duplicate_key_ignore+ - true|false, tells import to discard
+    #    records that contain duplicate keys. For Postgres 9.5+ it adds
+    #    ON CONFLICT DO NOTHING, for MySQL it uses INSERT IGNORE, and for
+    #    SQLite it uses INSERT OR IGNORE. Cannot be enabled on a
     #    recursive import.
     # * +on_duplicate_key_update+ - an Array or Hash, tells import to
     #    use MySQL's ON DUPLICATE KEY UPDATE or Postgres 9.5+ ON CONFLICT
@@ -519,7 +520,9 @@ class ActiveRecord::Base
       end
 
       columns_sql = "(#{column_names.map { |name| connection.quote_column_name(name) }.join(',')})"
-      insert_sql = "INSERT #{options[:ignore] ? 'IGNORE ' : ''}INTO #{quoted_table_name} #{columns_sql} VALUES "
+      pre_sql_statements = connection.pre_sql_statements( options )
+      insert_sql = ['INSERT', pre_sql_statements, "INTO #{quoted_table_name} #{columns_sql} VALUES "]
+      insert_sql = insert_sql.flatten.join(' ')
       values_sql = values_sql_for_columns_and_attributes(columns, array_of_attributes)
 
       number_inserted = 0
