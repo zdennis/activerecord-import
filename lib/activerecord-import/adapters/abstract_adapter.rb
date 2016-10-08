@@ -54,6 +54,8 @@ module ActiveRecord::Import::AbstractAdapter
         elsif options[:on_duplicate_key_update]
           post_sql_statements << sql_for_on_duplicate_key_update( table_name, options[:on_duplicate_key_update] )
         end
+      elsif options[:on_duplicate_key_update]
+        logger.warn "Ignoring on_duplicate_key_update because it is not supported by the database."
       end
 
       # custom user post_sql
