@@ -349,7 +349,7 @@ class ActiveRecord::Base
       options[:primary_key] = primary_key
 
       # Don't modify incoming arguments
-      if options[:on_duplicate_key_update]
+      if options[:on_duplicate_key_update] && options[:on_duplicate_key_update].duplicable?
         options[:on_duplicate_key_update] = options[:on_duplicate_key_update].dup
       end
 

@@ -49,4 +49,18 @@ describe "#import" do
       assert_equal 2500, Topic.count, "Failed to insert all records. Make sure you have a supported version of SQLite3 (3.7.11 or higher) installed"
     end
   end
+
+  context "with :on_duplicate_key_update" do
+    let(:topics) { Build(1, :topics) }
+
+    it "should log a warning message" do
+      log = StringIO.new
+      logger = Logger.new(log)
+      logger.level = Logger::WARN
+      ActiveRecord::Base.connection.stubs(:logger).returns(logger)
+
+      Topic.import topics, on_duplicate_key_update: true
+      assert_match(/Ignoring on_duplicate_key_update/, log.string)
+    end
+  end
 end
