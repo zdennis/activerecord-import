@@ -30,12 +30,14 @@ module ActiveRecord::Import::SQLite3Adapter
     value_sets = ::ActiveRecord::Import::ValueSetsRecordsParser.parse(values,
       max_records: SQLITE_LIMIT_COMPOUND_SELECT)
 
-    value_sets.each do |value_set|
-      number_of_inserts += 1
-      sql2insert = base_sql + value_set.join( ',' ) + post_sql
-      last_insert_id = insert( sql2insert, *args )
-      first_insert_id = last_insert_id - affected_rows + 1
-      ids.concat((first_insert_id..last_insert_id).to_a)
+    transaction(requires_new: true) do
+      value_sets.each do |value_set|
+        number_of_inserts += 1
+        sql2insert = base_sql + value_set.join( ',' ) + post_sql
+        last_insert_id = insert( sql2insert, *args )
+        first_insert_id = last_insert_id - affected_rows + 1
+        ids.concat((first_insert_id..last_insert_id).to_a)
+      end
     end
 
     [number_of_inserts, ids]

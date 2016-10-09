@@ -541,9 +541,11 @@ class ActiveRecord::Base
           ids += result[1]
         end
       else
-        values_sql.each do |values|
-          ids << connection.insert(insert_sql + values)
-          number_inserted += 1
+        transaction(requires_new: true) do
+          values_sql.each do |values|
+            ids << connection.insert(insert_sql + values)
+            number_inserted += 1
+          end
         end
       end
       [number_inserted, ids]
