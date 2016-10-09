@@ -60,6 +60,12 @@ module ActiveRecord::Import::MysqlAdapter
     end
   end
 
+  def pre_sql_statements( options)
+    sql = []
+    sql << "IGNORE" if options[:ignore] || options[:on_duplicate_key_ignore]
+    sql + super
+  end
+
   # Add a column to be updated on duplicate key update
   def add_column_for_on_duplicate_key_update( column, options = {} ) # :nodoc:
     if options.include?(:on_duplicate_key_update)
@@ -68,7 +74,7 @@ module ActiveRecord::Import::MysqlAdapter
       when Array then columns << column.to_sym unless columns.include?(column.to_sym)
       when Hash then columns[column.to_sym] = column.to_sym
       end
-    else
+    elsif !options[:on_duplicate_key_ignore]
       options[:on_duplicate_key_update] = [column.to_sym]
     end
   end

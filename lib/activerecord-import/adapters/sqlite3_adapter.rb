@@ -34,15 +34,29 @@ module ActiveRecord::Import::SQLite3Adapter
       number_of_inserts += 1
       sql2insert = base_sql + value_set.join( ',' ) + post_sql
       last_insert_id = insert( sql2insert, *args )
-      first_insert_id = last_insert_id - value_set.size + 1
+      first_insert_id = last_insert_id - affected_rows + 1
       ids.concat((first_insert_id..last_insert_id).to_a)
     end
 
     [number_of_inserts, ids]
   end
 
+  def pre_sql_statements( options)
+    sql = []
+    # Options :recursive and :on_duplicate_key_ignore are mutually exclusive
+    if (options[:ignore] || options[:on_duplicate_key_ignore]) && !options[:recursive]
+      sql << "OR IGNORE"
+    end
+    sql + super
+  end
+
   def next_value_for_sequence(sequence_name)
     %{nextval('#{sequence_name}')}
+  end
+
+  def affected_rows
+    result = execute('SELECT changes();')
+    result.first[0]
   end
 
   def support_setting_primary_key_of_imported_objects?

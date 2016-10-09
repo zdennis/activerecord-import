@@ -108,6 +108,7 @@ end
 
 def should_support_postgresql_upsert_functionality
   should_support_basic_on_duplicate_key_update
+  should_support_on_duplicate_key_ignore
 
   describe "#import" do
     extend ActiveSupport::TestCase::ImportAssertions

@@ -23,7 +23,6 @@ module ActiveRecord::Import::AbstractAdapter
       sql = []
       sql << options[:pre_sql] if options[:pre_sql]
       sql << options[:command] if options[:command]
-      sql << "IGNORE" if options[:ignore]
 
       # add keywords like IGNORE or DELAYED
       if options[:keywords].is_a?(Array)
@@ -45,15 +44,8 @@ module ActiveRecord::Import::AbstractAdapter
     def post_sql_statements( table_name, options ) # :nodoc:
       post_sql_statements = []
 
-      if supports_on_duplicate_key_update?
-        if options[:on_duplicate_key_ignore] && respond_to?(:sql_for_on_duplicate_key_ignore)
-          # Options :recursive and :on_duplicate_key_ignore are mutually exclusive
-          unless options[:recursive]
-            post_sql_statements << sql_for_on_duplicate_key_ignore( table_name, options[:on_duplicate_key_ignore] )
-          end
-        elsif options[:on_duplicate_key_update]
-          post_sql_statements << sql_for_on_duplicate_key_update( table_name, options[:on_duplicate_key_update] )
-        end
+      if supports_on_duplicate_key_update? && options[:on_duplicate_key_update]
+        post_sql_statements << sql_for_on_duplicate_key_update( table_name, options[:on_duplicate_key_update] )
       elsif options[:on_duplicate_key_update]
         logger.warn "Ignoring on_duplicate_key_update because it is not supported by the database."
       end
