@@ -6,7 +6,7 @@ def should_support_on_duplicate_key_ignore
 
     context "with :on_duplicate_key_ignore" do
       it "should skip duplicates and continue import" do
-        topics << Topic.new(id: 100, title: "Book 2", author_name: "Jane Doe")
+        topics << Topic.new(title: "Book 2", author_name: "Jane Doe")
         assert_difference "Topic.count", +1 do
           Topic.import topics, on_duplicate_key_ignore: true, validate: false
         end
@@ -15,7 +15,7 @@ def should_support_on_duplicate_key_ignore
 
     context "with :ignore" do
       it "should skip duplicates and continue import" do
-        topics << Topic.new(id: 100, title: "Book 2", author_name: "Jane Doe")
+        topics << Topic.new(title: "Book 2", author_name: "Jane Doe")
         assert_difference "Topic.count", +1 do
           Topic.import topics, ignore: true, validate: false
         end
