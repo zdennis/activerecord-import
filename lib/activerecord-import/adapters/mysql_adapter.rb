@@ -77,7 +77,7 @@ module ActiveRecord::Import::MysqlAdapter
       when Array then columns << column.to_sym unless columns.include?(column.to_sym)
       when Hash then columns[column.to_sym] = column.to_sym
       end
-    elsif !options[:on_duplicate_key_ignore]
+    elsif !options[:ignore] && !options[:on_duplicate_key_ignore]
       options[:on_duplicate_key_update] = [column.to_sym]
     end
   end
