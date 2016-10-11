@@ -1,3 +1,12 @@
+## Changes in 0.16.1
+
+### Fixes
+
+* Fixes issue with missing error messages on failed instances when
+  importing using arrays of columns and values. Thanks to @Fivell via \#332
+* Update so SQLite only return ids if table has a primary key field via \#333
+
+
 ## Changes in 0.16.0
 
 ### New Features
