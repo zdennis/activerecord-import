@@ -476,7 +476,9 @@ class ActiveRecord::Base
           next if model.valid?(options[:validate_with_context])
           raise(ActiveRecord::RecordInvalid, model) if options[:raise_error]
           array_of_attributes[i] = nil
-          failed_instances << model.dup
+          failure = model.dup
+          failure.errors.send(:initialize_dup, model.errors)
+          failed_instances << failure
         end
       end
 

@@ -121,7 +121,10 @@ describe "#import" do
       it "should report the failed instances" do
         results = Topic.import columns, invalid_values, validate: true
         assert_equal invalid_values.size, results.failed_instances.size
-        results.failed_instances.each { |e| assert_kind_of Topic, e }
+        results.failed_instances.each do |e|
+          assert_kind_of Topic, e
+          assert_equal e.errors.count, 1
+        end
       end
 
       it "should set ids in valid models if adapter supports setting primary key of imported objects" do
