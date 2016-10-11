@@ -121,6 +121,7 @@ describe "#import" do
       it "should report the failed instances" do
         results = Topic.import columns, invalid_values, validate: true
         assert_equal invalid_values.size, results.failed_instances.size
+        assert_not_equal results.failed_instances.first, results.failed_instances.last
         results.failed_instances.each do |e|
           assert_kind_of Topic, e
           assert_equal e.errors.count, 1
