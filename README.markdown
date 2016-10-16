@@ -29,7 +29,11 @@ Use activerecord-import 0.11.0 or higher.
 
 Use activerecord-import 0.4.0 or higher.
 
-### Rails 3.1.x up to, but not including 4.0
+### Rails 3.2.x up to, but not including 4.0
+
+Use activerecord-import 0.3.0 or higher.
+
+### Rails 3.1.x up to, but not including 3.2
 
 Use the latest in the activerecord-import 0.3.x series.
 
