@@ -1,3 +1,35 @@
+## Changes in 0.16.1
+
+### Fixes
+
+* Fixes issue with missing error messages on failed instances when
+  importing using arrays of columns and values. Thanks to @Fivell via \#332
+* Update so SQLite only return ids if table has a primary key field via \#333
+
+
+## Changes in 0.16.0
+
+### New Features
+
+* Add partial index upsert support for PostgreSQL. Thanks to @luislew via \#305
+* Add UUID primary key support for PostgreSQL. Thanks to @jkowens via
+  \#312
+* Add store accessor support for JSON, JSON, and HSTORE data types.
+  Thanks to @jkowens via \#322
+* Log warning if database does not support :on_duplicate_key_update.
+  Thanks to @jkowens vi \#324
+* Add option :on_duplicate_key_ignore for MySQL and SQLite. Thanks to
+  @jkowens via \#326
+
+### Fixes
+
+* Fixes issue with recursive import using same primary key for all models.
+  Thanks to @chopraanmol1 via \#309
+* Fixes issue importing from STI subclass with polymorphic associations.
+  Thanks to @JNajera via \#314
+* Fixes issue setting returned IDs to wrong models when some fail validation. Also fixes issue with SQLite returning wrong IDs. Thanks to @mizukami234 via \#315
+
+
 ## Changes in 0.15.0
 
 ### New Features

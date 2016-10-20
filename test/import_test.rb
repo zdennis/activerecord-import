@@ -44,6 +44,25 @@ describe "#import" do
         end
       end
     end
+
+    context "that have no primary key" do
+      it "should import models successfully" do
+        assert_difference "Rule.count", +3 do
+          Rule.import Build(3, :rules)
+        end
+      end
+    end
+  end
+
+  describe "with STI models" do
+    it "should import models successfully" do
+      dictionaries = [Dictionary.new(author_name: "Noah Webster", title: "Webster's Dictionary")]
+
+      assert_difference "Dictionary.count", +1 do
+        Dictionary.import dictionaries
+      end
+      assert_equal "Dictionary", Dictionary.first.type
+    end
   end
 
   context "with :validation option" do
@@ -51,6 +70,8 @@ describe "#import" do
     let(:valid_values) { [["LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
     let(:valid_values_with_context) { [[1111, "Jerry Carter"], [2222, "Chad Fowler"]] }
     let(:invalid_values) { [["The RSpec Book", ""], ["Agile+UX", ""]] }
+    let(:valid_models) { valid_values.map { |title, author_name| Topic.new(title: title, author_name: author_name) } }
+    let(:invalid_models) { invalid_values.map { |title, author_name| Topic.new(title: title, author_name: author_name) } }
 
     context "with validation checks turned off" do
       it "should import valid data" do
@@ -100,7 +121,21 @@ describe "#import" do
       it "should report the failed instances" do
         results = Topic.import columns, invalid_values, validate: true
         assert_equal invalid_values.size, results.failed_instances.size
-        results.failed_instances.each { |e| assert_kind_of Topic, e }
+        assert_not_equal results.failed_instances.first, results.failed_instances.last
+        results.failed_instances.each do |e|
+          assert_kind_of Topic, e
+          assert_equal e.errors.count, 1
+        end
+      end
+
+      it "should set ids in valid models if adapter supports setting primary key of imported objects" do
+        if ActiveRecord::Base.support_setting_primary_key_of_imported_objects?
+          Topic.import (invalid_models + valid_models), validate: true
+          assert_nil invalid_models[0].id
+          assert_nil invalid_models[1].id
+          assert_equal valid_models[0].id, Topic.all[0].id
+          assert_equal valid_models[1].id, Topic.all[1].id
+        end
       end
 
       it "should import valid data when mixed with invalid data" do
@@ -108,6 +143,18 @@ describe "#import" do
           Topic.import columns, valid_values + invalid_values, validate: true
         end
         assert_equal 0, Topic.where(title: invalid_values.map(&:first)).count
+      end
+    end
+  end
+
+  context "without :validation option" do
+    let(:columns) { %w(title author_name) }
+    let(:invalid_values) { [["The RSpec Book", ""], ["Agile+UX", ""]] }
+
+    it "should not import invalid data" do
+      assert_no_difference "Topic.count" do
+        result = Topic.import columns, invalid_values
+        assert_equal 2, result.failed_instances.size
       end
     end
   end
@@ -512,13 +559,21 @@ describe "#import" do
       assert_equal({ a: :b }, Widget.find_by_w_id(1).custom_data)
     end
 
-    if ENV['AR_VERSION'].to_f >= 3.1
-      let(:data) { { a: :b } }
-      it "imports values for serialized JSON fields" do
-        assert_difference "Widget.unscoped.count", +1 do
-          Widget.import [:w_id, :json_data], [[9, data]]
+    let(:data) { { a: :b } }
+    it "imports values for serialized JSON fields" do
+      assert_difference "Widget.unscoped.count", +1 do
+        Widget.import [:w_id, :json_data], [[9, data]]
+      end
+      assert_equal(data.as_json, Widget.find_by_w_id(9).json_data)
+    end
+
+    context "with a store" do
+      it "imports serialized attributes set using accessors" do
+        vendors = [Vendor.new(name: 'Vendor 1', color: 'blue')]
+        assert_difference "Vendor.count", +1 do
+          Vendor.import vendors
         end
-        assert_equal(data.as_json, Widget.find_by_w_id(9).json_data)
+        assert_equal('blue', Vendor.first.color)
       end
     end
   end

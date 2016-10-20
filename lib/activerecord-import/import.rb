@@ -171,10 +171,11 @@ class ActiveRecord::Base
     # == Options
     # * +validate+ - true|false, tells import whether or not to use
     #    ActiveRecord validations. Validations are enforced by default.
-    # * +ignore+ - true|false, tells import to use MySQL's INSERT IGNORE
-    #    to discard records that contain duplicate keys.
-    # * +on_duplicate_key_ignore+ - true|false, tells import to use
-    #    Postgres 9.5+ ON CONFLICT DO NOTHING. Cannot be enabled on a
+    # * +ignore+ - true|false, an alias for on_duplicate_key_ignore.
+    # * +on_duplicate_key_ignore+ - true|false, tells import to discard
+    #    records that contain duplicate keys. For Postgres 9.5+ it adds
+    #    ON CONFLICT DO NOTHING, for MySQL it uses INSERT IGNORE, and for
+    #    SQLite it uses INSERT OR IGNORE. Cannot be enabled on a
     #    recursive import.
     # * +on_duplicate_key_update+ - an Array or Hash, tells import to
     #    use MySQL's ON DUPLICATE KEY UPDATE or Postgres 9.5+ ON CONFLICT
@@ -246,7 +247,8 @@ class ActiveRecord::Base
     # == On Duplicate Key Update (Postgres 9.5+)
     #
     # The :on_duplicate_key_update option can be an Array or a Hash with up to
-    # two attributes, :conflict_target or :constraint_name and :columns.
+    # three attributes, :conflict_target (and optionally :index_predicate) or
+    # :constraint_name, and :columns.
     #
     # ==== Using an Array
     #
@@ -260,10 +262,11 @@ class ActiveRecord::Base
     #
     # ====  Using a Hash
     #
-    # The :on_duplicate_update option can be a hash with up to two attributes,
-    # :conflict_target or constraint_name, and :columns. Unlike MySQL, Postgres
-    # requires the conflicting constraint to be explicitly specified. Using this
-    # option allows you to specify a constraint other than the primary key.
+    # The :on_duplicate_key_update option can be a hash with up to three
+    # attributes, :conflict_target (and optionally :index_predicate) or
+    # :constraint_name, and :columns. Unlike MySQL, Postgres requires the
+    # conflicting constraint to be explicitly specified. Using this option
+    # allows you to specify a constraint other than the primary key.
     #
     # ====== :conflict_target
     #
@@ -273,7 +276,16 @@ class ActiveRecord::Base
     # but it is the preferred method of identifying a constraint. It will
     # default to the primary key. Below is an example:
     #
-    #   BlogPost.import columns, values, on_duplicate_key_update: { conflict_target: [:author_id, :slug], columns: [ :date_modified ] }
+    #   BlogPost.import columns, values, on_duplicate_key_update: { conflict_target: [ :author_id, :slug ], columns: [ :date_modified ] }
+    #
+    # ====== :index_predicate
+    #
+    # The :index_predicate attribute optionally specifies a WHERE condition
+    # on :conflict_target, which is required for matching against partial
+    # indexes. This attribute is ignored if :constraint_name is included.
+    # Below is an example:
+    #
+    #   BlogPost.import columns, values, on_duplicate_key_update: { conflict_target: [ :author_id, :slug ], index_predicate: 'status <> 0', columns: [ :date_modified ] }
     #
     # ====== :constraint_name
     #
@@ -307,7 +319,7 @@ class ActiveRecord::Base
     # This returns an object which responds to +failed_instances+ and +num_inserts+.
     # * failed_instances - an array of objects that fails validation and were not committed to the database. An empty array if no validation is performed.
     # * num_inserts - the number of insert statements it took to import the data
-    # * ids - the primary keys of the imported ids, if the adpater supports it, otherwise and empty array.
+    # * ids - the primary keys of the imported ids if the adapter supports it, otherwise an empty array.
     def import(*args)
       if args.first.is_a?( Array ) && args.first.first.is_a?(ActiveRecord::Base)
         options = {}
@@ -332,11 +344,13 @@ class ActiveRecord::Base
     end
 
     def import_helper( *args )
-      options = { validate: true, timestamps: true, primary_key: primary_key }
+      options = { validate: true, timestamps: true }
       options.merge!( args.pop ) if args.last.is_a? Hash
+      # making sure that current model's primary key is used
+      options[:primary_key] = primary_key
 
       # Don't modify incoming arguments
-      if options[:on_duplicate_key_update]
+      if options[:on_duplicate_key_update] && options[:on_duplicate_key_update].duplicable?
         options[:on_duplicate_key_update] = options[:on_duplicate_key_update].dup
       end
 
@@ -347,17 +361,27 @@ class ActiveRecord::Base
       if args.last.is_a?( Array ) && args.last.first.is_a?(ActiveRecord::Base)
         if args.length == 2
           models = args.last
-          column_names = args.first
+          column_names = args.first.dup
         else
           models = args.first
           column_names = self.column_names.dup
         end
 
+        if column_names.include?(primary_key) && columns_hash[primary_key].type == :uuid
+          column_names.delete(primary_key)
+        end
+
+        stored_attrs = respond_to?(:stored_attributes) ? stored_attributes : {}
+
         array_of_attributes = models.map do |model|
           # this next line breaks sqlite.so with a segmentation fault
           # if model.new_record? || options[:on_duplicate_key_update]
           column_names.map do |name|
-            model.read_attribute_before_type_cast(name.to_s)
+            if stored_attrs.any? && stored_attrs.key?(name.to_sym)
+              model.read_attribute(name.to_s)
+            else
+              model.read_attribute_before_type_cast(name.to_s)
+            end
           end
           # end
         end
@@ -367,13 +391,13 @@ class ActiveRecord::Base
         # supports 2-element array and array
       elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
         column_names, array_of_attributes = args
+
+        # dup the passed args so we don't modify unintentionally
+        column_names = column_names.dup
         array_of_attributes = array_of_attributes.map(&:dup)
       else
         raise ArgumentError, "Invalid arguments!"
       end
-
-      # dup the passed in array so we don't modify it unintentionally
-      column_names = column_names.dup
 
       # Force the primary key col into the insert if it's not
       # on the list and we are using a sequence and stuff a nil
@@ -452,7 +476,9 @@ class ActiveRecord::Base
           next if model.valid?(options[:validate_with_context])
           raise(ActiveRecord::RecordInvalid, model) if options[:raise_error]
           array_of_attributes[i] = nil
-          failed_instances << model.dup
+          failure = model.dup
+          failure.errors.send(:initialize_dup, model.errors)
+          failed_instances << failure
         end
       end
 
@@ -498,7 +524,9 @@ class ActiveRecord::Base
       end
 
       columns_sql = "(#{column_names.map { |name| connection.quote_column_name(name) }.join(',')})"
-      insert_sql = "INSERT #{options[:ignore] ? 'IGNORE ' : ''}INTO #{quoted_table_name} #{columns_sql} VALUES "
+      pre_sql_statements = connection.pre_sql_statements( options )
+      insert_sql = ['INSERT', pre_sql_statements, "INTO #{quoted_table_name} #{columns_sql} VALUES "]
+      insert_sql = insert_sql.flatten.join(' ')
       values_sql = values_sql_for_columns_and_attributes(columns, array_of_attributes)
 
       number_inserted = 0
@@ -517,9 +545,11 @@ class ActiveRecord::Base
           ids += result[1]
         end
       else
-        values_sql.each do |values|
-          ids << connection.insert(insert_sql + values)
-          number_inserted += 1
+        transaction(requires_new: true) do
+          values_sql.each do |values|
+            ids << connection.insert(insert_sql + values)
+            number_inserted += 1
+          end
         end
       end
       [number_inserted, ids]
@@ -529,9 +559,10 @@ class ActiveRecord::Base
 
     def set_ids_and_mark_clean(models, import_result)
       return if models.nil?
+      models -= import_result.failed_instances
       import_result.ids.each_with_index do |id, index|
         model = models[index]
-        model.id = id.to_i
+        model.id = id
         if model.respond_to?(:clear_changes_information) # Rails 4.0 and higher
           model.clear_changes_information
         else # Rails 3.2
@@ -582,7 +613,7 @@ class ActiveRecord::Base
           child.public_send("#{association_reflection.foreign_key}=", model.id)
           # For polymorphic associations
           association_reflection.type.try do |type|
-            child.public_send("#{type}=", model.class.name)
+            child.public_send("#{type}=", model.class.base_class.name)
           end
         end
         associated_objects_by_class[model.class.name][association_reflection.name].concat changed_objects

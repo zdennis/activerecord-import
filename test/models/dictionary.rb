@@ -1,0 +1,2 @@
+class Dictionary < Book
+end

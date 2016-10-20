@@ -26,6 +26,7 @@ end
 gem "factory_girl", "~> 4.2.0"
 gem "timecop"
 gem "chronic"
+gem "mocha"
 
 # Debugging
 platforms :jruby do
