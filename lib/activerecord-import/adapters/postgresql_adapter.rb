@@ -21,7 +21,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
       insert( sql2insert, *args )
     end
 
-    ActiveRecord::Base.connection.query_cache.clear
+    query_cache.clear
 
     [number_of_inserts, ids]
   end
