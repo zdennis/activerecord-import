@@ -12,6 +12,11 @@ describe "#import" do
     end
   end
 
+  it "warns you that you're using the library wrong" do
+    error = assert_raise(ArgumentError) { Topic.import %w(title author_name), ['Author #1', 'Book #1', 0] }
+    assert_equal error.message, "Last argument should be a two dimensional array '[[]]'. First element in array was a String"
+  end
+
   it "should not produce an error when importing empty arrays" do
     assert_nothing_raised do
       Topic.import []
