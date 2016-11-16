@@ -17,11 +17,10 @@ module ActiveRecord::Import::PostgreSQLAdapter
     sql2insert = base_sql + values.join( ',' ) + post_sql
     if post_sql =~ /RETURNING\s/
       ids = select_values( sql2insert, *args )
+      query_cache.clear if query_cache_enabled
     else
       insert( sql2insert, *args )
     end
-
-    query_cache.clear
 
     [number_of_inserts, ids]
   end
