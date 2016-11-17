@@ -374,8 +374,6 @@ class ActiveRecord::Base
         stored_attrs = respond_to?(:stored_attributes) ? stored_attributes : {}
 
         array_of_attributes = models.map do |model|
-          # this next line breaks sqlite.so with a segmentation fault
-          # if model.new_record? || options[:on_duplicate_key_update]
           column_names.map do |name|
             if stored_attrs.any? && stored_attrs.key?(name.to_sym)
               model.read_attribute(name.to_s)
@@ -383,7 +381,6 @@ class ActiveRecord::Base
               model.read_attribute_before_type_cast(name.to_s)
             end
           end
-          # end
         end
         # supports empty array
       elsif args.last.is_a?( Array ) && args.last.empty?
