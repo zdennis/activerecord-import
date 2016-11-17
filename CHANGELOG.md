@@ -1,3 +1,14 @@
+## Changes in 0.16.2
+
+### Fixes
+
+* Fixes issue clearing query cache on wrong connection when using
+  multiple databases. Thanks to @KentoMoriwaki via \#337
+* Raises an ArgumentError on incorrect usage of nested arrays. Thanks
+  to @Nitrodist via \#340
+* Fixes issue that prevented uuid primary keys from being set manually.
+  Thanks to @Dclusin-og, @jkowens via \#342
+
 ## Changes in 0.16.1
 
 ### Fixes
