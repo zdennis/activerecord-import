@@ -387,6 +387,11 @@ class ActiveRecord::Base
         return ActiveRecord::Import::Result.new([], 0, [])
         # supports 2-element array and array
       elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
+
+        unless args.last.first.is_a?(Array)
+          raise ArgumentError, "Last argument should be a two dimensional array '[[]]'. First element in array was a #{args.last.first.class}"
+        end
+
         column_names, array_of_attributes = args
 
         # dup the passed args so we don't modify unintentionally
