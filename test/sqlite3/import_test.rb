@@ -2,6 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../test_helper')
 
 should_support_recursive_import
 should_support_on_duplicate_key_ignore
+should_not_support_replace
 
 describe "#supports_imports?" do
   context "and SQLite is 3.7.11 or higher" do

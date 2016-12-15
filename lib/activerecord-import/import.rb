@@ -17,6 +17,12 @@ module ActiveRecord::Import #:nodoc:
     end
   end
 
+  module ReplaceSupport #:nodoc:
+    def supports_replace? #:nodoc:
+      true
+    end
+  end
+
   class MissingColumnError < StandardError
     def initialize(name, index)
       super "Missing column for value <#{name}> at index #{index}"
@@ -123,6 +129,13 @@ class ActiveRecord::Base
       connection.supports_on_duplicate_key_update?
     end
 
+    # Returns true if the current database connection adapter
+    # supports replace statement functionality, otherwise
+    # returns false.
+    def supports_replace?
+      connection.respond_to?(:supports_replace?)
+    end
+
     # returns true if the current database connection adapter
     # supports setting the primary key of bulk imported models, otherwise
     # returns false
@@ -177,6 +190,9 @@ class ActiveRecord::Base
     #    ON CONFLICT DO NOTHING, for MySQL it uses INSERT IGNORE, and for
     #    SQLite it uses INSERT OR IGNORE. Cannot be enabled on a
     #    recursive import.
+    # * +replace+ - true|false, tells import to use REPLACE statement
+    #   instead of INSERT. It works only for MySQL, other adapters use
+    #   INSERT. Option on_duplicate_key_update is skipped.
     # * +on_duplicate_key_update+ - an Array or Hash, tells import to
     #    use MySQL's ON DUPLICATE KEY UPDATE or Postgres 9.5+ ON CONFLICT
     #    DO UPDATE ability. See On Duplicate Key Update below.
@@ -222,6 +238,20 @@ class ActiveRecord::Base
     #  posts = [BlogPost.new(title: "Foo"), BlogPost.new(title: "Bar")]
     #  BlogPost.import posts, synchronize: posts, synchronize_keys: [:title]
     #  puts posts.first.persisted? # => true
+    #
+    # == Replace (MySQL)
+    #
+    # REPLACE statement will be used instead of INSERT.
+    # REPLACE updates duplicated records by a primary key or a unique index.
+    #
+    # # Example replacing records.
+    # # Table has composite (author_name, title) unique index.
+    # columns = [ :author_name, :title, :quantity ] ]
+    # values = [ [ 'zdennis', 'test post', 1 ], [ 'jdoe', 'another test post', 5 ] ]
+    # new_values = [ 'zdennis', 'test post', 5 ]
+    # BlogPost.import columns, new_values, replace: true
+    # puts BlogPost.count # => 2
+    # puts BlogPost.find_by(name: 'zdennis').qantity # => 5
     #
     # == On Duplicate Key Update (MySQL)
     #
@@ -525,9 +555,10 @@ class ActiveRecord::Base
         column
       end
 
+      insert_statement = supports_replace? && options[:replace] ? 'REPLACE' : 'INSERT'
       columns_sql = "(#{column_names.map { |name| connection.quote_column_name(name) }.join(',')})"
       pre_sql_statements = connection.pre_sql_statements( options )
-      insert_sql = ['INSERT', pre_sql_statements, "INTO #{quoted_table_name} #{columns_sql} VALUES "]
+      insert_sql = [insert_statement, pre_sql_statements, "INTO #{quoted_table_name} #{columns_sql} VALUES "]
       insert_sql = insert_sql.flatten.join(' ')
       values_sql = values_sql_for_columns_and_attributes(columns, array_of_attributes)
 
@@ -679,7 +710,7 @@ class ActiveRecord::Base
           array_of_attributes.each { |arr| arr << value }
         end
 
-        if supports_on_duplicate_key_update?
+        if supports_on_duplicate_key_update? && !options[:replace]
           connection.add_column_for_on_duplicate_key_update(key, options)
         end
       end

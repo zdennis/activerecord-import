@@ -1,6 +1,7 @@
 # encoding: UTF-8
 def should_support_postgresql_import_functionality
   should_support_recursive_import
+  should_not_support_replace
 
   describe "#supports_imports?" do
     it "should support import" do
