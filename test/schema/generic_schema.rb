@@ -62,6 +62,8 @@ ActiveRecord::Schema.define do
     t.datetime :updated_on
     t.date :publish_date
     t.integer :topic_id
+    t.integer :tag_id
+    t.integer :publisher_id
     t.boolean :for_sale, default: true
     t.integer :status, default: 0
     t.string :type
@@ -151,4 +153,13 @@ ActiveRecord::Schema.define do
     t.text :config
     t.text :settings
   end
+
+  execute %(
+  CREATE TABLE IF NOT EXISTS tags (
+        tag_id    INT NOT NULL,
+        publisher_id INT NOT NULL,
+        tag       VARCHAR(50),
+        PRIMARY KEY (tag_id, publisher_id)
+    );
+  ).split.join(' ').strip
 end

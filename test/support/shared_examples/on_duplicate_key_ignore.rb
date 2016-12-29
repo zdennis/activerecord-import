@@ -11,6 +11,18 @@ def should_support_on_duplicate_key_ignore
           Topic.import topics, on_duplicate_key_ignore: true, validate: false
         end
       end
+
+      context "with composite primary keys" do
+        it "should import array of values successfully" do
+          columns = [:tag_id, :publisher_id, :tag]
+          values = [[1, 1, 'Mystery'], [1, 1, 'Science']]
+
+          assert_difference "Tag.count", +1 do
+            Tag.import columns, values, on_duplicate_key_ignore: true, validate: false
+          end
+          assert_equal 'Mystery', Tag.first.tag
+        end
+      end
     end
 
     context "with :ignore" do

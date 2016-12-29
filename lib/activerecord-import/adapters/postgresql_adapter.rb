@@ -44,7 +44,8 @@ module ActiveRecord::Import::PostgreSQLAdapter
     sql += super(table_name, options)
 
     unless options[:no_returning] || options[:primary_key].blank?
-      sql << "RETURNING #{options[:primary_key]}"
+      primary_key = Array(options[:primary_key])
+      sql << " RETURNING (#{primary_key.join(', ')})"
     end
 
     sql
@@ -136,8 +137,20 @@ module ActiveRecord::Import::PostgreSQLAdapter
   end
 
   def sql_for_default_conflict_target( table_name )
-    conflict_target = primary_key( table_name )
-    "(#{conflict_target}) " if conflict_target
+    pks = select_values(<<-SQL.strip_heredoc, "SCHEMA")
+      WITH pk_constraint AS (
+        SELECT conrelid, unnest(conkey) AS connum FROM pg_constraint
+        WHERE contype = 'p'
+          AND conrelid = #{quote(quote_table_name(table_name))}::regclass
+      ), cons AS (
+        SELECT conrelid, connum, row_number() OVER() AS rownum FROM pk_constraint
+      )
+      SELECT attr.attname FROM pg_attribute attr
+      INNER JOIN cons ON attr.attrelid = cons.conrelid AND attr.attnum = cons.connum
+      ORDER BY cons.rownum
+    SQL
+    conflict_target = pks.join(', ')
+    "(#{conflict_target}) " if conflict_target.present?
   end
 
   # Return true if the statement is a duplicate key record error
