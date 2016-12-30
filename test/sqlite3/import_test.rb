@@ -1,6 +1,5 @@
 require File.expand_path(File.dirname(__FILE__) + '/../test_helper')
 
-should_support_recursive_import
 should_support_on_duplicate_key_ignore
 
 describe "#supports_imports?" do
