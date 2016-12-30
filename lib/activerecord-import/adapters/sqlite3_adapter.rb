@@ -19,7 +19,6 @@ module ActiveRecord::Import::SQLite3Adapter
   # elements that are in position >= 1 will be appended to the final SQL.
   def insert_many(sql, values, *args) # :nodoc:
     number_of_inserts = 0
-    ids = []
 
     base_sql, post_sql = if sql.is_a?( String )
       [sql, '']
@@ -34,15 +33,11 @@ module ActiveRecord::Import::SQLite3Adapter
       value_sets.each do |value_set|
         number_of_inserts += 1
         sql2insert = base_sql + value_set.join( ',' ) + post_sql
-        last_insert_id = insert( sql2insert, *args )
-        if last_insert_id > 0
-          first_insert_id = last_insert_id - affected_rows + 1
-          ids.concat((first_insert_id..last_insert_id).to_a)
-        end
+        insert( sql2insert, *args )
       end
     end
 
-    [number_of_inserts, ids]
+    [number_of_inserts, []]
   end
 
   def pre_sql_statements( options)
@@ -56,14 +51,5 @@ module ActiveRecord::Import::SQLite3Adapter
 
   def next_value_for_sequence(sequence_name)
     %{nextval('#{sequence_name}')}
-  end
-
-  def affected_rows
-    result = execute('SELECT changes();')
-    result.first[0]
-  end
-
-  def support_setting_primary_key_of_imported_objects?
-    true
   end
 end
