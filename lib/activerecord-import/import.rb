@@ -187,7 +187,7 @@ class ActiveRecord::Base
     #   (if false) even if record timestamps is disabled in ActiveRecord::Base
     # * +recursive+ - true|false, tells import to import all has_many/has_one
     #   associations if the adapter supports setting the primary keys of the
-    #   newly imported objects.
+    #   newly imported objects. PostgreSQL only.
     # * +batch_size+ - an integer value to specify the max number of records to
     #   include per insert. Defaults to the total number of records to import.
     #
