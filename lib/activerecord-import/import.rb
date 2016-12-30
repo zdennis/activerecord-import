@@ -404,9 +404,15 @@ class ActiveRecord::Base
       # Force the primary key col into the insert if it's not
       # on the list and we are using a sequence and stuff a nil
       # value for it into each row so the sequencer will fire later
-      if !column_names.include?(primary_key) && connection.prefetch_primary_key? && sequence_name
-        column_names << primary_key
-        array_of_attributes.each { |a| a << nil }
+      symbolized_column_names = Array(column_names).map(&:to_sym)
+      symbolized_primary_key = Array(primary_key).map(&:to_sym)
+
+      if !symbolized_primary_key.to_set.subset?(symbolized_column_names.to_set) && connection.prefetch_primary_key? && sequence_name
+        column_count = column_names.size
+        column_names.concat(primary_key).uniq!
+        columns_added = column_names.size - column_count
+        new_fields = Array.new(columns_added)
+        array_of_attributes.each { |a| a.concat(new_fields) }
       end
 
       # record timestamps unless disabled in ActiveRecord::Base

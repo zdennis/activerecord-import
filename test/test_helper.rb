@@ -26,6 +26,7 @@ end
 
 require 'timecop'
 require 'chronic'
+require 'composite_primary_keys'
 
 require "ruby-debug" if RUBY_VERSION.to_f < 1.9
 
