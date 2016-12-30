@@ -144,6 +144,9 @@ class ActiveRecord::Base
     #
     # == Usage
     #  Model.import array_of_models
+    #  Model.import column_names, array_of_models
+    #  Model.import array_of_hash_objects
+    #  Model.import column_names, array_of_hash_objects
     #  Model.import column_names, array_of_values
     #  Model.import column_names, array_of_values, options
     #
@@ -199,6 +202,15 @@ class ActiveRecord::Base
     #            BlogPost.new author_name: 'Zach Dennis', title: 'AREXT2',
     #            BlogPost.new author_name: 'Zach Dennis', title: 'AREXT3' ]
     #  BlogPost.import posts
+    #
+    #  # Example using array_of_hash_objects
+    #  values = [ {author_name: 'zdennis', title: 'test post'} ], [ {author_name: 'jdoe', title: 'another test post'} ] ]
+    #  BlogPost.import values
+    #
+    #  # Example using column_names and array_of_hash_objects
+    #  columns = [ :author_name, :title ]
+    #  values = [ {author_name: 'zdennis', title: 'test post'} ], [ {author_name: 'jdoe', title: 'another test post'} ] ]
+    #  BlogPost.import columns, values
     #
     #  # Example using column_names and array_of_values
     #  columns = [ :author_name, :title ]
@@ -380,6 +392,22 @@ class ActiveRecord::Base
             else
               model.read_attribute_before_type_cast(name.to_s)
             end
+          end
+        end
+        # supports array of hash objects
+      elsif args.last.is_a?( Array ) && args.last.first.is_a?(Hash)
+        if args.length == 2
+          array_of_hashes = args.last
+          column_names = args.first.dup
+          column_names = column_names.map(&:to_sym)
+        else
+          array_of_hashes = args.first
+          column_names = array_of_hashes.first.keys
+        end
+
+        array_of_attributes = array_of_hashes.map do |h|
+          column_names.map do |key|
+            h[key]
           end
         end
         # supports empty array

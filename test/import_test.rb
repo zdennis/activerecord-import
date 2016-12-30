@@ -59,6 +59,27 @@ describe "#import" do
     end
   end
 
+  describe "with an array of hashes" do
+    let(:columns) { %w(title author_name) }
+    let(:values) { [{ title: "LDAP", author_name: "Jerry Carter", author_email_address: "jcarter@test.com" }, { title: "Rails Recipes", author_name: "Chad Fowler", author_email_address: "cfowler@test.com" }] }
+
+    it "should import hash data successfully" do
+      assert_difference "Topic.count", +2 do
+        Topic.import values, validate: false
+      end
+    end
+
+    it "should import specified hash data successfully" do
+      assert_difference "Topic.count", +2 do
+        Topic.import columns, values, validate: false
+      end
+
+      Topic.all.each do |t|
+        assert_nil t.author_email_address
+      end
+    end
+  end
+
   describe "with composite primary keys" do
     it "should import models successfully" do
       tags = [Tag.new(tag_id: 1, publisher_id: 1, tag: 'Mystery')]
