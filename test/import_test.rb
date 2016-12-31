@@ -60,7 +60,7 @@ describe "#import" do
   end
 
   describe "with an array of hashes" do
-    let(:columns) { %w(title author_name) }
+    let(:columns) { [:title, :author_name] }
     let(:values) { [{ title: "LDAP", author_name: "Jerry Carter", author_email_address: "jcarter@test.com" }, { title: "Rails Recipes", author_name: "Chad Fowler", author_email_address: "cfowler@test.com" }] }
 
     it "should import hash data successfully" do

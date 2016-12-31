@@ -399,7 +399,6 @@ class ActiveRecord::Base
         if args.length == 2
           array_of_hashes = args.last
           column_names = args.first.dup
-          column_names = column_names.map(&:to_sym)
         else
           array_of_hashes = args.first
           column_names = array_of_hashes.first.keys
