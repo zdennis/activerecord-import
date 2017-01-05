@@ -15,6 +15,10 @@ jdbcmysql: &mysql2
   <<: *common
   adapter: jdbcmysql
 
+jdbcsqlite3: &sqlite3
+  <<: *common
+  adapter: jdbcsqlite3
+
 mysql2: &mysql2
   <<: *common
   adapter: mysql2
