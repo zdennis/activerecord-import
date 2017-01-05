@@ -19,6 +19,7 @@ matrix:
     - rvm: jruby-9.0.5.0
       env: AR_VERSION=4.2
       script:
+        - bundle exec rake test:jdbcsqlite3
         - bundle exec rake test:jdbcmysql
         - bundle exec rake test:jdbcpostgresql
 

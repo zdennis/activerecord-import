@@ -17,6 +17,7 @@ end
 platforms :jruby do
   gem "jdbc-mysql"
   gem "jdbc-postgres"
+  gem "activerecord-jdbcsqlite3-adapter"
   gem "activerecord-jdbcmysql-adapter"
   gem "activerecord-jdbcpostgresql-adapter"
 end
