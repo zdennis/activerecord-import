@@ -659,9 +659,11 @@ class ActiveRecord::Base
     # Returns SQL the VALUES for an INSERT statement given the passed in +columns+
     # and +array_of_attributes+.
     def values_sql_for_columns_and_attributes(columns, array_of_attributes) # :nodoc:
-      # connection gets called a *lot* in this high intensity loop.
-      # Reuse the same one w/in the loop, otherwise it would keep being re-retreived (= lots of time for large imports)
+      # connection and type_caster get called a *lot* in this high intensity loop.
+      # Reuse the same ones w/in the loop, otherwise they would keep being re-retreived (= lots of time for large imports)
       connection_memo = connection
+      type_caster_memo = type_caster if respond_to?(:type_caster)
+
       array_of_attributes.map do |arr|
         my_values = arr.each_with_index.map do |val, j|
           column = columns[j]
@@ -670,8 +672,8 @@ class ActiveRecord::Base
           if val.nil? && column.name == primary_key && !sequence_name.blank?
             connection_memo.next_value_for_sequence(sequence_name)
           elsif column
-            if respond_to?(:type_caster) && type_caster.respond_to?(:type_cast_for_database) # Rails 5.0 and higher
-              connection_memo.quote(type_caster.type_cast_for_database(column.name, val))
+            if defined?(type_caster_memo) && type_caster_memo.respond_to?(:type_cast_for_database) # Rails 5.0 and higher
+              connection_memo.quote(type_caster_memo.type_cast_for_database(column.name, val))
             elsif column.respond_to?(:type_cast_from_user)                                   # Rails 4.2 and higher
               connection_memo.quote(column.type_cast_from_user(val), column)
             else                                                                             # Rails 3.2, 4.0 and 4.1
