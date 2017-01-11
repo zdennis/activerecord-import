@@ -25,6 +25,8 @@ log/*.log
 test.db
 test/database.yml
 
+.idea/
+
 .ruby-*
 .bundle/
 .redcar/
