@@ -26,6 +26,8 @@ test.db
 test/database.yml
 benchmarks/log/
 
+.idea/
+
 .ruby-*
 .bundle/
 .redcar/
