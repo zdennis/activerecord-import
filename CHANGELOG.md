@@ -1,3 +1,19 @@
+## Changes in 0.17.0
+
+### New Features
+
+* Add support for composite_primary_keys gem. Thanks to @jkowens
+  via \#350.
+* Add support for importing an array of hashes. Thanks to @jkowens
+  via \#352.
+* Add JDBC SQLite3 support. Thanks to @jkowens via \#356.
+
+### Fixes
+
+* Remove support for SQLite recursive imports. See \#351.
+* Improve import speed for Rails 5. Thanks to @ranchodeluxe, @jkowens
+  via \#359.
+
 ## Changes in 0.16.2
 
 ### Fixes
@@ -28,7 +44,7 @@
 * Add store accessor support for JSON, JSON, and HSTORE data types.
   Thanks to @jkowens via \#322
 * Log warning if database does not support :on_duplicate_key_update.
-  Thanks to @jkowens vi \#324
+  Thanks to @jkowens via \#324
 * Add option :on_duplicate_key_ignore for MySQL and SQLite. Thanks to
   @jkowens via \#326
 
