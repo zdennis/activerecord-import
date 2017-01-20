@@ -183,6 +183,24 @@ describe "#import" do
         end
       end
 
+      it "should set ActiveRecord timestamps in valid models if adapter supports setting primary key of imported objects" do
+        if ActiveRecord::Base.support_setting_primary_key_of_imported_objects?
+          Timecop.freeze(Time.at(0)) do
+            Topic.import (invalid_models + valid_models), validate: true
+          end
+
+          assert_nil invalid_models[0].created_at
+          assert_nil invalid_models[0].updated_at
+          assert_nil invalid_models[1].created_at
+          assert_nil invalid_models[1].updated_at
+
+          assert_equal valid_models[0].created_at, Topic.all[0].created_at
+          assert_equal valid_models[0].updated_at, Topic.all[0].updated_at
+          assert_equal valid_models[1].created_at, Topic.all[1].created_at
+          assert_equal valid_models[1].updated_at, Topic.all[1].updated_at
+        end
+      end
+
       it "should import valid data when mixed with invalid data" do
         assert_difference "Topic.count", +2 do
           Topic.import columns, valid_values + invalid_values, validate: true
