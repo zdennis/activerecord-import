@@ -442,9 +442,11 @@ class ActiveRecord::Base
         array_of_attributes.each { |a| a.concat(new_fields) }
       end
 
+      timestamps = {}
+
       # record timestamps unless disabled in ActiveRecord::Base
       if record_timestamps && options.delete( :timestamps )
-        add_special_rails_stamps column_names, array_of_attributes, options
+        timestamps = add_special_rails_stamps column_names, array_of_attributes, options
       end
 
       return_obj = if is_validating
@@ -474,7 +476,7 @@ class ActiveRecord::Base
 
       # if we have ids, then set the id on the models and mark the models as clean.
       if models && support_setting_primary_key_of_imported_objects?
-        set_ids_and_mark_clean(models, return_obj)
+        set_attributes_and_mark_clean(models, return_obj, timestamps)
 
         # if there are auto-save associations on the models we imported that are new, import them as well
         import_associations(models, options.dup) if options[:recursive]
@@ -592,7 +594,7 @@ class ActiveRecord::Base
 
     private
 
-    def set_ids_and_mark_clean(models, import_result)
+    def set_attributes_and_mark_clean(models, import_result, timestamps)
       return if models.nil?
       models -= import_result.failed_instances
       import_result.ids.each_with_index do |id, index|
@@ -604,6 +606,10 @@ class ActiveRecord::Base
           model.instance_variable_get(:@changed_attributes).clear
         end
         model.instance_variable_set(:@new_record, false)
+
+        timestamps.each do |attr, value|
+          model.send(attr + "=", value)
+        end
       end
     end
 
@@ -689,9 +695,13 @@ class ActiveRecord::Base
     end
 
     def add_special_rails_stamps( column_names, array_of_attributes, options )
+      timestamps = {}
+
       AREXT_RAILS_COLUMNS[:create].each_pair do |key, blk|
         next unless self.column_names.include?(key)
         value = blk.call
+        timestamps[key] = value
+
         index = column_names.index(key) || column_names.index(key.to_sym)
         if index
           # replace every instance of the array of attributes with our value
@@ -705,6 +715,8 @@ class ActiveRecord::Base
       AREXT_RAILS_COLUMNS[:update].each_pair do |key, blk|
         next unless self.column_names.include?(key)
         value = blk.call
+        timestamps[key] = value
+
         index = column_names.index(key) || column_names.index(key.to_sym)
         if index
           # replace every instance of the array of attributes with our value
@@ -718,6 +730,8 @@ class ActiveRecord::Base
           connection.add_column_for_on_duplicate_key_update(key, options)
         end
       end
+
+      timestamps
     end
 
     # Returns an Array of Hashes for the passed in +column_names+ and +array_of_attributes+.
