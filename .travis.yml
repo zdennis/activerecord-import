@@ -18,6 +18,10 @@ matrix:
   include:
     - rvm: jruby-9.0.5.0
       env: AR_VERSION=4.2
+      before_install:
+        - gem uninstall -i /home/travis/.rvm/gems/jruby-9.0.5.0@global bundler
+        - gem install bundler -v 1.13.7 --no-rdoc --no-ri --no-document
+
       script:
         - bundle exec rake test:jdbcsqlite3
         - bundle exec rake test:jdbcmysql
