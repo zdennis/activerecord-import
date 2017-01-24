@@ -4,6 +4,7 @@ gemspec
 
 group :development, :test do
   gem 'rubocop', '~> 0.38.0'
+  gem 'rake'
 end
 
 # Database Adapters

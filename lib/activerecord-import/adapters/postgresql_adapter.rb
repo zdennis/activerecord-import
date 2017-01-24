@@ -4,7 +4,8 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
   MIN_VERSION_FOR_UPSERT = 90_500
 
-  def insert_many( sql, values, *args ) # :nodoc:
+  def insert_many( sql, values, options = {}, *args ) # :nodoc:
+    primary_key = options[:primary_key]
     number_of_inserts = 1
     ids = []
 
@@ -15,11 +16,17 @@ module ActiveRecord::Import::PostgreSQLAdapter
     end
 
     sql2insert = base_sql + values.join( ',' ) + post_sql
-    if post_sql =~ /RETURNING\s/
-      ids = select_values( sql2insert, *args )
-      query_cache.clear if query_cache_enabled
-    else
+
+    if primary_key.blank? || options[:no_returning]
       insert( sql2insert, *args )
+    else
+      ids = if primary_key.is_a?( Array )
+        # Select composite primary keys
+        select_rows( sql2insert, *args )
+      else
+        select_values( sql2insert, *args )
+      end
+      query_cache.clear if query_cache_enabled
     end
 
     [number_of_inserts, ids]
@@ -45,7 +52,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
     unless options[:no_returning] || options[:primary_key].blank?
       primary_key = Array(options[:primary_key])
-      sql << " RETURNING (#{primary_key.join(', ')})"
+      sql << " RETURNING #{primary_key.join(', ')}"
     end
 
     sql

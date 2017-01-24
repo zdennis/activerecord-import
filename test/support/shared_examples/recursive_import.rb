@@ -102,6 +102,21 @@ def should_support_recursive_import
       end
     end
 
+    describe "with composite primary keys" do
+      it "should import models and set id" do
+        tags = []
+        tags << Tag.new(tag_id: 1, publisher_id: 1, tag: 'Mystery')
+        tags << Tag.new(tag_id: 2, publisher_id: 1, tag: 'Science')
+
+        assert_difference "Tag.count", +2 do
+          Tag.import tags
+        end
+
+        assert_equal 1, tags[0].tag_id
+        assert_equal 2, tags[1].tag_id
+      end
+    end
+
     # These models dont validate associated.  So we expect that books and topics get inserted, but not chapters
     # Putting a transaction around everything wouldn't work, so if you want your chapters to prevent topics from
     # being created, you would need to have validates_associated in your models and insert with validation
