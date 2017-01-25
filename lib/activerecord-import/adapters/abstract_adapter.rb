@@ -4,7 +4,7 @@ module ActiveRecord::Import::AbstractAdapter
       %(#{sequence_name}.nextval)
     end
 
-    def insert_many( sql, values, *args ) # :nodoc:
+    def insert_many( sql, values, _options = {}, *args ) # :nodoc:
       number_of_inserts = 1
 
       base_sql, post_sql = if sql.is_a?( String )

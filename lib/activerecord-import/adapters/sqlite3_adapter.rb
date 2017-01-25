@@ -17,7 +17,7 @@ module ActiveRecord::Import::SQLite3Adapter
 
   # +sql+ can be a single string or an array. If it is an array all
   # elements that are in position >= 1 will be appended to the final SQL.
-  def insert_many(sql, values, *args) # :nodoc:
+  def insert_many( sql, values, _options = {}, *args ) # :nodoc:
     number_of_inserts = 0
 
     base_sql, post_sql = if sql.is_a?( String )
