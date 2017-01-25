@@ -481,12 +481,12 @@ describe "#import" do
 
   context "importing through an association scope" do
     { has_many: :chapters, polymorphic: :discounts }.each do |association_type, association|
-      let(:book)   { FactoryGirl.create :book }
-      let(:scope)  { book.public_send association }
-      let(:klass)  { { chapters: Chapter, discounts: Discount }[association] }
-      let(:column) { { chapters: :title,  discounts: :amount  }[association] }
-      let(:val1)   { { chapters: 'A',     discounts: 5        }[association] }
-      let(:val2)   { { chapters: 'B',     discounts: 6        }[association] }
+      book   = FactoryGirl.create :book
+      scope  = book.public_send association
+      klass  = { chapters: Chapter, discounts: Discount }[association]
+      column = { chapters: :title,  discounts: :amount  }[association]
+      val1   = { chapters: 'A',     discounts: 5        }[association]
+      val2   = { chapters: 'B',     discounts: 6        }[association]
 
       context "for #{association_type}" do
         it "works importing models" do

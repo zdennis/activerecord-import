@@ -1,6 +1,11 @@
 class ActiveSupport::TestCase
   include ActiveRecord::TestFixtures
-  self.use_transactional_fixtures = true
+
+  if ENV['AR_VERSION'].to_f >= 5.0
+    self.use_transactional_tests = true
+  else
+    self.use_transactional_fixtures = true
+  end
 
   class << self
     def requires_active_record_version(version_string, &blk)
