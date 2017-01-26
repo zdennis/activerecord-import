@@ -83,7 +83,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
   # Returns a generated ON CONFLICT DO UPDATE statement given the passed
   # in +args+.
   def sql_for_on_duplicate_key_update( table_name, *args ) # :nodoc:
-    arg = args.first
+    arg, primary_key = args
     arg = { columns: arg } if arg.is_a?( Array ) || arg.is_a?( String )
     return unless arg.is_a?( Hash )
 
@@ -95,7 +95,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
       return sql << "#{conflict_target}DO NOTHING"
     end
 
-    conflict_target ||= sql_for_default_conflict_target( table_name )
+    conflict_target ||= sql_for_default_conflict_target( table_name, primary_key )
     unless conflict_target
       raise ArgumentError, 'Expected :conflict_target or :constraint_name to be specified'
     end
@@ -143,20 +143,8 @@ module ActiveRecord::Import::PostgreSQLAdapter
     end
   end
 
-  def sql_for_default_conflict_target( table_name )
-    pks = select_values(<<-SQL.strip_heredoc, "SCHEMA")
-      WITH pk_constraint AS (
-        SELECT conrelid, unnest(conkey) AS connum FROM pg_constraint
-        WHERE contype = 'p'
-          AND conrelid = #{quote(quote_table_name(table_name))}::regclass
-      ), cons AS (
-        SELECT conrelid, connum, row_number() OVER() AS rownum FROM pk_constraint
-      )
-      SELECT attr.attname FROM pg_attribute attr
-      INNER JOIN cons ON attr.attrelid = cons.conrelid AND attr.attnum = cons.connum
-      ORDER BY cons.rownum
-    SQL
-    conflict_target = pks.join(', ')
+  def sql_for_default_conflict_target( table_name, primary_key )
+    conflict_target = Array(primary_key).join(', ')
     "(#{conflict_target}) " if conflict_target.present?
   end
 

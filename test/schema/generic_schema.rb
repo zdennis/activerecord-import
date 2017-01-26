@@ -114,7 +114,7 @@ ActiveRecord::Schema.define do
   add_index :animals, [:name], unique: true, name: 'uk_animals'
 
   create_table :widgets, id: false, force: :cascade do |t|
-    t.integer :w_id
+    t.integer :w_id, primary_key: true
     t.boolean :active, default: false
     t.text :data
     t.text :json_data

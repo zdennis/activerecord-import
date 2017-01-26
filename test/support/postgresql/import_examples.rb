@@ -323,7 +323,7 @@ def should_support_postgresql_upsert_functionality
           context "with no primary key" do
             it "raises ArgumentError" do
               error = assert_raises ArgumentError do
-                Widget.import Build(1, :widgets), on_duplicate_key_update: [:data], validate: false
+                Rule.import Build(3, :rules), on_duplicate_key_update: [:condition_text], validate: false
               end
               assert_match(/Expected :conflict_target or :constraint_name to be specified/, error.message)
             end
