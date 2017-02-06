@@ -1,3 +1,13 @@
+## Changes in 0.17.1
+
+### Fixes
+
+* Along with setting id on models for adapters that support it,
+  add created_at and updated_at timestamps. Thanks to @jacob-carlborg
+  via \#364.
+* Properly set returned ids when using composite_primary_keys.
+  Thanks to @guigs, @jkowens via \#371.
+
 ## Changes in 0.17.0
 
 ### New Features
