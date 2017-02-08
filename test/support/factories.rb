@@ -55,4 +55,10 @@ FactoryGirl.define do
     title 'Tortilla Flat'
     author_name 'John Steinbeck'
   end
+
+  factory :car do
+    sequence(:Name) { |n| n }
+    sequence(:Features) { |n| "Feature #{n}" }
+  end
+
 end

@@ -154,6 +154,13 @@ ActiveRecord::Schema.define do
     t.text :settings
   end
 
+  create_table :cars, id: false, force: :cascade do |t|
+    t.string :Name, null: true
+    t.string :Features
+  end
+
+  add_index :cars, :Name, unique: true
+
   execute %(
   CREATE TABLE IF NOT EXISTS tags (
         tag_id    INT NOT NULL,
