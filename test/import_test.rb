@@ -463,10 +463,12 @@ describe "#import" do
 
   context "with has_and_belongs_to_many" do
     it "should import has_and_belongs_to_many ids also" do
-      Genre.import [:title], [['Horror'], ['Romance'], ['Fiction']]
-      Book.import  [Book.new(title: "Fell", author_name: "Curry", publisher: "Bayer", created_at: 2.years.ago.utc, created_on: 2.years.ago.utc, genres: [Genre.first, Genre.last])]
+      if ActiveRecord::Base.support_setting_primary_key_of_imported_objects?
+        Genre.import [:title], [['Horror'], ['Romance'], ['Fiction']]
+        Book.import  [Book.new(title: "Fell", author_name: "Curry", publisher: "Bayer", created_at: 2.years.ago.utc, created_on: 2.years.ago.utc, genres: [Genre.first, Genre.last])]
 
-      assert_equal 2, Book.last.genres.count
+        assert_equal 2, Book.last.genres.count
+      end
     end
   end
 
