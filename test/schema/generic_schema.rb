@@ -122,7 +122,7 @@ ActiveRecord::Schema.define do
     t.text :custom_data
   end
 
-  create_table :promotions, primary_key: :promotion_id, force: :cascade do |t|
+  create_table :promotions, primary_key: :Promotion_id, force: :cascade do |t|
     t.string :code
     t.string :description
     t.decimal :discount

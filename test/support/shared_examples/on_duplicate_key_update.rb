@@ -56,7 +56,7 @@ def should_support_basic_on_duplicate_key_update
       end
 
       context "with a table that has a non-standard primary key" do
-        let(:columns) { [:promotion_id, :code] }
+        let(:columns) { [:Promotion_id, :code] }
         let(:values) { [[1, 'DISCOUNT1']] }
         let(:updated_values) { [[1, 'DISCOUNT2']] }
         let(:update_columns) { [:code] }
@@ -64,7 +64,7 @@ def should_support_basic_on_duplicate_key_update
         macro(:perform_import) do |*opts|
           Promotion.import columns, updated_values, opts.extract_options!.merge(on_duplicate_key_update: update_columns, validate: false)
         end
-        macro(:updated_promotion) { Promotion.find(@promotion.promotion_id) }
+        macro(:updated_promotion) { Promotion.find(@promotion.Promotion_id) }
 
         setup do
           Promotion.import columns, values, validate: false
