@@ -48,6 +48,14 @@ describe "#import" do
           Widget.import Build(3, :widgets)
         end
       end
+
+      context "with uppercase letters" do
+        it "should import models successfully" do
+          assert_difference "Car.count", +3 do
+            Car.import Build(3, :cars)
+          end
+        end
+      end
     end
 
     context "that have no primary key" do
