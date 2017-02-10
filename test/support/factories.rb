@@ -60,5 +60,4 @@ FactoryGirl.define do
     sequence(:Name) { |n| n }
     sequence(:Features) { |n| "Feature #{n}" }
   end
-
 end
