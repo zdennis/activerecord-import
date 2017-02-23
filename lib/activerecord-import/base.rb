@@ -40,8 +40,7 @@ module ActiveRecord::Import
   end
 end
 
-this_dir = Pathname.new File.dirname(__FILE__)
-require this_dir.join("import").to_s
-require this_dir.join("active_record/adapters/abstract_adapter").to_s
-require this_dir.join("synchronize").to_s
-require this_dir.join("value_sets_parser").to_s
+require 'activerecord-import/import'
+require 'activerecord-import/active_record/adapters/abstract_adapter'
+require 'activerecord-import/synchronize'
+require 'activerecord-import/value_sets_parser'
