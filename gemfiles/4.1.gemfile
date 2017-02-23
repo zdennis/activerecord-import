@@ -1,3 +1,2 @@
-platforms :ruby do
-  gem 'activerecord', '~> 4.1.0'
-end
+gem 'activerecord', '~> 4.1.0'
+gem 'composite_primary_keys', '~> 7.0'

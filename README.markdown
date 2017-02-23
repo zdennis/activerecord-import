@@ -29,7 +29,11 @@ Use activerecord-import 0.11.0 or higher.
 
 Use activerecord-import 0.4.0 or higher.
 
-### Rails 3.1.x up to, but not including 4.0
+### Rails 3.2.x up to, but not including 4.0
+
+Use activerecord-import 0.3.0 or higher.
+
+### Rails 3.1.x up to, but not including 3.2
 
 Use the latest in the activerecord-import 0.3.x series.
 
@@ -37,7 +41,7 @@ Use the latest in the activerecord-import 0.3.x series.
 
 Use activerecord-import 0.2.11. As of activerecord-import 0.3.0 we are relying on functionality that was introduced in Rails 3.1. Since Rails 3.0.x is no longer a supported version of Rails we have decided to drop support as well.
 
-### For More Information
+### More Information : Usage and Examples in Wiki
 
 For more information on activerecord-import please see its wiki: https://github.com/zdennis/activerecord-import/wiki
 
@@ -60,7 +64,7 @@ To understand how rubygems loads code you can reference the following:
 And an example of how active_record dynamically load adapters:
   https://github.com/rails/rails/blob/master/activerecord/lib/active_record/connection_adapters/connection_specification.rb
 
-In summary, when a gem is loaded rubygems adds the `lib` folder of the gem to the global load path `$LOAD_PATH` so that all `require` lookups will not propegate through all of the folders on the load path. When a `require` is issued each folder on the `$LOAD_PATH` is checked for the file and/or folder referenced. This allows a gem (like activerecord-import) to define push the activerecord-import folder (or namespace) on the `$LOAD_PATH` and any adapters provided by activerecord-import will be found by rubygems when the require is issued.
+In summary, when a gem is loaded rubygems adds the `lib` folder of the gem to the global load path `$LOAD_PATH` so that all `require` lookups will not propagate through all of the folders on the load path. When a `require` is issued each folder on the `$LOAD_PATH` is checked for the file and/or folder referenced. This allows a gem (like activerecord-import) to define push the activerecord-import folder (or namespace) on the `$LOAD_PATH` and any adapters provided by activerecord-import will be found by rubygems when the require is issued.
 
 If `fake_name` adapter is needed by a gem (potentially called `activerecord-import-fake_name`) then the folder structure should look as follows:
 

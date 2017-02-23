@@ -18,12 +18,15 @@ require "active_support/test_case"
 
 if ActiveSupport::VERSION::STRING < "4.0"
   require 'test/unit'
+  require 'mocha/test_unit'
 else
   require 'active_support/testing/autorun'
+  require "mocha/mini_test"
 end
 
 require 'timecop'
 require 'chronic'
+require 'composite_primary_keys'
 
 require "ruby-debug" if RUBY_VERSION.to_f < 1.9
 

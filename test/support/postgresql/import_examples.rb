@@ -2,6 +2,10 @@
 def should_support_postgresql_import_functionality
   should_support_recursive_import
 
+  if ActiveRecord::Base.connection.supports_on_duplicate_key_update?
+    should_support_postgresql_upsert_functionality
+  end
+
   describe "#supports_imports?" do
     it "should support import" do
       assert ActiveRecord::Base.supports_import?
@@ -58,10 +62,72 @@ def should_support_postgresql_import_functionality
       end
     end
   end
+
+  if ENV['AR_VERSION'].to_f >= 4.0
+    describe "with a uuid primary key" do
+      let(:vendor) { Vendor.new(name: "foo") }
+      let(:vendors) { [vendor] }
+
+      it "creates records" do
+        assert_difference "Vendor.count", +1 do
+          Vendor.import vendors
+        end
+      end
+
+      it "assigns an id to the model objects" do
+        Vendor.import vendors
+        assert_not_nil vendor.id
+      end
+    end
+
+    describe "with an assigned uuid primary key" do
+      let(:id) { SecureRandom.uuid }
+      let(:vendor) { Vendor.new(id: id, name: "foo") }
+      let(:vendors) { [vendor] }
+
+      it "creates records with correct id" do
+        assert_difference "Vendor.count", +1 do
+          Vendor.import vendors
+        end
+        assert_equal id, vendor.id
+      end
+    end
+  end
+
+  describe "with store accessor fields" do
+    if ENV['AR_VERSION'].to_f >= 4.0
+      it "imports values for json fields" do
+        vendors = [Vendor.new(name: 'Vendor 1', size: 100)]
+        assert_difference "Vendor.count", +1 do
+          Vendor.import vendors
+        end
+        assert_equal(100, Vendor.first.size)
+      end
+
+      it "imports values for hstore fields" do
+        vendors = [Vendor.new(name: 'Vendor 1', contact: 'John Smith')]
+        assert_difference "Vendor.count", +1 do
+          Vendor.import vendors
+        end
+        assert_equal('John Smith', Vendor.first.contact)
+      end
+    end
+
+    if ENV['AR_VERSION'].to_f >= 4.2
+      it "imports values for jsonb fields" do
+        vendors = [Vendor.new(name: 'Vendor 1', charge_code: '12345')]
+        assert_difference "Vendor.count", +1 do
+          Vendor.import vendors
+        end
+        assert_equal('12345', Vendor.first.charge_code)
+      end
+    end
+  end
 end
 
 def should_support_postgresql_upsert_functionality
   should_support_basic_on_duplicate_key_update
+  should_support_on_duplicate_key_ignore
 
   describe "#import" do
     extend ActiveSupport::TestCase::ImportAssertions
@@ -151,6 +217,50 @@ def should_support_postgresql_upsert_functionality
           end
         end
 
+        context 'with :index_predicate' do
+          let(:columns) { %w( id device_id alarm_type status metadata ) }
+          let(:values) { [[99, 17, 1, 1, 'foo']] }
+          let(:updated_values) { [[99, 17, 1, 2, 'bar']] }
+
+          macro(:perform_import) do |*opts|
+            Alarm.import columns, updated_values, opts.extract_options!.merge(on_duplicate_key_update: { conflict_target: [:device_id, :alarm_type], index_predicate: 'status <> 0', columns: [:status] }, validate: false)
+          end
+
+          macro(:updated_alarm) { Alarm.find(@alarm.id) }
+
+          setup do
+            Alarm.import columns, values, validate: false
+            @alarm = Alarm.find 99
+          end
+
+          context 'supports on duplicate key update for partial indexes' do
+            it 'should not update created_at timestamp columns' do
+              Timecop.freeze Chronic.parse("5 minutes from now") do
+                perform_import
+                assert_in_delta @alarm.created_at.to_i, updated_alarm.created_at.to_i, 1
+              end
+            end
+
+            it 'should update updated_at timestamp columns' do
+              time = Chronic.parse("5 minutes from now")
+              Timecop.freeze time do
+                perform_import
+                assert_in_delta time.to_i, updated_alarm.updated_at.to_i, 1
+              end
+            end
+
+            it 'should not update fields not mentioned' do
+              perform_import
+              assert_equal 'foo', updated_alarm.metadata
+            end
+
+            it 'should update fields mentioned with hash mappings' do
+              perform_import
+              assert_equal 2, updated_alarm.status
+            end
+          end
+        end
+
         context "with :constraint_name" do
           let(:columns) { %w( id title author_name author_email_address parent_id ) }
           let(:values) { [[100, "Book", "John Doe", "john@doe.com", 17]] }
@@ -213,7 +323,7 @@ def should_support_postgresql_upsert_functionality
           context "with no primary key" do
             it "raises ArgumentError" do
               error = assert_raises ArgumentError do
-                Widget.import Build(1, :widgets), on_duplicate_key_update: [:data], validate: false
+                Rule.import Build(3, :rules), on_duplicate_key_update: [:condition_text], validate: false
               end
               assert_match(/Expected :conflict_target or :constraint_name to be specified/, error.message)
             end

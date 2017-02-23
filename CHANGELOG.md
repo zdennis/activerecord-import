@@ -1,3 +1,72 @@
+## Changes in 0.17.1
+
+### Fixes
+
+* Along with setting id on models for adapters that support it,
+  add created_at and updated_at timestamps. Thanks to @jacob-carlborg
+  via \#364.
+* Properly set returned ids when using composite_primary_keys.
+  Thanks to @guigs, @jkowens via \#371.
+
+## Changes in 0.17.0
+
+### New Features
+
+* Add support for composite_primary_keys gem. Thanks to @jkowens
+  via \#350.
+* Add support for importing an array of hashes. Thanks to @jkowens
+  via \#352.
+* Add JDBC SQLite3 support. Thanks to @jkowens via \#356.
+
+### Fixes
+
+* Remove support for SQLite recursive imports. See \#351.
+* Improve import speed for Rails 5. Thanks to @ranchodeluxe, @jkowens
+  via \#359.
+
+## Changes in 0.16.2
+
+### Fixes
+
+* Fixes issue clearing query cache on wrong connection when using
+  multiple databases. Thanks to @KentoMoriwaki via \#337
+* Raises an ArgumentError on incorrect usage of nested arrays. Thanks
+  to @Nitrodist via \#340
+* Fixes issue that prevented uuid primary keys from being set manually.
+  Thanks to @Dclusin-og, @jkowens via \#342
+
+## Changes in 0.16.1
+
+### Fixes
+
+* Fixes issue with missing error messages on failed instances when
+  importing using arrays of columns and values. Thanks to @Fivell via \#332
+* Update so SQLite only return ids if table has a primary key field via \#333
+
+
+## Changes in 0.16.0
+
+### New Features
+
+* Add partial index upsert support for PostgreSQL. Thanks to @luislew via \#305
+* Add UUID primary key support for PostgreSQL. Thanks to @jkowens via
+  \#312
+* Add store accessor support for JSON, JSON, and HSTORE data types.
+  Thanks to @jkowens via \#322
+* Log warning if database does not support :on_duplicate_key_update.
+  Thanks to @jkowens via \#324
+* Add option :on_duplicate_key_ignore for MySQL and SQLite. Thanks to
+  @jkowens via \#326
+
+### Fixes
+
+* Fixes issue with recursive import using same primary key for all models.
+  Thanks to @chopraanmol1 via \#309
+* Fixes issue importing from STI subclass with polymorphic associations.
+  Thanks to @JNajera via \#314
+* Fixes issue setting returned IDs to wrong models when some fail validation. Also fixes issue with SQLite returning wrong IDs. Thanks to @mizukami234 via \#315
+
+
 ## Changes in 0.15.0
 
 ### New Features

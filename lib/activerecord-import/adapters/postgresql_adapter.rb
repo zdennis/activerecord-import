@@ -4,7 +4,8 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
   MIN_VERSION_FOR_UPSERT = 90_500
 
-  def insert_many( sql, values, *args ) # :nodoc:
+  def insert_many( sql, values, options = {}, *args ) # :nodoc:
+    primary_key = options[:primary_key]
     number_of_inserts = 1
     ids = []
 
@@ -15,13 +16,18 @@ module ActiveRecord::Import::PostgreSQLAdapter
     end
 
     sql2insert = base_sql + values.join( ',' ) + post_sql
-    if post_sql =~ /RETURNING\s/
-      ids = select_values( sql2insert, *args )
-    else
-      insert( sql2insert, *args )
-    end
 
-    ActiveRecord::Base.connection.query_cache.clear
+    if primary_key.blank? || options[:no_returning]
+      insert( sql2insert, *args )
+    else
+      ids = if primary_key.is_a?( Array )
+        # Select composite primary keys
+        select_rows( sql2insert, *args )
+      else
+        select_values( sql2insert, *args )
+      end
+      query_cache.clear if query_cache_enabled
+    end
 
     [number_of_inserts, ids]
   end
@@ -31,11 +37,25 @@ module ActiveRecord::Import::PostgreSQLAdapter
   end
 
   def post_sql_statements( table_name, options ) # :nodoc:
-    if options[:no_returning] || options[:primary_key].blank?
-      super(table_name, options)
-    else
-      super(table_name, options) << "RETURNING #{options[:primary_key]}"
+    sql = []
+
+    if supports_on_duplicate_key_update?
+      # Options :recursive and :on_duplicate_key_ignore are mutually exclusive
+      if (options[:ignore] || options[:on_duplicate_key_ignore]) && !options[:on_duplicate_key_update] && !options[:recursive]
+        sql << sql_for_on_duplicate_key_ignore( table_name, options[:on_duplicate_key_ignore] )
+      end
+    elsif options[:on_duplicate_key_ignore] && !options[:on_duplicate_key_update]
+      logger.warn "Ignoring on_duplicate_key_ignore because it is not supported by the database."
     end
+
+    sql += super(table_name, options)
+
+    unless options[:no_returning] || options[:primary_key].blank?
+      primary_key = Array(options[:primary_key])
+      sql << " RETURNING \"#{primary_key.join('", "')}\""
+    end
+
+    sql
   end
 
   # Add a column to be updated on duplicate key update
@@ -63,7 +83,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
   # Returns a generated ON CONFLICT DO UPDATE statement given the passed
   # in +args+.
   def sql_for_on_duplicate_key_update( table_name, *args ) # :nodoc:
-    arg = args.first
+    arg, primary_key = args
     arg = { columns: arg } if arg.is_a?( Array ) || arg.is_a?( String )
     return unless arg.is_a?( Hash )
 
@@ -75,7 +95,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
       return sql << "#{conflict_target}DO NOTHING"
     end
 
-    conflict_target ||= sql_for_default_conflict_target( table_name )
+    conflict_target ||= sql_for_default_conflict_target( table_name, primary_key )
     unless conflict_target
       raise ArgumentError, 'Expected :conflict_target or :constraint_name to be specified'
     end
@@ -113,16 +133,19 @@ module ActiveRecord::Import::PostgreSQLAdapter
   def sql_for_conflict_target( args = {} )
     constraint_name = args[:constraint_name]
     conflict_target = args[:conflict_target]
+    index_predicate = args[:index_predicate]
     if constraint_name.present?
       "ON CONSTRAINT #{constraint_name} "
     elsif conflict_target.present?
-      '(' << Array( conflict_target ).reject( &:empty? ).join( ', ' ) << ') '
+      '(' << Array( conflict_target ).reject( &:empty? ).join( ', ' ) << ') '.tap do |sql|
+        sql << "WHERE #{index_predicate} " if index_predicate
+      end
     end
   end
 
-  def sql_for_default_conflict_target( table_name )
-    conflict_target = primary_key( table_name )
-    "(#{conflict_target}) " if conflict_target
+  def sql_for_default_conflict_target( table_name, primary_key )
+    conflict_target = Array(primary_key).join(', ')
+    "(#{conflict_target}) " if conflict_target.present?
   end
 
   # Return true if the statement is a duplicate key record error
@@ -132,10 +155,6 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
   def supports_on_duplicate_key_update?(current_version = postgresql_version)
     current_version >= MIN_VERSION_FOR_UPSERT
-  end
-
-  def supports_on_duplicate_key_ignore?(current_version = postgresql_version)
-    supports_on_duplicate_key_update?(current_version)
   end
 
   def support_setting_primary_key_of_imported_objects?

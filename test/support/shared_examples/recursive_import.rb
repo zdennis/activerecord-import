@@ -48,6 +48,22 @@ def should_support_recursive_import
       end
     end
 
+    it 'imports polymorphic associations from subclass' do
+      discounts = Array.new(1) { |i| Discount.new(amount: i) }
+      dictionaries = Array.new(1) { |i| Dictionary.new(author_name: "Author ##{i}", title: "Book ##{i}") }
+      dictionaries.each do |dictionary|
+        dictionary.discounts << discounts
+      end
+      Dictionary.import dictionaries, recursive: true
+      assert_equal 1, Dictionary.last.discounts.count
+      dictionaries.each do |dictionary|
+        dictionary.discounts.each do |discount|
+          assert_not_nil discount.discountable_id
+          assert_equal 'Book', discount.discountable_type
+        end
+      end
+    end
+
     [{ recursive: false }, {}].each do |import_options|
       it "skips recursion for #{import_options}" do
         assert_difference "Book.count", 0 do
@@ -86,6 +102,21 @@ def should_support_recursive_import
       end
     end
 
+    describe "with composite primary keys" do
+      it "should import models and set id" do
+        tags = []
+        tags << Tag.new(tag_id: 1, publisher_id: 1, tag: 'Mystery')
+        tags << Tag.new(tag_id: 2, publisher_id: 1, tag: 'Science')
+
+        assert_difference "Tag.count", +2 do
+          Tag.import tags
+        end
+
+        assert_equal 1, tags[0].tag_id
+        assert_equal 2, tags[1].tag_id
+      end
+    end
+
     # These models dont validate associated.  So we expect that books and topics get inserted, but not chapters
     # Putting a transaction around everything wouldn't work, so if you want your chapters to prevent topics from
     # being created, you would need to have validates_associated in your models and insert with validation
@@ -106,14 +137,16 @@ def should_support_recursive_import
 
     # If adapter supports on_duplicate_key_update, it is only applied to top level models so that SQL with invalid
     # columns, keys, etc isn't generated for child associations when doing recursive import
-    describe "on_duplicate_key_update" do
-      let(:new_topics) { Build(1, :topic_with_book) }
+    if ActiveRecord::Base.connection.supports_on_duplicate_key_update?
+      describe "on_duplicate_key_update" do
+        let(:new_topics) { Build(1, :topic_with_book) }
 
-      it "imports objects with associations" do
-        assert_difference "Topic.count", +1 do
-          Topic.import new_topics, recursive: true, on_duplicate_key_update: [:updated_at], validate: false
-          new_topics.each do |topic|
-            assert_not_nil topic.id
+        it "imports objects with associations" do
+          assert_difference "Topic.count", +1 do
+            Topic.import new_topics, recursive: true, on_duplicate_key_update: [:updated_at], validate: false
+            new_topics.each do |topic|
+              assert_not_nil topic.id
+            end
           end
         end
       end

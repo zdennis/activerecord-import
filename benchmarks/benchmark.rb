@@ -1,6 +1,7 @@
 require 'pathname'
 require "fileutils"
 require "active_record"
+require "active_record/base"
 
 benchmark_dir = File.dirname(__FILE__)
 
