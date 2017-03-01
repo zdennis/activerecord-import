@@ -666,7 +666,8 @@ class ActiveRecord::Base
       end
 
       habtm_inserts.each_value do |reflection, values|
-        insert_sql = prepare_insert_sql([reflection.association_foreign_key, reflection.foreign_key], table_name: reflection.join_table)
+        join_table = reflection.options[:join_table] || reflection.join_table
+        insert_sql = prepare_insert_sql([reflection.association_foreign_key, reflection.foreign_key], table_name: join_table)
         perform_insert insert_sql, values_sql_for_attributes(values)
       end
     end
