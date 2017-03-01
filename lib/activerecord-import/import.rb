@@ -648,20 +648,19 @@ class ActiveRecord::Base
       end
     end
 
-    def import_habtm(models)
+    def import_habtm(habtm_models)
       habtm_inserts = {}
-      models.group_by(&:class).each do |klass, models|
+      habtm_models.group_by(&:class).each do |klass, models|
         habtms = habtm_reflections(klass)
 
-        unless habtms.blank?
-          habtms.each do |reflection|
-            models.each do |model|
-              association_ids = model.send(reflection.name).collect(&:id)
-              unless association_ids.blank?
-                habtm_inserts[reflection.association_foreign_key] ||= [reflection, []]
-                habtm_inserts[reflection.association_foreign_key].last.push(*association_ids.zip([model.id] * association_ids.count))
-              end
-            end
+        next if habtms.blank?
+
+        habtms.each do |reflection|
+          models.each do |model|
+            association_ids = model.send(reflection.name).collect(&:id)
+            next if association_ids.blank?
+            habtm_inserts[reflection.association_foreign_key] ||= [reflection, []]
+            habtm_inserts[reflection.association_foreign_key].last.push(*association_ids.zip([model.id] * association_ids.count))
           end
         end
       end
