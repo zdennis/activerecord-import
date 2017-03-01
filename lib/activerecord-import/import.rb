@@ -672,11 +672,7 @@ class ActiveRecord::Base
     end
 
     def habtm_reflections(klass)
-      klass.reflections.each_value.select { |reflection| reflection.is_a?(habtm_class) } if klass.respond_to?(:reflections)
-    end
-
-    def habtm_class
-      defined?(ActiveRecord::Reflection::HasAndBelongsToManyReflection) ? ActiveRecord::Reflection::HasAndBelongsToManyReflection : ActiveRecord::Reflection::HABTMReflection
+      klass.reflections.each_value.select { |reflection| reflection.macro == :has_and_belongs_to_many } if klass.respond_to?(:reflections)
     end
 
     # We are eventually going to call Class.import <objects> so we build up a hash
