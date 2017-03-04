@@ -86,8 +86,11 @@ def should_support_mysql_import_functionality
     describe "single_insert" do
       let(:values) do
         # generate "big" data to go above the default mysql max_allowed_packet limit
+        max_allow_packet = Car.connection.execute("SHOW VARIABLES like 'max_allowed_packet';" ).to_a[0][1].to_i
         value = 'long_name_to_increase_size_of_the_packet_long_name_to_increase_size_of_the_packet_long_name_to_increase_size_of_the_packet_long_name_to_increase_size_of_the_packet_long_name_to_increase_size_of_the_packet_long_name_to_increase_size_of_the_packet'.freeze
-        Array.new(20_000) do
+
+        nb_values = (max_allow_packet / value.size) + 1
+        Array.new(nb_values) do
           [value]
         end
       end
