@@ -87,7 +87,7 @@ def should_support_mysql_import_functionality
       let(:values) do
         # generate "big" data to go above the default mysql max_allowed_packet limit
         value = 'long_name_to_increase_size_of_the_packet_long_name_to_increase_size_of_the_packet_long_name_to_increase_size_of_the_packet_long_name_to_increase_size_of_the_packet_long_name_to_increase_size_of_the_packet_long_name_to_increase_size_of_the_packet'.freeze
-        20000.times.map do
+        Array.new(20_000) do
           [value]
         end
       end
