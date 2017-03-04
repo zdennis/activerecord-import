@@ -59,12 +59,6 @@ module ActiveRecord::Import::AbstractAdapter
       post_sql_statements
     end
 
-    # Returns the maximum number of bytes that the server will allow
-    # in a single packet
-    def max_allowed_packet
-      NO_MAX_PACKET
-    end
-
     def supports_on_duplicate_key_update?
       false
     end
