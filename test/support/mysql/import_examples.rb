@@ -82,5 +82,37 @@ def should_support_mysql_import_functionality
         assert_equal "Chad Fowler", topics.last.author_name, "wrong author!"
       end
     end
+
+    describe "single_insert" do
+      let(:values) do
+        # generate "big" data to go above the default mysql max_allowed_packet limit
+        value = 'long_name_to_increase_size_of_the_packet_long_name_to_increase_size_of_the_packet_long_name_to_increase_size_of_the_packet_long_name_to_increase_size_of_the_packet_long_name_to_increase_size_of_the_packet_long_name_to_increase_size_of_the_packet'.freeze
+        20000.times.map do
+          [value]
+        end
+      end
+
+      context "with :single_insert option" do
+        it "raise an error if max_allowed_packet is not big enought" do
+          assert_raise ActiveRecord::StatementInvalid do
+            begin
+              Car.import ['Name'], values, validate: false, on_duplicate_key_ignore: true, single_insert: true
+            ensure
+              # as MySQL server has gone way we need to close and reopen the connection..
+              Car.connection.close
+              Car.first
+            end
+          end
+        end
+      end
+
+      context "without :single_insert option" do
+        it "succeed even if max_allowed_packet is not big enought" do
+          assert_nothing_raised do
+            Car.import ['Name'], values, validate: false, on_duplicate_key_ignore: true, single_insert: false
+          end
+        end
+      end
+    end
   end
 end
