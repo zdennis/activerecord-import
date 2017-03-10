@@ -20,8 +20,10 @@ ActiveRecord::Schema.define do
 
     if t.respond_to?(:jsonb)
       t.jsonb :settings
+      t.jsonb :json_data, null: false, default: {}
     else
       t.text :settings
+      t.text :json_data
     end
 
     t.datetime :created_at

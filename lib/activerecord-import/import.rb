@@ -384,10 +384,12 @@ class ActiveRecord::Base
         end
 
         stored_attrs = respond_to?(:stored_attributes) ? stored_attributes : {}
+        default_values = column_defaults
 
         array_of_attributes = models.map do |model|
           column_names.map do |name|
-            if stored_attrs.any? && stored_attrs.key?(name.to_sym)
+            is_stored_attr = stored_attrs.any? && stored_attrs.key?(name.to_sym)
+            if is_stored_attr || default_values[name].is_a?(Hash)
               model.read_attribute(name.to_s)
             else
               model.read_attribute_before_type_cast(name.to_s)
@@ -681,9 +683,9 @@ class ActiveRecord::Base
           elsif column
             if defined?(type_caster_memo) && type_caster_memo.respond_to?(:type_cast_for_database) # Rails 5.0 and higher
               connection_memo.quote(type_caster_memo.type_cast_for_database(column.name, val))
-            elsif column.respond_to?(:type_cast_from_user)                                   # Rails 4.2 and higher
+            elsif column.respond_to?(:type_cast_from_user)                                         # Rails 4.2 and higher
               connection_memo.quote(column.type_cast_from_user(val), column)
-            else                                                                             # Rails 3.2, 4.0 and 4.1
+            else                                                                                   # Rails 3.2, 4.0 and 4.1
               if serialized_attributes.include?(column.name)
                 val = serialized_attributes[column.name].dump(val)
               end

@@ -123,6 +123,18 @@ def should_support_postgresql_import_functionality
       end
     end
   end
+
+  if ENV['AR_VERSION'].to_f >= 4.2
+    describe "with serializable fields" do
+      it "imports default values as correct data type" do
+        vendors = [Vendor.new(name: 'Vendor 1')]
+        assert_difference "Vendor.count", +1 do
+          Vendor.import vendors
+        end
+        assert_equal({}, Vendor.first.json_data)
+      end
+    end
+  end
 end
 
 def should_support_postgresql_upsert_functionality
