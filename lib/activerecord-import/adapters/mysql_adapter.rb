@@ -7,7 +7,7 @@ module ActiveRecord::Import::MysqlAdapter
 
   # +sql+ can be a single string or an array. If it is an array all
   # elements that are in position >= 1 will be appended to the final SQL.
-  def insert_many( sql, values, _options = {}, *args ) # :nodoc:
+  def insert_many( sql, values, options = {}, *args ) # :nodoc:
     # the number of inserts default
     number_of_inserts = 0
 
@@ -31,7 +31,7 @@ module ActiveRecord::Import::MysqlAdapter
     max = max_allowed_packet
 
     # if we can insert it all as one statement
-    if NO_MAX_PACKET == max || total_bytes <= max
+    if NO_MAX_PACKET == max || total_bytes <= max || options[:single_insert]
       number_of_inserts += 1
       sql2insert = base_sql + values.join( ',' ) + post_sql
       insert( sql2insert, *args )
