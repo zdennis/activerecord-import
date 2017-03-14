@@ -1,3 +1,16 @@
+## Changes in 0.17.2
+
+### Fixes
+
+* Fix issue where PostgreSQL cannot recognize columns if names
+  include mixed case characters. Thanks to @hugobgranja via \#379.
+* Fix an issue for ActiveRecord 5 where serialized fields with 
+  default values were not being typecast. Thanks to @whistlerbrk,
+  @jkowens via \#386.
+* Add option :force_single_insert for MySQL to make sure a single
+  insert is attempted instead of performing multiple inserts based
+  on max_allowed_packet. Thanks to @mtparet via \#387.
+
 ## Changes in 0.17.1
 
 ### Fixes
