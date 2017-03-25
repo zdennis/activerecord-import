@@ -54,7 +54,7 @@ When `ActiveRecord::Import.require_adapter("fake_name")` is called the require w
   require 'activerecord-import/active_record/adapters/fake_name_adapter'
 ```
 
-This allows an external gem to dyanmically add an adapter without the need to add any file/code to the core activerecord-import gem.
+This allows an external gem to dynamically add an adapter without the need to add any file/code to the core activerecord-import gem.
 
 ### Load Path Setup
 To understand how rubygems loads code you can reference the following:
