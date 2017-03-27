@@ -176,7 +176,7 @@ def should_support_postgresql_upsert_functionality
       # would be associated with the wrong parent.
       it ":on_duplicate_key_ignore is ignored" do
         assert_raise ActiveRecord::RecordNotUnique do
-          Topic.import mixed_topics, recursive: true, on_duplicate_key_ignore: true
+          Topic.import mixed_topics, recursive: true, on_duplicate_key_ignore: true, validate: false
         end
       end
     end

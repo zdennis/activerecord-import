@@ -159,6 +159,13 @@ describe "#import" do
         end
       end
 
+      it "should ignore uniqueness validators" do
+        Topic.import columns, valid_values, validate: true
+        assert_difference "Topic.count", +2 do
+          Topic.import columns, valid_values, validate: true
+        end
+      end
+
       it "should not import invalid data" do
         assert_no_difference "Topic.count" do
           Topic.import columns, invalid_values, validate: true
