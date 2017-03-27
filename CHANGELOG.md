@@ -1,3 +1,11 @@
+## Changes in 0.18.0 (Unreleased)
+
+### New Features
+
+* Uniqueness validation is bypassed when validating models since
+  it cannot be guaranteed if there are duplicates in a batch.
+  Thanks to @jkowens via \#301.
+
 ## Changes in 0.17.2
 
 ### Fixes
