@@ -12,17 +12,22 @@ module ActiveRecord::Import
     when 'spatialite' then 'sqlite3'
     when 'postgresql_makara' then 'postgresql'
     when 'postgis' then 'postgresql'
+    when 'sqlserver' then ''
+    when 'oracle' then ''
     else adapter
     end
   end
 
   # Loads the import functionality for a specific database adapter
   def self.require_adapter(adapter)
-    require File.join(ADAPTER_PATH, "/abstract_adapter")
-    begin
-      require File.join(ADAPTER_PATH, "/#{base_adapter(adapter)}_adapter")
-    rescue LoadError
-      # fallback
+    base_adapter = base_adapter(adapter)
+    unless base_adapter.blank?
+      require File.join(ADAPTER_PATH,"/abstract_adapter")
+      begin
+        require File.join(ADAPTER_PATH, "/#{base_adapter(adapter)}_adapter")
+      rescue LoadError
+        # fallback
+      end
     end
   end
 
