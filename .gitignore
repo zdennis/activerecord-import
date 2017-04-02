@@ -17,12 +17,15 @@ tmtags
 coverage
 rdoc
 pkg
+*.gem
+*.lock
 
 ## PROJECT::SPECIFIC
 log/*.log
 test.db
 test/database.yml
 
+.ruby-*
 .bundle/
 .redcar/
 .rvmrc

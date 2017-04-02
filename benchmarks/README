@@ -15,10 +15,10 @@ See "ruby benchmark.rb -h" for the complete listing of options.
 EXAMPLES
 --------
 To output to html format:
-  ruby benchmark.rb --adapter=mysql --to-html=results.html
+  ruby benchmark.rb --adapter=mysql2 --to-html=results.html
 
 To output to csv format:
-  ruby benchmark.rb --adapter=mysql --to-csv=results.csv
+  ruby benchmark.rb --adapter=mysql2 --to-csv=results.csv
 
 LIMITATIONS
 -----------

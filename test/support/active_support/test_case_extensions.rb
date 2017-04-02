@@ -1,19 +1,29 @@
 class ActiveSupport::TestCase
   include ActiveRecord::TestFixtures
-  self.use_transactional_fixtures = true
-  
+
+  if ENV['AR_VERSION'].to_f >= 5.0
+    self.use_transactional_tests = true
+  else
+    self.use_transactional_fixtures = true
+  end
+
   class << self
+    def requires_active_record_version(version_string, &blk)
+      return unless Gem::Dependency.new('', version_string).match?('', ActiveRecord::VERSION::STRING)
+      instance_eval(&blk)
+    end
+
     def assertion(name, &block)
-      mc = class << self ; self ; end
+      mc = class << self; self; end
       mc.class_eval do
         define_method(name) do
           it(name, &block)
         end
       end
     end
-    
+
     def asssertion_group(name, &block)
-      mc = class << self ; self ; end
+      mc = class << self; self; end
       mc.class_eval do
         define_method(name, &block)
       end
@@ -24,8 +34,8 @@ class ActiveSupport::TestCase
         define_method(name, &block)
       end
     end
-    
-    def describe(description, toplevel=nil, &blk)
+
+    def describe(description, toplevel = nil, &blk)
       text = toplevel ? description : "#{name} #{description}"
       klass = Class.new(self)
 
@@ -42,26 +52,24 @@ class ActiveSupport::TestCase
         end
       end
 
-      klass.instance_eval &blk
+      klass.instance_eval(&blk)
     end
-    alias_method :context, :describe
-    
+    alias context describe
+
     def let(name, &blk)
-      values = {}
       define_method(name) do
-        return values[name] if values.has_key?(name)
-        values[name] = instance_eval(&blk)
+        instance_variable_name = "@__let_#{name}"
+        return instance_variable_get(instance_variable_name) if instance_variable_defined?(instance_variable_name)
+        instance_variable_set(instance_variable_name, instance_eval(&blk))
       end
     end
-    
+
     def it(description, &blk)
-      define_method("test: #{name} #{description}", &blk)
+      define_method("test_#{name}_#{description}", &blk)
     end
   end
-  
 end
 
 def describe(description, &blk)
   ActiveSupport::TestCase.describe(description, true, &blk)
 end
-

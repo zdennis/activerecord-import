@@ -1,42 +1,53 @@
-source :gemcutter
+source 'https://rubygems.org'
 
-gem "activerecord", "~> 3.0"
+gemspec
 
-group :development do
-  gem "rake"
-  gem "jeweler", ">= 1.4.0"
+group :development, :test do
+  gem 'rubocop', '~> 0.38.0'
+  gem 'rake'
 end
 
-group :test do
-  # Database Adapters
-  platforms :ruby do
-    gem "mysql", "~> 2.8.1"
-    gem "mysql2", "~> 0.3.0"
-    gem "pg", "~> 0.9"
-    gem "sqlite3-ruby", "~> 1.3.1"
-    gem "seamless_database_pool", "~> 1.0.11"
-  end
-
-  platforms :jruby do
-    gem "jdbc-mysql"
-    gem "activerecord-jdbcmysql-adapter"
-  end
-
-  # Support libs
-  gem "factory_girl", "~> 1.3.3"
-  gem "delorean", "~> 0.2.0"
-
-  # Debugging
-  platforms :mri_18 do
-    gem "ruby-debug", "= 0.10.4"
-  end
-
-  platforms :jruby do
-    gem "ruby-debug-base", "= 0.10.4"
-    gem "ruby-debug", "= 0.10.4"
-  end
-
-  platforms :mri_19 do
-    gem "debugger"
-  end
+# Database Adapters
+platforms :ruby do
+  gem "mysql2",                 "~> 0.3.0"
+  gem "pg",                     "~> 0.9"
+  gem "sqlite3",                "~> 1.3.10"
+  gem "seamless_database_pool", "~> 1.0.18"
 end
+
+platforms :jruby do
+  gem "jdbc-mysql"
+  gem "jdbc-postgres"
+  gem "activerecord-jdbcsqlite3-adapter"
+  gem "activerecord-jdbcmysql-adapter"
+  gem "activerecord-jdbcpostgresql-adapter"
+end
+
+# Support libs
+gem "factory_girl", "~> 4.2.0"
+gem "timecop"
+gem "chronic"
+gem "mocha"
+
+# Debugging
+platforms :jruby do
+  gem "ruby-debug", "= 0.10.4"
+end
+
+platforms :mri_19 do
+  gem "debugger"
+end
+
+platforms :ruby do
+  gem "pry-byebug"
+end
+
+version = ENV['AR_VERSION'] || "4.2"
+
+if version >= "4.0"
+  gem "minitest"
+else
+  gem "test-unit"
+end
+
+eval_gemfile File.expand_path("../gemfiles/#{version}.gemfile", __FILE__)

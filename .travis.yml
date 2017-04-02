@@ -1,0 +1,59 @@
+language: ruby
+cache: bundler
+rvm:
+  - 2.3.3
+
+env:
+  global:
+    # https://github.com/discourse/discourse/blob/master/.travis.yml
+    - RUBY_GC_MALLOC_LIMIT=50000000
+  matrix:
+    - AR_VERSION=3.2
+    - AR_VERSION=4.0
+    - AR_VERSION=4.1
+    - AR_VERSION=4.2
+    - AR_VERSION=5.0
+
+matrix:
+  include:
+    - rvm: jruby-9.1.7.0
+      env: AR_VERSION=4.2
+      before_install:
+        - gem update --system
+
+      script:
+        - bundle exec rake test:jdbcsqlite3
+        - bundle exec rake test:jdbcmysql
+        - bundle exec rake test:jdbcpostgresql
+
+  fast_finish: true
+
+before_script:
+  - mysql -e 'create database activerecord_import_test;'
+  - psql -c 'create database activerecord_import_test;' -U postgres
+  - psql activerecord_import_test -c 'create extension if not exists hstore;' -U postgres
+  - psql -c 'create extension if not exists postgis;' -U postgres
+  - psql -c 'create extension if not exists "uuid-ossp";' -U postgres
+  - cp test/travis/database.yml test/database.yml
+
+addons:
+  postgresql: "9.4"
+  apt:
+    sources:
+      - travis-ci/sqlite3
+    packages:
+      - sqlite3
+
+script:
+  - bundle exec rake test:mysql2
+  - bundle exec rake test:mysql2_makara
+  - bundle exec rake test:mysql2spatial
+  - bundle exec rake test:postgis
+  - bundle exec rake test:postgresql
+  - bundle exec rake test:postgresql_makara
+  - bundle exec rake test:seamless_database_pool
+  - bundle exec rake test:spatialite
+  - bundle exec rake test:sqlite3
+  - bundle exec rubocop
+
+sudo: false
