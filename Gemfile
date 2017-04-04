@@ -40,6 +40,7 @@ end
 
 platforms :ruby do
   gem "pry-byebug"
+  gem "rb-readline"
 end
 
 version = ENV['AR_VERSION'] || "4.2"

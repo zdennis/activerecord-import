@@ -88,21 +88,23 @@ describe "#import" do
     end
   end
 
-  describe "with composite primary keys" do
-    it "should import models successfully" do
-      tags = [Tag.new(tag_id: 1, publisher_id: 1, tag: 'Mystery')]
+  unless ENV["SKIP_COMPOSITE_PK"]
+    describe "with composite primary keys" do
+      it "should import models successfully" do
+        tags = [Tag.new(tag_id: 1, publisher_id: 1, tag: 'Mystery')]
 
-      assert_difference "Tag.count", +1 do
-        Tag.import tags
+        assert_difference "Tag.count", +1 do
+          Tag.import tags
+        end
       end
-    end
 
-    it "should import array of values successfully" do
-      columns = [:tag_id, :publisher_id, :tag]
-      values = [[1, 1, 'Mystery'], [2, 1, 'Science']]
+      it "should import array of values successfully" do
+        columns = [:tag_id, :publisher_id, :tag]
+        values = [[1, 1, 'Mystery'], [2, 1, 'Science']]
 
-      assert_difference "Tag.count", +2 do
-        Tag.import columns, values, validate: false
+        assert_difference "Tag.count", +2 do
+          Tag.import columns, values, validate: false
+        end
       end
     end
   end

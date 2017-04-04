@@ -161,12 +161,14 @@ ActiveRecord::Schema.define do
 
   add_index :cars, :Name, unique: true
 
-  execute %(
-  CREATE TABLE IF NOT EXISTS tags (
-        tag_id    INT NOT NULL,
-        publisher_id INT NOT NULL,
-        tag       VARCHAR(50),
-        PRIMARY KEY (tag_id, publisher_id)
-    );
-  ).split.join(' ').strip
+  unless ENV["SKIP_COMPOSITE_PK"]
+    execute %(
+    CREATE TABLE IF NOT EXISTS tags (
+          tag_id    INT NOT NULL,
+          publisher_id INT NOT NULL,
+          tag       VARCHAR(50),
+          PRIMARY KEY (tag_id, publisher_id)
+      );
+    ).split.join(' ').strip
+  end
 end
