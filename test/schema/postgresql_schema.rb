@@ -1,5 +1,6 @@
 ActiveRecord::Schema.define do
   execute('CREATE extension IF NOT EXISTS "hstore";')
+  execute('CREATE extension IF NOT EXISTS "pgcrypto";')
   execute('CREATE extension IF NOT EXISTS "uuid-ossp";')
 
   create_table :vendors, id: :uuid, force: :cascade do |t|

@@ -26,7 +26,12 @@ end
 
 require 'timecop'
 require 'chronic'
-require 'composite_primary_keys'
+
+begin
+  require 'composite_primary_keys'
+rescue LoadError
+  ENV["SKIP_COMPOSITE_PK"] = "true"
+end
 
 require "ruby-debug" if RUBY_VERSION.to_f < 1.9
 

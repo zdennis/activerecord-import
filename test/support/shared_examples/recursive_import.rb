@@ -102,18 +102,20 @@ def should_support_recursive_import
       end
     end
 
-    describe "with composite primary keys" do
-      it "should import models and set id" do
-        tags = []
-        tags << Tag.new(tag_id: 1, publisher_id: 1, tag: 'Mystery')
-        tags << Tag.new(tag_id: 2, publisher_id: 1, tag: 'Science')
+    unless ENV["SKIP_COMPOSITE_PK"]
+      describe "with composite primary keys" do
+        it "should import models and set id" do
+          tags = []
+          tags << Tag.new(tag_id: 1, publisher_id: 1, tag: 'Mystery')
+          tags << Tag.new(tag_id: 2, publisher_id: 1, tag: 'Science')
 
-        assert_difference "Tag.count", +2 do
-          Tag.import tags
+          assert_difference "Tag.count", +2 do
+            Tag.import tags
+          end
+
+          assert_equal 1, tags[0].tag_id
+          assert_equal 2, tags[1].tag_id
         end
-
-        assert_equal 1, tags[0].tag_id
-        assert_equal 2, tags[1].tag_id
       end
     end
 

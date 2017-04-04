@@ -13,6 +13,7 @@ env:
     - AR_VERSION=4.1
     - AR_VERSION=4.2
     - AR_VERSION=5.0
+    - AR_VERSION=5.1
 
 matrix:
   include:
@@ -26,6 +27,9 @@ matrix:
         - bundle exec rake test:jdbcmysql
         - bundle exec rake test:jdbcpostgresql
 
+  allow_failures:
+    - env: AR_VERSION=5.1
+
   fast_finish: true
 
 before_script:
@@ -37,7 +41,7 @@ before_script:
   - cp test/travis/database.yml test/database.yml
 
 addons:
-  postgresql: "9.4"
+  postgresql: "9.5"
   apt:
     sources:
       - travis-ci/sqlite3
@@ -56,4 +60,4 @@ script:
   - bundle exec rake test:sqlite3
   - bundle exec rubocop
 
-sudo: false
+sudo: required
