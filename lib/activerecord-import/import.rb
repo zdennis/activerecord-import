@@ -135,19 +135,6 @@ end
 
 class ActiveRecord::Base
   class << self
-    # use tz as set in ActiveRecord::Base
-    tproc = lambda do
-      ActiveRecord::Base.default_timezone == :utc ? Time.now.utc : Time.now
-    end
-
-    AREXT_RAILS_COLUMNS = {
-      create: { "created_on" => tproc,
-                "created_at" => tproc },
-      update: { "updated_on" => tproc,
-                "updated_at" => tproc }
-    }.freeze
-    AREXT_RAILS_COLUMN_NAMES = AREXT_RAILS_COLUMNS[:create].keys + AREXT_RAILS_COLUMNS[:update].keys
-
     # Returns true if the current database connection adapter
     # supports import functionality, otherwise returns false.
     def supports_import?(*args)
@@ -724,7 +711,7 @@ class ActiveRecord::Base
           elsif column
             if defined?(type_caster_memo) && type_caster_memo.respond_to?(:type_cast_for_database) # Rails 5.0 and higher
               connection_memo.quote(type_caster_memo.type_cast_for_database(column.name, val))
-            elsif column.respond_to?(:type_cast_from_user)                                         # Rails 4.2 and higher
+            elsif column.respond_to?(:type_cast_from_user)                                         # Rails 4.2
               connection_memo.quote(column.type_cast_from_user(val), column)
             else                                                                                   # Rails 3.2, 4.0 and 4.1
               if serialized_attributes.include?(column.name)
@@ -739,39 +726,38 @@ class ActiveRecord::Base
     end
 
     def add_special_rails_stamps( column_names, array_of_attributes, options )
-      timestamps = {}
+      timestamp_columns = {}
+      timestamps        = {}
 
-      AREXT_RAILS_COLUMNS[:create].each_pair do |key, blk|
-        next unless self.column_names.include?(key)
-        value = blk.call
-        timestamps[key] = value
-
-        index = column_names.index(key) || column_names.index(key.to_sym)
-        if index
-          # replace every instance of the array of attributes with our value
-          array_of_attributes.each { |arr| arr[index] = value if arr[index].nil? }
-        else
-          column_names << key
-          array_of_attributes.each { |arr| arr << value }
-        end
+      if respond_to?(:all_timestamp_attributes_in_model, true) # Rails 5.1 and higher
+        timestamp_columns[:create] = timestamp_attributes_for_create_in_model
+        timestamp_columns[:update] = timestamp_attributes_for_update_in_model
+      else
+        instance = new
+        timestamp_columns[:create] = instance.send(:timestamp_attributes_for_create_in_model)
+        timestamp_columns[:update] = instance.send(:timestamp_attributes_for_update_in_model)
       end
 
-      AREXT_RAILS_COLUMNS[:update].each_pair do |key, blk|
-        next unless self.column_names.include?(key)
-        value = blk.call
-        timestamps[key] = value
+      # use tz as set in ActiveRecord::Base
+      timestamp = ActiveRecord::Base.default_timezone == :utc ? Time.now.utc : Time.now
 
-        index = column_names.index(key) || column_names.index(key.to_sym)
-        if index
-          # replace every instance of the array of attributes with our value
-          array_of_attributes.each { |arr| arr[index] = value }
-        else
-          column_names << key
-          array_of_attributes.each { |arr| arr << value }
-        end
+      [:create, :update].each do |action|
+        timestamp_columns[action].each do |column|
+          column = column.to_s
+          timestamps[column] = timestamp
 
-        if supports_on_duplicate_key_update?
-          connection.add_column_for_on_duplicate_key_update(key, options)
+          index = column_names.index(column) || column_names.index(column.to_sym)
+          if index
+            # replace every instance of the array of attributes with our value
+            array_of_attributes.each { |arr| arr[index] = timestamp if arr[index].nil? || action == :update }
+          else
+            column_names << column
+            array_of_attributes.each { |arr| arr << timestamp }
+          end
+
+          if supports_on_duplicate_key_update? && action == :update
+            connection.add_column_for_on_duplicate_key_update(column, options)
+          end
         end
       end
 
