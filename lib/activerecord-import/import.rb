@@ -394,6 +394,8 @@ class ActiveRecord::Base
       is_validating = options[:validate]
       is_validating = true unless options[:validate_with_context].nil?
 
+      habtm_models = []
+
       # assume array of model objects
       if args.last.is_a?( Array ) && args.last.first.is_a?(ActiveRecord::Base)
         if args.length == 2
@@ -412,6 +414,9 @@ class ActiveRecord::Base
         default_values = column_defaults
 
         array_of_attributes = models.map do |model|
+          # Only do HABTM import for new records
+          habtm_models << model if model.new_record?
+
           column_names.map do |name|
             is_stored_attr = stored_attrs.any? && stored_attrs.key?(name.to_sym)
             if is_stored_attr || default_values[name].is_a?(Hash)
@@ -507,6 +512,8 @@ class ActiveRecord::Base
 
         # if there are auto-save associations on the models we imported that are new, import them as well
         import_associations(models, options.dup) if options[:recursive]
+        # Import habtm rows
+        import_habtm(habtm_models) unless habtm_models.blank?
       end
 
       return_obj
@@ -586,12 +593,15 @@ class ActiveRecord::Base
         column
       end
 
-      columns_sql = "(#{column_names.map { |name| connection.quote_column_name(name) }.join(',')})"
-      pre_sql_statements = connection.pre_sql_statements( options )
-      insert_sql = ['INSERT', pre_sql_statements, "INTO #{quoted_table_name} #{columns_sql} VALUES "]
-      insert_sql = insert_sql.flatten.join(' ')
+      insert_sql = prepare_insert_sql(column_names, options)
       values_sql = values_sql_for_columns_and_attributes(columns, array_of_attributes)
 
+      perform_insert insert_sql, values_sql, options
+    end
+
+    private
+
+    def perform_insert(insert_sql, values_sql, options = {})
       number_inserted = 0
       ids = []
       if supports_import?
@@ -619,7 +629,12 @@ class ActiveRecord::Base
       [number_inserted, ids]
     end
 
-    private
+    def prepare_insert_sql(column_names, options = {})
+      columns_sql = "(#{column_names.map { |name| connection.quote_column_name(name) }.join(',')})"
+      pre_sql_statements = connection.pre_sql_statements( options )
+      table_name = options[:table_name] ? connection.quote_table_name(options[:table_name]) : quoted_table_name
+      ['INSERT', pre_sql_statements, "INTO #{table_name} #{columns_sql} VALUES "].flatten.join(' ')
+    end
 
     def set_attributes_and_mark_clean(models, import_result, timestamps)
       return if models.nil?
@@ -659,6 +674,34 @@ class ActiveRecord::Base
       end
     end
 
+    def import_habtm(habtm_models)
+      habtm_inserts = {}
+      habtm_models.group_by(&:class).each do |klass, models|
+        habtms = habtm_reflections(klass)
+
+        next if habtms.blank?
+
+        habtms.each do |reflection|
+          models.each do |model|
+            association_ids = model.send(reflection.name).collect(&:id)
+            next if association_ids.blank?
+            habtm_inserts[reflection.association_foreign_key] ||= [reflection, []]
+            habtm_inserts[reflection.association_foreign_key].last.push(*association_ids.zip([model.id] * association_ids.count))
+          end
+        end
+      end
+
+      habtm_inserts.each_value do |reflection, values|
+        join_table = reflection.options[:join_table] || reflection.join_table
+        insert_sql = prepare_insert_sql([reflection.association_foreign_key, reflection.foreign_key], table_name: join_table)
+        perform_insert insert_sql, values_sql_for_attributes(values)
+      end
+    end
+
+    def habtm_reflections(klass)
+      klass.reflections.each_value.select { |reflection| reflection.macro == :has_and_belongs_to_many } if klass.respond_to?(:reflections)
+    end
+
     # We are eventually going to call Class.import <objects> so we build up a hash
     # of class => objects to import.
     def find_associated_objects_for_import(associated_objects_by_class, model)
@@ -696,9 +739,8 @@ class ActiveRecord::Base
       # Reuse the same ones w/in the loop, otherwise they would keep being re-retreived (= lots of time for large imports)
       connection_memo = connection
       type_caster_memo = type_caster if respond_to?(:type_caster)
-
-      array_of_attributes.map do |arr|
-        my_values = arr.each_with_index.map do |val, j|
+      values_sql_for_attributes(array_of_attributes) do |arr|
+        arr.each_with_index.map do |val, j|
           column = columns[j]
 
           # be sure to query sequence_name *last*, only if cheaper tests fail, because it's costly
@@ -717,6 +759,12 @@ class ActiveRecord::Base
             end
           end
         end
+      end
+    end
+
+    def values_sql_for_attributes(array_of_attributes)
+      array_of_attributes.map do |arr|
+        my_values = block_given? ? yield(arr) : arr
         "(#{my_values.join(',')})"
       end
     end

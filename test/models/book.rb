@@ -5,5 +5,6 @@ class Book < ActiveRecord::Base
   has_many :chapters, inverse_of: :book
   has_many :discounts, as: :discountable
   has_many :end_notes, inverse_of: :book
+  has_and_belongs_to_many :genres
   enum status: [:draft, :published] if ENV['AR_VERSION'].to_f >= 4.1
 end

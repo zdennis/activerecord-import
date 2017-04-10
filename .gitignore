@@ -30,3 +30,4 @@ test/database.yml
 .redcar/
 .rvmrc
 docsite/
+.byebug_history

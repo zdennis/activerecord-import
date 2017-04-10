@@ -52,6 +52,17 @@ ActiveRecord::Schema.define do
     t.string :name
   end
 
+  create_table :genres, force: :cascade do |t|
+    t.string :title, null: false
+  end
+
+  create_table :books_genres, force: :cascade do |t|
+    t.integer :book_id, null: false
+    t.integer :genre_id, null: false
+  end
+
+  add_index :books_genres, [:genre_id, :book_id], unique: true
+
   create_table :books, force: :cascade do |t|
     t.string :title, null: false
     t.string :publisher, null: false, default: 'Default Publisher'
