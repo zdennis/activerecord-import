@@ -695,7 +695,6 @@ class ActiveRecord::Base
       # connection and type_caster get called a *lot* in this high intensity loop.
       # Reuse the same ones w/in the loop, otherwise they would keep being re-retreived (= lots of time for large imports)
       connection_memo = connection
-      type_caster_memo = type_caster if respond_to?(:type_caster)
 
       array_of_attributes.map do |arr|
         my_values = arr.each_with_index.map do |val, j|
@@ -705,11 +704,13 @@ class ActiveRecord::Base
           if val.nil? && column.name == primary_key && !sequence_name.blank?
             connection_memo.next_value_for_sequence(sequence_name)
           elsif column
-            if defined?(type_caster_memo) && type_caster_memo.respond_to?(:type_cast_for_database) # Rails 5.0 and higher
-              connection_memo.quote(type_caster_memo.type_cast_for_database(column.name, val))
-            elsif column.respond_to?(:type_cast_from_user)                                         # Rails 4.2
+            if respond_to?(:type_caster)                                         # Rails 5.0 and higher
+              type = type_for_attribute(column.name)
+              val = type.type == :boolean ? type.cast(val) : type.serialize(val)
+              connection_memo.quote(val)
+            elsif column.respond_to?(:type_cast_from_user)                       # Rails 4.2
               connection_memo.quote(column.type_cast_from_user(val), column)
-            else                                                                                   # Rails 3.2, 4.0 and 4.1
+            else                                                                 # Rails 3.2, 4.0 and 4.1
               if serialized_attributes.include?(column.name)
                 val = serialized_attributes[column.name].dump(val)
               end

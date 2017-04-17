@@ -598,6 +598,30 @@ describe "#import" do
     end
   end
 
+  context 'importing arrays of values with boolean fields' do
+    let(:columns) { [:author_name, :title, :for_sale] }
+
+    it 'should be able to coerce integers as boolean fields' do
+      Book.delete_all if Book.count > 0
+      values = [['Author #1', 'Book #1', 0], ['Author #2', 'Book #2', 1]]
+      assert_difference "Book.count", +2 do
+        Book.import columns, values
+      end
+      assert_equal false, Book.first.for_sale
+      assert_equal true, Book.last.for_sale
+    end
+
+    it 'should be able to coerce strings as boolean fields' do
+      Book.delete_all if Book.count > 0
+      values = [['Author #1', 'Book #1', 'false'], ['Author #2', 'Book #2', 'true']]
+      assert_difference "Book.count", +2 do
+        Book.import columns, values
+      end
+      assert_equal false, Book.first.for_sale
+      assert_equal true, Book.last.for_sale
+    end
+  end
+
   describe "importing when model has default_scope" do
     it "doesn't import the default scope values" do
       assert_difference "Widget.unscoped.count", +2 do
