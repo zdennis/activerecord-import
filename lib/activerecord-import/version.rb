@@ -1,5 +1,5 @@
 module ActiveRecord
   module Import
-    VERSION = "0.17.2".freeze
+    VERSION = "0.18.0".freeze
   end
 end
