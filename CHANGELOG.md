@@ -5,6 +5,13 @@
 * Uniqueness validation is bypassed when validating models since
   it cannot be guaranteed if there are duplicates in a batch.
   Thanks to @jkowens via \#301.
+* Allow for custom timestamp columns. Thanks to @mojidabckuu, @jkowens
+  via \#401.
+ 
+### Fixes
+
+* Fix ActiveRecord 5 issue coercing boolean values when serializing
+  for the database. Thanks to @rjrobinson, @jkowens via \#403.
 
 ## Changes in 0.17.2
 
