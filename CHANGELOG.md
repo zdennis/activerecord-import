@@ -1,3 +1,10 @@
+## Changes in 0.18.1
+
+### Fixes
+
+* Fix to enable validation callbacks (before_validation,
+  after_validation). Thanks to @sinsoku, @jkowens via \#406.
+
 ## Changes in 0.18.0
 
 ### New Features
