@@ -224,6 +224,12 @@ describe "#import" do
         end
         assert_equal 0, Topic.where(title: invalid_values.map(&:first)).count
       end
+
+      it "should run callbacks" do
+        assert_no_difference "Topic.count" do
+          Topic.import columns, [["invalid", "Jerry Carter"]], validate: true
+        end
+      end
     end
   end
 
