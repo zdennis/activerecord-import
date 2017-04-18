@@ -1,4 +1,4 @@
-## Changes in 0.18.0 (Unreleased)
+## Changes in 0.18.0
 
 ### New Features
 
