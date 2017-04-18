@@ -3,6 +3,8 @@ class Topic < ActiveRecord::Base
   validates :title, numericality: { only_integer: true }, on: :context_test
   validates :title, uniqueness: true
 
+  before_validation -> { errors.add(:title, :invalid) if title == 'invalid' }
+
   has_many :books, inverse_of: :topic
   belongs_to :parent, class_name: "Topic"
 
