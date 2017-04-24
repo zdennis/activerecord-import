@@ -700,8 +700,8 @@ class ActiveRecord::Base
     # Returns SQL the VALUES for an INSERT statement given the passed in +columns+
     # and +array_of_attributes+.
     def values_sql_for_columns_and_attributes(columns, array_of_attributes) # :nodoc:
-      # connection and type_caster get called a *lot* in this high intensity loop.
-      # Reuse the same ones w/in the loop, otherwise they would keep being re-retreived (= lots of time for large imports)
+      # connection gets called a *lot* in this high intensity loop.
+      # Reuse the same one w/in the loop, otherwise it would keep being re-retreived (= lots of time for large imports)
       connection_memo = connection
 
       array_of_attributes.map do |arr|
