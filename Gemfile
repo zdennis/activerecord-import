@@ -12,7 +12,7 @@ platforms :ruby do
   gem "mysql2",                 "~> 0.3.0"
   gem "pg",                     "~> 0.9"
   gem "sqlite3",                "~> 1.3.10"
-  gem "seamless_database_pool", "~> 1.0.18"
+  gem "seamless_database_pool", "~> 1.0.20"
 end
 
 platforms :jruby do
