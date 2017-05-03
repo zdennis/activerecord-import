@@ -42,10 +42,12 @@ module ActiveRecord::Import #:nodoc:
       end
 
       model.run_callbacks(:validation) do
-        if validate_callbacks.method(:compile).arity == 0 # ActiveRecord >= 4.x
+        if defined?(ActiveSupport::Callbacks::Filters::Environment) # ActiveRecord >= 4.1
           runner = validate_callbacks.compile
           e = ActiveSupport::Callbacks::Filters::Environment.new(model, false, nil)
           runner.call(e)
+        elsif validate_callbacks.method(:compile).arity == 0 # ActiveRecord = 4.0
+          model.instance_eval validate_callbacks.compile
         else # ActiveRecord 3.x
           model.instance_eval validate_callbacks.compile(nil, model)
         end
