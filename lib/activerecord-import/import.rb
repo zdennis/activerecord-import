@@ -41,9 +41,11 @@ module ActiveRecord::Import #:nodoc:
         validate_callbacks.delete(callback) if callback.raw_filter.is_a? ActiveRecord::Validations::UniquenessValidator
       end
 
-      model.send(:_run_validation_callbacks) do
-        if model.method(:__run_callbacks__) # ActiveRecord 4.x
-          model.send(:__run_callbacks__, validate_callbacks)
+      model.run_callbacks(:validation) do
+        if validate_callbacks.method(:compile).arity == 0 # ActiveRecord >= 4.x
+          runner = validate_callbacks.compile
+          e = ActiveSupport::Callbacks::Filters::Environment.new(model, false, nil)
+          runner.call(e)
         else # ActiveRecord 3.x
           model.instance_eval validate_callbacks.compile(nil, model)
         end
