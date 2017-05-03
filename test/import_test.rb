@@ -230,6 +230,12 @@ describe "#import" do
           Topic.import columns, [["invalid", "Jerry Carter"]], validate: true
         end
       end
+
+      it "should call validation methods" do
+        assert_no_difference "Topic.count" do
+          Topic.import columns, [["validate_failed", "Jerry Carter"]], validate: true
+        end
+      end
     end
   end
 

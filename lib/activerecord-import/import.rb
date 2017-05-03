@@ -49,6 +49,7 @@ module ActiveRecord::Import #:nodoc:
         model.send(:_run_validation_callbacks, &validation_proc)
       else
         model.send(:run_callbacks, :validation, &validation_proc)
+        model.send(:run_callbacks, :validate, &validation_proc)
       end
 
       model.send(:validation_context=, current_context)
