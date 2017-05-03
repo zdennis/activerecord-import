@@ -24,8 +24,7 @@ module ActiveRecord::Import #:nodoc:
   end
 
   class Validator
-    def initialize(validators, options = {})
-      @validators = validators
+    def initialize(options = {})
       @options    = options
     end
 
@@ -37,19 +36,17 @@ module ActiveRecord::Import #:nodoc:
       model.send(:validation_context=, validation_context)
       model.errors.clear
 
-      validation_proc = lambda do
-        @validators.each do |v|
-          if validation_context == v.options.fetch(:on, validation_context)
-            v.validate(model) if validate?(v, model)
-          end
-        end
+      validate_callbacks = model._validate_callbacks
+      validate_callbacks.each do |callback|
+        validate_callbacks.delete(callback) if callback.raw_filter.is_a? ActiveRecord::Validations::UniquenessValidator
       end
 
-      if model.respond_to?(:run_validation_callbacks)
-        model.send(:_run_validation_callbacks, &validation_proc)
-      else
-        model.send(:run_callbacks, :validation, &validation_proc)
-        model.send(:run_callbacks, :validate, &validation_proc)
+      model.send(:_run_validation_callbacks) do
+        if model.method(:__run_callbacks__) # ActiveRecord 4.x
+          model.send(:__run_callbacks__, validate_callbacks)
+        else # ActiveRecord 3.x
+          model.instance_eval validate_callbacks.compile(nil, model)
+        end
       end
 
       model.send(:validation_context=, current_context)
@@ -531,8 +528,7 @@ class ActiveRecord::Base
     def import_with_validations( column_names, array_of_attributes, options = {} )
       failed_instances = []
 
-      validators = self.validators.reject { |v| v.is_a? ActiveRecord::Validations::UniquenessValidator }
-      validator = ActiveRecord::Import::Validator.new(validators, options)
+      validator = ActiveRecord::Import::Validator.new(options)
 
       if block_given?
         yield validator, failed_instances
