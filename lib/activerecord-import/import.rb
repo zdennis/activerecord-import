@@ -25,7 +25,7 @@ module ActiveRecord::Import #:nodoc:
 
   class Validator
     def initialize(options = {})
-      @options    = options
+      @options = options
     end
 
     def valid_model?(model)
