@@ -36,7 +36,7 @@ module ActiveRecord::Import #:nodoc:
       model.send(:validation_context=, validation_context)
       model.errors.clear
 
-      validate_callbacks = model._validate_callbacks
+      validate_callbacks = model._validate_callbacks.dup
       validate_callbacks.each do |callback|
         validate_callbacks.delete(callback) if callback.raw_filter.is_a? ActiveRecord::Validations::UniquenessValidator
       end

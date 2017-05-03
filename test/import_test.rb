@@ -168,6 +168,15 @@ describe "#import" do
         end
       end
 
+      it "should not alter the callback chain of the model" do
+        attributes = columns.zip(valid_values.first).to_h
+        topic = Topic.new attributes
+        Topic.import [topic], validate: true
+        duplicate_topic = Topic.new attributes
+        Topic.import [duplicate_topic], validate: true
+        assert duplicate_topic.invalid?
+      end
+
       it "should not import invalid data" do
         assert_no_difference "Topic.count" do
           Topic.import columns, invalid_values, validate: true
