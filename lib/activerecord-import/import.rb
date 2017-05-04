@@ -32,32 +32,29 @@ module ActiveRecord::Import #:nodoc:
       validation_context = @options[:validate_with_context]
       validation_context ||= (model.new_record? ? :create : :update)
 
-      validate_callbacks_orig = model._validate_callbacks
+      current_context = model.send(:validation_context)
+      model.send(:validation_context=, validation_context)
+      model.errors.clear
 
       validate_callbacks = model._validate_callbacks.dup
       validate_callbacks.each do |callback|
         validate_callbacks.delete(callback) if callback.raw_filter.is_a? ActiveRecord::Validations::UniquenessValidator
       end
 
-      begin
-        set_validate_callbacks(model, validate_callbacks)
-        model.valid?(validation_context)
-      ensure
-        set_validate_callbacks(model, validate_callbacks_orig)
+      model.run_callbacks(:validation) do
+        if defined?(ActiveSupport::Callbacks::Filters::Environment) # ActiveRecord >= 4.1
+          runner = validate_callbacks.compile
+          e = ActiveSupport::Callbacks::Filters::Environment.new(model, false, nil)
+          runner.call(e)
+        elsif validate_callbacks.method(:compile).arity == 0 # ActiveRecord = 4.0
+          model.instance_eval validate_callbacks.compile
+        else # ActiveRecord 3.x
+          model.instance_eval validate_callbacks.compile(nil, model)
+        end
       end
-    end
 
-    private
-
-    def set_validate_callbacks(model, validate_callbacks)
-      if model.respond_to?(:_validate_callbacks=) # ActiveRecord < 4.1
-        model._validate_callbacks = validate_callbacks
-        model.class.__reset_runner(:validate)
-      elsif model.class.respond_to?(:_validate_callbacks=) # ActiveRecord < 5.1
-        model.class._validate_callbacks = validate_callbacks
-      else # ActiveRecord 5.1
-        model.__callbacks[:validate] = validate_callbacks
-      end
+      model.send(:validation_context=, current_context)
+      model.errors.empty?
     end
   end
 end
