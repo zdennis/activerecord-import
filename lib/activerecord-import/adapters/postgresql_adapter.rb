@@ -50,7 +50,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
     sql += super(table_name, options)
 
-    unless options[:no_returning] || options[:primary_key].blank?
+    unless options[:primary_key].blank? || options[:no_returning]
       primary_key = Array(options[:primary_key])
       sql << " RETURNING \"#{primary_key.join('", "')}\""
     end
