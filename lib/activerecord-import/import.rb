@@ -32,7 +32,6 @@ module ActiveRecord::Import #:nodoc:
       validation_context = @options[:validate_with_context]
       validation_context ||= (model.new_record? ? :create : :update)
 
-      current_context = model.send(:validation_context)
       validate_callbacks_orig = model._validate_callbacks
 
       validate_callbacks = model._validate_callbacks.dup
