@@ -57,4 +57,4 @@ script:
   - bundle exec rake test:sqlite3
   - bundle exec rubocop
 
-sudo: required
+dist: trusty
