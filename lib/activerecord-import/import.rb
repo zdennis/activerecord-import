@@ -56,19 +56,6 @@ module ActiveRecord::Import #:nodoc:
       model.send(:validation_context=, current_context)
       model.errors.empty?
     end
-
-    def validate?(validator, model)
-      evaluate = lambda do |condition|
-        case condition
-        when String then model.instance_eval(condition)
-        when Symbol then model.send(condition)
-        when Proc then model.instance_eval(&condition)
-        end
-      end
-
-      Array(validator.options[:if]).map(&evaluate).compact.all? &&
-        !Array(validator.options[:unless]).map(&evaluate).compact.any?
-    end
   end
 end
 
