@@ -33,28 +33,38 @@ module ActiveRecord::Import #:nodoc:
       validation_context ||= (model.new_record? ? :create : :update)
 
       current_context = model.send(:validation_context)
-      model.send(:validation_context=, validation_context)
-      model.errors.clear
+      begin
+        model.send(:validation_context=, validation_context)
+        model.errors.clear
 
-      validate_callbacks = model._validate_callbacks.dup
-      validate_callbacks.each do |callback|
-        validate_callbacks.delete(callback) if callback.raw_filter.is_a? ActiveRecord::Validations::UniquenessValidator
-      end
-
-      model.run_callbacks(:validation) do
-        if defined?(ActiveSupport::Callbacks::Filters::Environment) # ActiveRecord >= 4.1
-          runner = validate_callbacks.compile
-          e = ActiveSupport::Callbacks::Filters::Environment.new(model, false, nil)
-          runner.call(e)
-        elsif validate_callbacks.method(:compile).arity == 0 # ActiveRecord = 4.0
-          model.instance_eval validate_callbacks.compile
-        else # ActiveRecord 3.x
-          model.instance_eval validate_callbacks.compile(nil, model)
+        validate_callbacks = model._validate_callbacks.dup
+        validate_callbacks.each do |callback|
+          validate_callbacks.delete(callback) if callback.raw_filter.is_a? ActiveRecord::Validations::UniquenessValidator
         end
-      end
 
-      model.send(:validation_context=, current_context)
-      model.errors.empty?
+        model.run_callbacks(:validation) do
+          if defined?(ActiveSupport::Callbacks::Filters::Environment) # ActiveRecord >= 4.1
+            runner = validate_callbacks.compile
+            env = ActiveSupport::Callbacks::Filters::Environment.new(model, false, nil)
+            if runner.respond_to?(:call) # ActiveRecord < 5.1
+              runner.call(env)
+            else # ActiveRecord 5.1
+              # Note that this is a gross simplification of ActiveSupport::Callbacks#run_callbacks.
+              # In particular, we don't invoke any "around_validate" callbacks.
+              runner.invoke_before(env)
+              runner.invoke_after(env)
+            end
+          elsif validate_callbacks.method(:compile).arity == 0 # ActiveRecord = 4.0
+            model.instance_eval validate_callbacks.compile
+          else # ActiveRecord 3.x
+            model.instance_eval validate_callbacks.compile(nil, model)
+          end
+        end
+
+        model.errors.empty?
+      ensure
+        model.send(:validation_context=, current_context)
+      end
     end
   end
 end
