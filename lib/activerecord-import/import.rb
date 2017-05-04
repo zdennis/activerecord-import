@@ -220,7 +220,9 @@ class ActiveRecord::Base
     #    records that contain duplicate keys. For Postgres 9.5+ it adds
     #    ON CONFLICT DO NOTHING, for MySQL it uses INSERT IGNORE, and for
     #    SQLite it uses INSERT OR IGNORE. Cannot be enabled on a
-    #    recursive import.
+    #    recursive import. For database adapters that normally support
+    #    setting primary keys on imported objects, this option prevents
+    #    that from occurring.
     # * +on_duplicate_key_update+ - an Array or Hash, tells import to
     #    use MySQL's ON DUPLICATE KEY UPDATE or Postgres 9.5+ ON CONFLICT
     #    DO UPDATE ability. See On Duplicate Key Update below.
@@ -519,7 +521,9 @@ class ActiveRecord::Base
 
       # if we have ids, then set the id on the models and mark the models as clean.
       if models && support_setting_primary_key_of_imported_objects?
-        set_attributes_and_mark_clean(models, return_obj, timestamps)
+        if options[:recursive] || !(options[:ignore] || options[:on_duplicate_key_ignore])
+          set_attributes_and_mark_clean(models, return_obj, timestamps)
+        end
 
         # if there are auto-save associations on the models we imported that are new, import them as well
         import_associations(models, options.dup) if options[:recursive]
