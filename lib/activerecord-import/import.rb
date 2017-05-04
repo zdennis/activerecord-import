@@ -24,9 +24,8 @@ module ActiveRecord::Import #:nodoc:
   end
 
   class Validator
-    def initialize(validators, options = {})
-      @validators = validators
-      @options    = options
+    def initialize(options = {})
+      @options = options
     end
 
     def valid_model?(model)
@@ -34,38 +33,47 @@ module ActiveRecord::Import #:nodoc:
       validation_context ||= (model.new_record? ? :create : :update)
 
       current_context = model.send(:validation_context)
-      model.send(:validation_context=, validation_context)
-      model.errors.clear
+      begin
+        model.send(:validation_context=, validation_context)
+        model.errors.clear
 
-      validation_proc = lambda do
-        @validators.each do |v|
-          if validation_context == v.options.fetch(:on, validation_context)
-            v.validate(model) if validate?(v, model)
+        validate_callbacks = model._validate_callbacks.dup
+        validate_callbacks.each do |callback|
+          validate_callbacks.delete(callback) if callback.raw_filter.is_a? ActiveRecord::Validations::UniquenessValidator
+        end
+
+        model.run_callbacks(:validation) do
+          if defined?(ActiveSupport::Callbacks::Filters::Environment) # ActiveRecord >= 4.1
+            runner = validate_callbacks.compile
+            env = ActiveSupport::Callbacks::Filters::Environment.new(model, false, nil)
+            if runner.respond_to?(:call) # ActiveRecord < 5.1
+              runner.call(env)
+            else # ActiveRecord 5.1
+              # Note that this is a gross simplification of ActiveSupport::Callbacks#run_callbacks.
+              # It's technically possible for there to exist an "around" callback in the
+              # :validate chain, but this would be an aberration, since Rails doesn't define
+              # "around_validate". Still, rather than silently ignoring such callbacks, we
+              # explicitly raise a RuntimeError, since activerecord-import was asked to perform
+              # validations and it's unable to do so.
+              #
+              # The alternative here would be to copy-and-paste the bulk of the
+              # ActiveSupport::Callbacks#run_callbacks method, which is undesirable if there's
+              # no real-world use case for it.
+              raise "The :validate callback chain contains an 'around' callback, which is unsupported" unless runner.final?
+              runner.invoke_before(env)
+              runner.invoke_after(env)
+            end
+          elsif validate_callbacks.method(:compile).arity == 0 # ActiveRecord = 4.0
+            model.instance_eval validate_callbacks.compile
+          else # ActiveRecord 3.x
+            model.instance_eval validate_callbacks.compile(nil, model)
           end
         end
+
+        model.errors.empty?
+      ensure
+        model.send(:validation_context=, current_context)
       end
-
-      if model.respond_to?(:run_validation_callbacks)
-        model.send(:_run_validation_callbacks, &validation_proc)
-      else
-        model.send(:run_callbacks, :validation, &validation_proc)
-      end
-
-      model.send(:validation_context=, current_context)
-      model.errors.empty?
-    end
-
-    def validate?(validator, model)
-      evaluate = lambda do |condition|
-        case condition
-        when String then model.instance_eval(condition)
-        when Symbol then model.send(condition)
-        when Proc then model.instance_eval(&condition)
-        end
-      end
-
-      Array(validator.options[:if]).map(&evaluate).compact.all? &&
-        !Array(validator.options[:unless]).map(&evaluate).compact.any?
     end
   end
 end
@@ -530,8 +538,7 @@ class ActiveRecord::Base
     def import_with_validations( column_names, array_of_attributes, options = {} )
       failed_instances = []
 
-      validators = self.validators.reject { |v| v.is_a? ActiveRecord::Validations::UniquenessValidator }
-      validator = ActiveRecord::Import::Validator.new(validators, options)
+      validator = ActiveRecord::Import::Validator.new(options)
 
       if block_given?
         yield validator, failed_instances
