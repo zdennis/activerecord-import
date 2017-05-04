@@ -44,6 +44,7 @@ addons:
       - travis-ci/sqlite3
     packages:
       - sqlite3
+      - postgresql-9.5-postgis-2.3
 
 script:
   - bundle exec rake test:mysql2
