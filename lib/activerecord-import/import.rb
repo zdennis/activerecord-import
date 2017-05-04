@@ -50,7 +50,16 @@ module ActiveRecord::Import #:nodoc:
               runner.call(env)
             else # ActiveRecord 5.1
               # Note that this is a gross simplification of ActiveSupport::Callbacks#run_callbacks.
-              # In particular, we don't invoke any "around_validate" callbacks.
+              # It's technically possible for there to exist an "around" callback in the
+              # :validate chain, but this would be an aberration, since Rails doesn't define
+              # "around_validate". Still, rather than silently ignoring such callbacks, we
+              # explicitly raise a RuntimeError, since activerecord-import was asked to perform
+              # validations and it's unable to do so.
+              #
+              # The alternative here would be to copy-and-paste the bulk of the
+              # ActiveSupport::Callbacks#run_callbacks method, which is undesirable if there's
+              # no real-world use case for it.
+              raise "The :validate callback chain contains an 'around' callback, which is unsupported" unless runner.final?
               runner.invoke_before(env)
               runner.invoke_after(env)
             end
