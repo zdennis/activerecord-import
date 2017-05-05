@@ -1,3 +1,11 @@
+## Changes in 0.18.2
+
+### Fixes
+
+* Enable custom validate callbacks when validating import. Thanks to @afn via \#410.
+* Prevent wrong IDs being set on models when using :on_duplicate_key_ignore.
+  Thanks to @afn, @jkowens via \#412.
+
 ## Changes in 0.18.1
 
 ### Fixes
