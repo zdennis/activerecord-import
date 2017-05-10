@@ -1,3 +1,10 @@
+## Changes in 0.18.3
+
+### Fixes
+
+* Set models new_record attribute to false when importing with
+  :on_duplicate_key_ignore. Thanks to @nijikon, @jkowens via \#416.
+
 ## Changes in 0.18.2
 
 ### Fixes
