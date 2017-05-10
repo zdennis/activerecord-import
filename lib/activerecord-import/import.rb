@@ -521,19 +521,7 @@ class ActiveRecord::Base
 
       # if we have ids, then set the id on the models and mark the models as clean.
       if models && support_setting_primary_key_of_imported_objects?
-        set_attributes_and_mark_clean(models, return_obj) do |updated_models|
-          # if ids were returned for all models we know all were updated
-          if updated_models.size == return_obj.ids.size
-            return_obj.ids.each_with_index do |id, index|
-              model = updated_models[index]
-              model.id = id
-
-              timestamps.each do |attr, value|
-                model.send(attr + "=", value)
-              end
-            end
-          end
-        end
+        set_attributes_and_mark_clean(models, return_obj, timestamps)
 
         # if there are auto-save associations on the models we imported that are new, import them as well
         import_associations(models, options.dup) if options[:recursive]
@@ -650,7 +638,7 @@ class ActiveRecord::Base
 
     private
 
-    def set_attributes_and_mark_clean(models, import_result)
+    def set_attributes_and_mark_clean(models, import_result, timestamps)
       return if models.nil?
       models -= import_result.failed_instances
       models.each do |model|
@@ -662,7 +650,17 @@ class ActiveRecord::Base
         model.instance_variable_set(:@new_record, false)
       end
 
-      yield models
+      # if ids were returned for all models we know all were updated
+      if models.size == import_result.ids.size
+        import_result.ids.each_with_index do |id, index|
+          model = models[index]
+          model.id = id
+
+          timestamps.each do |attr, value|
+            model.send(attr + "=", value)
+          end
+        end
+      end
     end
 
     def import_associations(models, options)
