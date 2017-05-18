@@ -112,9 +112,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
       raise ArgumentError, 'Expected :columns to be an Array or Hash'
     end
 
-    if condition.present?
-      sql << " WHERE #{condition}"
-    end
+    sql << " WHERE #{condition}" if condition.present?
 
     sql
   end
