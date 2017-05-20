@@ -273,6 +273,39 @@ def should_support_postgresql_upsert_functionality
           end
         end
 
+        context 'with :condition' do
+          let(:columns) { %w( id device_id alarm_type status metadata) }
+          let(:values) { [[99, 17, 1, 1, 'foo']] }
+          let(:updated_values) { [[99, 17, 1, 1, 'bar']] }
+
+          macro(:perform_import) do |*opts|
+            Alarm.import(
+              columns,
+              updated_values,
+              opts.extract_options!.merge(
+                on_duplicate_key_update: {
+                  conflict_target: [:id],
+                  condition: "alarms.metadata NOT LIKE '%foo%'",
+                  columns: [:metadata]
+                },
+                validate: false
+              )
+            )
+          end
+
+          macro(:updated_alarm) { Alarm.find(@alarm.id) }
+
+          setup do
+            Alarm.import columns, values, validate: false
+            @alarm = Alarm.find 99
+          end
+
+          it 'should not update fields not matched' do
+            perform_import
+            assert_equal 'foo', updated_alarm.metadata
+          end
+        end
+
         context "with :constraint_name" do
           let(:columns) { %w( id title author_name author_email_address parent_id ) }
           let(:values) { [[100, "Book", "John Doe", "john@doe.com", 17]] }

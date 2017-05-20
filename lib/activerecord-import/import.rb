@@ -350,6 +350,15 @@ class ActiveRecord::Base
     #
     #   BlogPost.import columns, values, on_duplicate_key_update: { constraint_name: :blog_posts_pkey, columns: [ :date_modified ] }
     #
+    # ====== :condition
+    #
+    # The :condition attribute optionally specifies a WHERE condition
+    # on :conflict_action. Only rows for which this expression returns true will be updated.
+    # Note that it's evaluated last, after a conflict has been identified as a candidate to update.
+    # Below is an example:
+    #
+    #   BlogPost.import columns, values, on_duplicate_key_update: { conflict_target: [ :author_id ], condition: "blog_posts.title NOT LIKE '%sample%'", columns: [ :author_name ] }
+
     # ====== :columns
     #
     # The :columns attribute can be either an Array or a Hash.

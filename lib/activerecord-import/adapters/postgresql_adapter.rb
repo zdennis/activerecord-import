@@ -87,10 +87,11 @@ module ActiveRecord::Import::PostgreSQLAdapter
     arg = { columns: arg } if arg.is_a?( Array ) || arg.is_a?( String )
     return unless arg.is_a?( Hash )
 
-    sql = " ON CONFLICT "
+    sql = ' ON CONFLICT '
     conflict_target = sql_for_conflict_target( arg )
 
     columns = arg.fetch( :columns, [] )
+    condition = arg[:condition]
     if columns.respond_to?( :empty? ) && columns.empty?
       return sql << "#{conflict_target}DO NOTHING"
     end
@@ -110,6 +111,9 @@ module ActiveRecord::Import::PostgreSQLAdapter
     else
       raise ArgumentError, 'Expected :columns to be an Array or Hash'
     end
+
+    sql << " WHERE #{condition}" if condition.present?
+
     sql
   end
 
