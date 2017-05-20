@@ -12,6 +12,7 @@ module ActiveRecord::Import
     when 'spatialite' then 'sqlite3'
     when 'postgresql_makara' then 'postgresql'
     when 'postgis' then 'postgresql'
+    when 'redshift' then 'postgresql'
     else adapter
     end
   end
