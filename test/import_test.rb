@@ -692,6 +692,16 @@ describe "#import" do
       assert_equal(data.as_json, Widget.find_by_w_id(9).json_data)
     end
 
+    it "imports serialized values from saved records" do
+      Widget.import [:w_id, :json_data], [[1, data]]
+      assert_equal data.as_json, Widget.last.json_data
+
+      w = Widget.last
+      w.w_id = 2
+      Widget.import([w])
+      assert_equal data.as_json, Widget.last.json_data
+    end
+
     context "with a store" do
       it "imports serialized attributes set using accessors" do
         vendors = [Vendor.new(name: 'Vendor 1', color: 'blue')]

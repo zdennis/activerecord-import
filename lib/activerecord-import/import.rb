@@ -435,13 +435,20 @@ class ActiveRecord::Base
           column_names.delete(primary_key)
         end
 
-        stored_attrs = respond_to?(:stored_attributes) ? stored_attributes : {}
         default_values = column_defaults
+        stored_attrs = respond_to?(:stored_attributes) ? stored_attributes : {}
+        serialized_attrs = if defined?(ActiveRecord::Type::Serialized)
+          attrs = column_names.select { |c| type_for_attribute(c.to_s).class == ActiveRecord::Type::Serialized }
+          Hash[attrs.map { |c| [c, nil] }]
+        else
+          serialized_attributes
+        end
 
         array_of_attributes = models.map do |model|
           column_names.map do |name|
             is_stored_attr = stored_attrs.any? && stored_attrs.key?(name.to_sym)
-            if is_stored_attr || default_values[name].is_a?(Hash)
+            is_serialized_attr = serialized_attrs.any? && serialized_attrs.key?(name)
+            if is_stored_attr || is_serialized_attr || default_values[name].is_a?(Hash)
               model.read_attribute(name.to_s)
             else
               model.read_attribute_before_type_cast(name.to_s)
