@@ -439,7 +439,7 @@ class ActiveRecord::Base
         stored_attrs = respond_to?(:stored_attributes) ? stored_attributes : {}
         serialized_attrs = if defined?(ActiveRecord::Type::Serialized)
           attrs = column_names.select { |c| type_for_attribute(c.to_s).class == ActiveRecord::Type::Serialized }
-          Hash[attrs.map { |c| [c, nil] }]
+          Hash[attrs.map { |a| [a, nil] }]
         else
           serialized_attributes
         end
