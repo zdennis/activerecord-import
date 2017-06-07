@@ -431,7 +431,7 @@ class ActiveRecord::Base
           column_names = self.column_names.dup
         end
 
-        if models.first.id.nil? && column_names.include?(primary_key) && columns_hash[primary_key].type == :uuid
+        if models.first.id.nil? && column_names.include?(primary_key) && [:integer, :uuid].include?(columns_hash[primary_key].type)
           column_names.delete(primary_key)
         end
 
