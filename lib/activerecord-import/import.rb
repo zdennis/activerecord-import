@@ -739,6 +739,23 @@ class ActiveRecord::Base
         my_values = arr.each_with_index.map do |val, j|
           column = columns[j]
 
+          # Rails 4.1 enums
+          # https://github.com/rails/rails/blob/877ea784e4cd0d539bdfbd15839ae3d28169b156/activerecord/lib/active_record/enum.rb
+          # enum status: [ :active, :archived ]
+          # model.active!
+          # model.status # => "active", not 0
+          # defined_enums will return Hash of enum columns with map.
+          # defined_enums = {"status"=>{"active"=>0, "archived"=>1}}
+
+          if defined? defined_enums
+            enums = defined_enums
+            enum_values = enums[column.name]
+            if ! enum_values.nil?
+              # conversion from enum const string to integer
+              val = enum_values[val]
+            end
+          end
+
           # be sure to query sequence_name *last*, only if cheaper tests fail, because it's costly
           if val.nil? && column.name == primary_key && !sequence_name.blank?
             connection_memo.next_value_for_sequence(sequence_name)
