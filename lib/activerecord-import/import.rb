@@ -446,9 +446,9 @@ class ActiveRecord::Base
 
         array_of_attributes = models.map do |model|
           column_names.map do |name|
-            is_stored_attr = stored_attrs.any? && stored_attrs.key?(name.to_sym)
-            is_serialized_attr = serialized_attrs.any? && serialized_attrs.key?(name)
-            if is_stored_attr || is_serialized_attr || default_values[name].is_a?(Hash)
+            if stored_attrs.key?(name.to_sym) ||
+               serialized_attrs.key?(name) ||
+               default_values.key?(name.to_s)
               model.read_attribute(name.to_s)
             else
               model.read_attribute_before_type_cast(name.to_s)
