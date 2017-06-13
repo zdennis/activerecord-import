@@ -1,3 +1,17 @@
+## Changes in 0.19.0
+
+### New Features
+
+* For PostgreSQL, add option to set WHERE condition in conflict_action. Thanks to
+  @Saidbek via \#423.
+
+### Fixes
+
+* Fix issue importing saved records with serialized fields. Thanks to
+  @Andreis13, @jkowens via \#425.
+* Fix issue importing records that have columns defined with default values
+  that are functions or expressions. Thanks to @Andreis13, @jkowens via \#428.
+
 ## Changes in 0.18.3
 
 ### Fixes
