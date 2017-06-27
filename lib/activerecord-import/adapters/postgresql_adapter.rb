@@ -5,9 +5,10 @@ module ActiveRecord::Import::PostgreSQLAdapter
   MIN_VERSION_FOR_UPSERT = 90_500
 
   def insert_many( sql, values, options = {}, *args ) # :nodoc:
-    primary_key = options[:primary_key]
     number_of_inserts = 1
+    returned_values = []
     ids = []
+    results = []
 
     base_sql, post_sql = if sql.is_a?( String )
       [sql, '']
@@ -17,11 +18,12 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
     sql2insert = base_sql + values.join( ',' ) + post_sql
 
-    if primary_key.blank? || options[:no_returning]
+    columns = returning_columns(options)
+    if columns.blank? || options[:no_returning]
       insert( sql2insert, *args )
     else
-      ids = if primary_key.is_a?( Array )
-        # Select composite primary keys
+      returned_values = if columns.size > 1
+        # Select composite columns
         select_rows( sql2insert, *args )
       else
         select_values( sql2insert, *args )
@@ -29,7 +31,34 @@ module ActiveRecord::Import::PostgreSQLAdapter
       query_cache.clear if query_cache_enabled
     end
 
-    [number_of_inserts, ids]
+    if options[:returning].blank?
+      ids = returned_values
+    elsif options[:primary_key].blank?
+      results = returned_values
+    else
+      # split primary key and returning columns
+      ids, results = split_ids_and_results(returned_values, columns, options)
+    end
+
+    ActiveRecord::Import::Result.new([], number_of_inserts, ids, results)
+  end
+
+  def split_ids_and_results(values, columns, options)
+    ids = []
+    results = []
+    id_indexes = Array(options[:primary_key]).map { |key| columns.index(key) }
+    returning_indexes = Array(options[:returning]).map { |key| columns.index(key) }
+
+    values.each do |value|
+      value_array = Array(value)
+      ids << id_indexes.map { |i| value_array[i] }
+      results << returning_indexes.map { |i| value_array[i] }
+    end
+
+    ids = ids.map(&:first) if id_indexes.size == 1
+    results = results.map(&:first) if returning_indexes.size == 1
+
+    [ids, results]
   end
 
   def next_value_for_sequence(sequence_name)
@@ -50,12 +79,19 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
     sql += super(table_name, options)
 
-    unless options[:primary_key].blank? || options[:no_returning]
-      primary_key = Array(options[:primary_key])
-      sql << " RETURNING \"#{primary_key.join('", "')}\""
+    columns = returning_columns(options)
+    unless columns.blank? || options[:no_returning]
+      sql << " RETURNING \"#{columns.join('", "')}\""
     end
 
     sql
+  end
+
+  def returning_columns(options)
+    columns = []
+    columns += Array(options[:primary_key]) if options[:primary_key].present?
+    columns |= Array(options[:returning]) if options[:returning].present?
+    columns
   end
 
   # Add a column to be updated on duplicate key update

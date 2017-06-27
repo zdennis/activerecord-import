@@ -3,7 +3,7 @@ require "ostruct"
 module ActiveRecord::Import::ConnectionAdapters; end
 
 module ActiveRecord::Import #:nodoc:
-  Result = Struct.new(:failed_instances, :num_inserts, :ids)
+  Result = Struct.new(:failed_instances, :num_inserts, :ids, :results)
 
   module ImportSupport #:nodoc:
     def supports_import? #:nodoc:
@@ -384,6 +384,7 @@ class ActiveRecord::Base
     # * failed_instances - an array of objects that fails validation and were not committed to the database. An empty array if no validation is performed.
     # * num_inserts - the number of insert statements it took to import the data
     # * ids - the primary keys of the imported ids if the adapter supports it, otherwise an empty array.
+    # * results - import results if the adapter supports it, otherwise an empty array.
     def import(*args)
       if args.first.is_a?( Array ) && args.first.first.is_a?(ActiveRecord::Base)
         options = {}
@@ -525,8 +526,7 @@ class ActiveRecord::Base
           import_with_validations( column_names, array_of_attributes, options )
         end
       else
-        (num_inserts, ids) = import_without_validations_or_callbacks( column_names, array_of_attributes, options )
-        ActiveRecord::Import::Result.new([], num_inserts, ids)
+        import_without_validations_or_callbacks( column_names, array_of_attributes, options )
       end
 
       if options[:synchronize]
@@ -580,12 +580,12 @@ class ActiveRecord::Base
 
       array_of_attributes.compact!
 
-      num_inserts, ids = if array_of_attributes.empty? || options[:all_or_none] && failed_instances.any?
-        [0, []]
+      result = if array_of_attributes.empty? || options[:all_or_none] && failed_instances.any?
+        ActiveRecord::Import::Result.new([], 0, [], [])
       else
         import_without_validations_or_callbacks( column_names, array_of_attributes, options )
       end
-      ActiveRecord::Import::Result.new(failed_instances, num_inserts, ids)
+      ActiveRecord::Import::Result.new(failed_instances, result.num_inserts, result.ids, result.results)
     end
 
     # Imports the passed in +column_names+ and +array_of_attributes+
@@ -627,6 +627,7 @@ class ActiveRecord::Base
 
       number_inserted = 0
       ids = []
+      results = []
       if supports_import?
         # generate the sql
         post_sql_statements = connection.post_sql_statements( quoted_table_name, options )
@@ -638,8 +639,9 @@ class ActiveRecord::Base
             batch_values,
             options,
             "#{self.class.name} Create Many Without Validations Or Callbacks" )
-          number_inserted += result[0]
-          ids += result[1]
+          number_inserted += result.num_inserts
+          ids += result.ids
+          results += result.results
         end
       else
         transaction(requires_new: true) do
@@ -649,7 +651,7 @@ class ActiveRecord::Base
           end
         end
       end
-      [number_inserted, ids]
+      ActiveRecord::Import::Result.new([], number_inserted, ids, results)
     end
 
     private

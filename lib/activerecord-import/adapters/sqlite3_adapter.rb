@@ -37,7 +37,7 @@ module ActiveRecord::Import::SQLite3Adapter
       end
     end
 
-    [number_of_inserts, []]
+    ActiveRecord::Import::Result.new([], number_of_inserts, [], [])
   end
 
   def pre_sql_statements( options)
