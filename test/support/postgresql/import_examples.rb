@@ -24,6 +24,30 @@ def should_support_postgresql_import_functionality
       end
     end
 
+    context "setting attributes and marking clean" do
+      let(:topic) { Build(:topics) }
+
+      setup { Topic.import([topic]) }
+
+      it "assigns ids" do
+        assert topic.id.present?
+      end
+
+      it "marks models as clean" do
+        assert !topic.changed?
+      end
+
+      it "marks models as persisted" do
+        assert !topic.new_record?
+        assert topic.persisted?
+      end
+
+      it "assigns timestamps" do
+        assert topic.created_at.present?
+        assert topic.updated_at.present?
+      end
+    end
+
     describe "with query cache enabled" do
       setup do
         unless ActiveRecord::Base.connection.query_cache_enabled
