@@ -657,14 +657,6 @@ class ActiveRecord::Base
     def set_attributes_and_mark_clean(models, import_result, timestamps)
       return if models.nil?
       models -= import_result.failed_instances
-      models.each do |model|
-        if model.respond_to?(:clear_changes_information) # Rails 4.0 and higher
-          model.clear_changes_information
-        else # Rails 3.2
-          model.instance_variable_get(:@changed_attributes).clear
-        end
-        model.instance_variable_set(:@new_record, false)
-      end
 
       # if ids were returned for all models we know all were updated
       if models.size == import_result.ids.size
@@ -676,6 +668,15 @@ class ActiveRecord::Base
             model.send(attr + "=", value)
           end
         end
+      end
+
+      models.each do |model|
+        if model.respond_to?(:clear_changes_information) # Rails 4.0 and higher
+          model.clear_changes_information
+        else # Rails 3.2
+          model.instance_variable_get(:@changed_attributes).clear
+        end
+        model.instance_variable_set(:@new_record, false)
       end
     end
 
