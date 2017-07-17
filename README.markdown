@@ -80,6 +80,7 @@ Zach Dennis (zach.dennis@gmail.com)
 * Henry Work
 * James Herdman
 * Marcus Crafter
+* Sai (@saizai)
 * Thibaud Guillaume-Gentil
 * Mark Van Holstyn
 * Victor Costan
