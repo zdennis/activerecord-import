@@ -8,6 +8,15 @@ describe ActiveRecord::Import::ValueSetsBytesParser do
     let(:base_sql) { "INSERT INTO atable (a,b,c)" }
     let(:values) { ["(1,2,3)", "(2,3,4)", "(3,4,5)"] }
 
+    context "when the max allowed bytes is 30 and the base SQL is 26 bytes" do
+      it "should raise ActiveRecord::Import::ValueSetTooLargeError" do
+        error = assert_raises ActiveRecord::Import::ValueSetTooLargeError do
+          parser.parse values, reserved_bytes: base_sql.size, max_bytes: 30
+        end
+        assert_match(/33 bytes exceeds the max allowed for an insert \[30\]/, error.message)
+      end
+    end
+
     context "when the max allowed bytes is 33 and the base SQL is 26 bytes" do
       it "should return 3 value sets when given 3 value sets of 7 bytes a piece" do
         value_sets = parser.parse values, reserved_bytes: base_sql.size, max_bytes: 33
