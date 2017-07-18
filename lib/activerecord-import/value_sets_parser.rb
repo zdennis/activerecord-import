@@ -1,4 +1,12 @@
 module ActiveRecord::Import
+  class ValueSetTooLargeError < StandardError
+    attr_reader :size
+    def initialize(msg = "Value set exceeds max size", size = 0)
+      @size = size
+      super(msg)
+    end
+  end
+
   class ValueSetsBytesParser
     attr_reader :reserved_bytes, :max_bytes, :values
 
@@ -18,6 +26,12 @@ module ActiveRecord::Import
       current_size = 0
       values.each_with_index do |val, i|
         comma_bytes = arr.size
+        insert_size = reserved_bytes + val.bytesize
+
+        if insert_size > max_bytes
+          raise ValueSetTooLargeError.new("#{insert_size} bytes exceeds the max allowed for an insert [#{@max_bytes}]", insert_size)
+        end
+
         bytes_thus_far = reserved_bytes + current_size + val.bytesize + comma_bytes
         if bytes_thus_far <= max_bytes
           current_size += val.bytesize
