@@ -1,3 +1,12 @@
+## Changes in 0.19.1
+
+### Fixes
+
+* Fix a regression where models weren't properly being marked clean. Thanks to @tjwp via \#434.
+* Raise ActiveRecord::Import::ValueSetTooLargeError when a record being inserted exceeds the
+  `max_allowed_packet` for MySQL. Thanks to @saizai, @jkowens via \#437.
+* Fix issue concatenating column names array with primary key. Thanks to @keeguon via \#440.
+
 ## Changes in 0.19.0
 
 ### New Features
