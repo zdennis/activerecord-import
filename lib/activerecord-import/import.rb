@@ -497,7 +497,7 @@ class ActiveRecord::Base
 
       if !symbolized_primary_key.to_set.subset?(symbolized_column_names.to_set) && connection.prefetch_primary_key? && sequence_name
         column_count = column_names.size
-        column_names.concat(primary_key).uniq!
+        column_names.concat(Array(primary_key)).uniq!
         columns_added = column_names.size - column_count
         new_fields = Array.new(columns_added)
         array_of_attributes.each { |a| a.concat(new_fields) }
