@@ -123,6 +123,37 @@ def should_support_postgresql_import_functionality
           assert_equal [[book_id, 'It']], result.results
         end
       end
+
+      context "setting model attributes" do
+        let(:code) { 'abc' }
+        let(:discount) { 0.10 }
+        let(:original_promotion) do
+          Promotion.new(code: code, discount: discount)
+        end
+        let(:updated_promotion) do
+          Promotion.new(code: code, description: 'ABC discount')
+        end
+        let(:returning_columns) { %w(discount) }
+
+        setup do
+          Promotion.import([original_promotion])
+          Promotion.import([updated_promotion],
+            on_duplicate_key_update: { conflict_target: %i(code), columns: %i(description) },
+            returning: returning_columns)
+        end
+
+        it "sets model attributes" do
+          assert_equal updated_promotion.discount, discount
+        end
+
+        context "returning multiple columns" do
+          let(:returning_columns) { %w(discount description) }
+
+          it "sets model attributes" do
+            assert_equal updated_promotion.discount, discount
+          end
+        end
+      end
     end
   end
 

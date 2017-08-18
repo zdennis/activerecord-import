@@ -537,7 +537,7 @@ class ActiveRecord::Base
 
       # if we have ids, then set the id on the models and mark the models as clean.
       if models && support_setting_primary_key_of_imported_objects?
-        set_attributes_and_mark_clean(models, return_obj, timestamps)
+        set_attributes_and_mark_clean(models, return_obj, timestamps, options)
 
         # if there are auto-save associations on the models we imported that are new, import them as well
         import_associations(models, options.dup) if options[:recursive]
@@ -656,7 +656,7 @@ class ActiveRecord::Base
 
     private
 
-    def set_attributes_and_mark_clean(models, import_result, timestamps)
+    def set_attributes_and_mark_clean(models, import_result, timestamps, options)
       return if models.nil?
       models -= import_result.failed_instances
 
@@ -668,6 +668,22 @@ class ActiveRecord::Base
 
           timestamps.each do |attr, value|
             model.send(attr + "=", value)
+          end
+        end
+      end
+
+      if models.size == import_result.results.size
+        columns = Array(options[:returning])
+        single_column = "#{columns.first}=" if columns.size == 1
+        import_result.results.each_with_index do |result, index|
+          model = models[index]
+
+          if single_column
+            model.send(single_column, result)
+          else
+            columns.each_with_index do |column, col_index|
+              model.send("#{column}=", result[col_index])
+            end
           end
         end
       end

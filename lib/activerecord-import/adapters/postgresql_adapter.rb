@@ -55,8 +55,8 @@ module ActiveRecord::Import::PostgreSQLAdapter
       results << returning_indexes.map { |i| value_array[i] }
     end
 
-    ids = ids.map(&:first) if id_indexes.size == 1
-    results = results.map(&:first) if returning_indexes.size == 1
+    ids.map!(&:first) if id_indexes.size == 1
+    results.map!(&:first) if returning_indexes.size == 1
 
     [ids, results]
   end
