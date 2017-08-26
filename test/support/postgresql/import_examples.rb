@@ -85,6 +85,76 @@ def should_support_postgresql_import_functionality
         assert_equal [], Book.import(books, no_returning: true).ids
       end
     end
+
+    describe "returning" do
+      let(:books) { [Book.new(author_name: "King", title: "It")] }
+      let(:result) { Book.import(books, returning: %w(author_name title)) }
+      let(:book_id) do
+        if RUBY_PLATFORM == 'java' || ENV['AR_VERSION'].to_i >= 5.0
+          books.first.id
+        else
+          books.first.id.to_s
+        end
+      end
+
+      it "creates records" do
+        assert_difference("Book.count", +1) { result }
+      end
+
+      it "returns ids" do
+        result
+        assert_equal [book_id], result.ids
+      end
+
+      it "returns specified columns" do
+        assert_equal [%w(King It)], result.results
+      end
+
+      context "when primary key and returning overlap" do
+        let(:result) { Book.import(books, returning: %w(id title)) }
+
+        setup { result }
+
+        it "returns ids" do
+          assert_equal [book_id], result.ids
+        end
+
+        it "returns specified columns" do
+          assert_equal [[book_id, 'It']], result.results
+        end
+      end
+
+      context "setting model attributes" do
+        let(:code) { 'abc' }
+        let(:discount) { 0.10 }
+        let(:original_promotion) do
+          Promotion.new(code: code, discount: discount)
+        end
+        let(:updated_promotion) do
+          Promotion.new(code: code, description: 'ABC discount')
+        end
+        let(:returning_columns) { %w(discount) }
+
+        setup do
+          Promotion.import([original_promotion])
+          Promotion.import([updated_promotion],
+            on_duplicate_key_update: { conflict_target: %i(code), columns: %i(description) },
+            returning: returning_columns)
+        end
+
+        it "sets model attributes" do
+          assert_equal updated_promotion.discount, discount
+        end
+
+        context "returning multiple columns" do
+          let(:returning_columns) { %w(discount description) }
+
+          it "sets model attributes" do
+            assert_equal updated_promotion.discount, discount
+          end
+        end
+      end
+    end
   end
 
   if ENV['AR_VERSION'].to_f >= 4.0
