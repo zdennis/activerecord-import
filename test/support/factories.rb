@@ -15,6 +15,7 @@ FactoryGirl.define do
   factory :topic do
     sequence(:title) { |n| "Title #{n}" }
     sequence(:author_name) { |n| "Author #{n}" }
+    sequence(:content) { |n| "Content #{n}" }
   end
 
   factory :widget do
