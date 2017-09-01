@@ -64,8 +64,8 @@ def should_support_mysql_import_functionality
       let(:columns) { %w(id author_name title) }
 
       setup do
-        topics << Topic.create!(title: "LDAP", author_name: "Big Bird")
-        topics << Topic.create!(title: "Rails Recipes", author_name: "Elmo")
+        topics << Topic.create!(title: "LDAP", author_name: "Big Bird", content: "Putting Directories to Work.")
+        topics << Topic.create!(title: "Rails Recipes", author_name: "Elmo", content: "A trusted collection of solutions.")
       end
 
       it "synchronizes passed in ActiveRecord model instances with the data just imported" do

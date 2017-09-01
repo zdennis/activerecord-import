@@ -121,12 +121,12 @@ describe "#import" do
   end
 
   context "with :validation option" do
-    let(:columns) { %w(title author_name) }
-    let(:valid_values) { [["LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
-    let(:valid_values_with_context) { [[1111, "Jerry Carter"], [2222, "Chad Fowler"]] }
-    let(:invalid_values) { [["The RSpec Book", ""], ["Agile+UX", ""]] }
-    let(:valid_models) { valid_values.map { |title, author_name| Topic.new(title: title, author_name: author_name) } }
-    let(:invalid_models) { invalid_values.map { |title, author_name| Topic.new(title: title, author_name: author_name) } }
+    let(:columns) { %w(title author_name content) }
+    let(:valid_values) { [["LDAP", "Jerry Carter", "Putting Directories to Work."], ["Rails Recipes", "Chad Fowler", "A trusted collection of solutions."]] }
+    let(:valid_values_with_context) { [[1111, "Jerry Carter", "1111"], [2222, "Chad Fowler", "2222"]] }
+    let(:invalid_values) { [["The RSpec Book", "", "Get the most out of BDD in Ruby."], ["Agile+UX", "", "All about Agile in UX."]] }
+    let(:valid_models) { valid_values.map { |title, author_name, content| Topic.new(title: title, author_name: author_name, content: content) } }
+    let(:invalid_models) { invalid_values.map { |title, author_name, content| Topic.new(title: title, author_name: author_name, content: content) } }
 
     context "with validation checks turned off" do
       it "should import valid data" do
