@@ -358,7 +358,7 @@ class ActiveRecord::Base
     # Below is an example:
     #
     #   BlogPost.import columns, values, on_duplicate_key_update: { conflict_target: [ :author_id ], condition: "blog_posts.title NOT LIKE '%sample%'", columns: [ :author_name ] }
-
+    #
     # ====== :columns
     #
     # The :columns attribute can be either an Array or a Hash.
