@@ -214,18 +214,18 @@ class ActiveRecord::Base
     #
     # == Options
     # * +validate+ - true|false, tells import whether or not to use
-    #    ActiveRecord validations. Validations are enforced by default.
+    #   ActiveRecord validations. Validations are enforced by default.
     # * +ignore+ - true|false, an alias for on_duplicate_key_ignore.
     # * +on_duplicate_key_ignore+ - true|false, tells import to discard
-    #    records that contain duplicate keys. For Postgres 9.5+ it adds
-    #    ON CONFLICT DO NOTHING, for MySQL it uses INSERT IGNORE, and for
-    #    SQLite it uses INSERT OR IGNORE. Cannot be enabled on a
-    #    recursive import. For database adapters that normally support
-    #    setting primary keys on imported objects, this option prevents
-    #    that from occurring.
+    #   records that contain duplicate keys. For Postgres 9.5+ it adds
+    #   ON CONFLICT DO NOTHING, for MySQL it uses INSERT IGNORE, and for
+    #   SQLite it uses INSERT OR IGNORE. Cannot be enabled on a
+    #   recursive import. For database adapters that normally support
+    #   setting primary keys on imported objects, this option prevents
+    #   that from occurring.
     # * +on_duplicate_key_update+ - an Array or Hash, tells import to
-    #    use MySQL's ON DUPLICATE KEY UPDATE or Postgres 9.5+ ON CONFLICT
-    #    DO UPDATE ability. See On Duplicate Key Update below.
+    #   use MySQL's ON DUPLICATE KEY UPDATE or Postgres 9.5+ ON CONFLICT
+    #   DO UPDATE ability. See On Duplicate Key Update below.
     # * +synchronize+ - an array of ActiveRecord instances for the model
     #   that you are currently importing data into. This synchronizes
     #   existing model instances in memory with updates from the import.
@@ -323,7 +323,7 @@ class ActiveRecord::Base
     # conflicting constraint to be explicitly specified. Using this option
     # allows you to specify a constraint other than the primary key.
     #
-    # ====== :conflict_target
+    # ===== :conflict_target
     #
     # The :conflict_target attribute specifies the columns that make up the
     # conflicting unique constraint and can be a single column or an array of
@@ -333,7 +333,7 @@ class ActiveRecord::Base
     #
     #   BlogPost.import columns, values, on_duplicate_key_update: { conflict_target: [ :author_id, :slug ], columns: [ :date_modified ] }
     #
-    # ====== :index_predicate
+    # ===== :index_predicate
     #
     # The :index_predicate attribute optionally specifies a WHERE condition
     # on :conflict_target, which is required for matching against partial
@@ -342,7 +342,7 @@ class ActiveRecord::Base
     #
     #   BlogPost.import columns, values, on_duplicate_key_update: { conflict_target: [ :author_id, :slug ], index_predicate: 'status <> 0', columns: [ :date_modified ] }
     #
-    # ====== :constraint_name
+    # ===== :constraint_name
     #
     # The :constraint_name attribute explicitly identifies the conflicting
     # unique index by name. Postgres documentation discourages using this method
@@ -350,7 +350,7 @@ class ActiveRecord::Base
     #
     #   BlogPost.import columns, values, on_duplicate_key_update: { constraint_name: :blog_posts_pkey, columns: [ :date_modified ] }
     #
-    # ====== :condition
+    # ===== :condition
     #
     # The :condition attribute optionally specifies a WHERE condition
     # on :conflict_action. Only rows for which this expression returns true will be updated.
@@ -359,11 +359,11 @@ class ActiveRecord::Base
     #
     #   BlogPost.import columns, values, on_duplicate_key_update: { conflict_target: [ :author_id ], condition: "blog_posts.title NOT LIKE '%sample%'", columns: [ :author_name ] }
     #
-    # ====== :columns
+    # ===== :columns
     #
     # The :columns attribute can be either an Array or a Hash.
     #
-    # ======== Using an Array
+    # ===== Using an Array
     #
     # The :columns attribute can be an array of column names. The column names
     # are the only fields that are updated if a duplicate record is found.
@@ -371,7 +371,7 @@ class ActiveRecord::Base
     #
     #   BlogPost.import columns, values, on_duplicate_key_update: { conflict_target: :slug, columns: [ :date_modified, :content, :author ] }
     #
-    # ========  Using a Hash
+    # =====  Using a Hash
     #
     # The :columns option can be a hash of column names to model attribute name
     # mappings. This gives you finer grained control over what fields are updated
