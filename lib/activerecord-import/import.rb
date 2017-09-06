@@ -772,7 +772,9 @@ class ActiveRecord::Base
               if serialized_attributes.include?(column.name)
                 val = serialized_attributes[column.name].dump(val)
               end
-              connection_memo.quote(column.type_cast(val), column)
+              # Fixes #443 to support binary (i.e. bytea) columns on PG
+              val = column.type_cast(val) unless column.type.to_sym == :binary
+              connection_memo.quote(val, column)
             end
           end
         end
