@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 gemspec
 
 group :development, :test do
-  gem 'rubocop', '~> 0.49.0'
+  gem 'rubocop', '~> 0.40.0'
   gem 'rake'
 end
 

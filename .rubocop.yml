@@ -1,7 +1,7 @@
 inherit_from: .rubocop_todo.yml
 
 Lint/EndAlignment:
-  EnforcedStyleAlignWith: variable
+  AlignWith: variable
 
 Metrics/AbcSize:
   Enabled: false

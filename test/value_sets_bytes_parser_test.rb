@@ -63,7 +63,8 @@ describe ActiveRecord::Import::ValueSetsBytesParser do
       values = [
         "('1','2','3')",
         "('4','5','6')",
-        "('7','8','9')"]
+        "('7','8','9')"
+      ]
 
       base_sql_size_in_bytes = 15
       max_bytes = 30
@@ -88,7 +89,8 @@ describe ActiveRecord::Import::ValueSetsBytesParser do
         # each accented e should be 2 bytes, so each entry is 6 bytes instead of 5
         values = [
           "('é')",
-          "('é')"]
+          "('é')"
+        ]
 
         base_sql_size_in_bytes = 15
         max_bytes = 26

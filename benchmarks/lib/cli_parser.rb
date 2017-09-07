@@ -42,7 +42,8 @@ module BenchmarkOptionParser
       table_types: {},
       delete_on_finish: true,
       number_of_objects: [],
-      outputs: [] )
+      outputs: []
+    )
 
     opt_parser = OptionParser.new do |opts|
       opts.banner = BANNER
