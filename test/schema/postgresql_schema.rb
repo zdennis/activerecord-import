@@ -36,6 +36,7 @@ ActiveRecord::Schema.define do
     t.column :alarm_type, :integer, null: false
     t.column :status, :integer, null: false
     t.column :metadata, :text
+    t.column :secret_key, :binary
     t.datetime :created_at
     t.datetime :updated_at
   end
