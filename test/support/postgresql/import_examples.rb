@@ -231,17 +231,6 @@ def should_support_postgresql_import_functionality
   end
 end
 
-describe "with binary field" do
-  let(:binary_value) { "\xE0'c\xB2\xB0\xB3Bh\\\xC2M\xB1m\\I\xC4r".force_encoding('ASCII-8BIT') }
-  it "imports the correct values for binary fields" do
-    alarms = [Alarm.new(device_id: 1, alarm_type: 1, status: 1, secret_key: binary_value)]
-    assert_difference "Alarm.count", +1 do
-      Alarm.import alarms
-    end
-    assert_equal(binary_value, Alarm.first.secret_key)
-  end
-end
-
 def should_support_postgresql_upsert_functionality
   should_support_basic_on_duplicate_key_update
   should_support_on_duplicate_key_ignore
