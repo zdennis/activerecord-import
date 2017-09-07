@@ -638,7 +638,7 @@ class ActiveRecord::Base
           result = connection.insert_many( [insert_sql, post_sql_statements].flatten,
             batch_values,
             options,
-            "#{self.class.name} Create Many Without Validations Or Callbacks" )
+            "#{model_name} Create Many Without Validations Or Callbacks" )
           number_inserted += result.num_inserts
           ids += result.ids
           results += result.results
