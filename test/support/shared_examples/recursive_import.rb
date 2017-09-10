@@ -102,6 +102,19 @@ def should_support_recursive_import
       end
     end
 
+    it "imports an imported belongs_to association id" do
+      books = new_topics[0].books.to_a
+      Topic.import new_topics, validate: false
+
+      assert_difference "Book.count", books.size do
+        Book.import books, validate: false
+      end
+
+      books.each do |book|
+        assert_not_nil book.topic_id
+      end
+    end
+
     unless ENV["SKIP_COMPOSITE_PK"]
       describe "with composite primary keys" do
         it "should import models and set id" do
