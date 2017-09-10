@@ -570,8 +570,8 @@ class ActiveRecord::Base
 
         # keep track of the instance and the position it is currently at. if this fails
         # validation we'll use the index to remove it from the array_of_attributes
-        model = new
         arr.each_with_index do |hsh, i|
+          model = new
           hsh.each_pair { |k, v| model[k] = v }
           next if validator.valid_model? model
           raise(ActiveRecord::RecordInvalid, model) if options[:raise_error]
