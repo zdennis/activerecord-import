@@ -446,6 +446,10 @@ class ActiveRecord::Base
         end
 
         array_of_attributes = models.map do |model|
+          if support_setting_primary_key_of_imported_objects?
+            load_association_ids(model)
+          end
+
           column_names.map do |name|
             if stored_attrs.key?(name.to_sym) ||
                serialized_attrs.key?(name) ||
@@ -695,6 +699,18 @@ class ActiveRecord::Base
           model.instance_variable_get(:@changed_attributes).clear
         end
         model.instance_variable_set(:@new_record, false)
+      end
+    end
+
+    # Sync belongs_to association ids with foreign key field
+    def load_association_ids(model)
+      association_reflections = model.class.reflect_on_all_associations(:belongs_to)
+      association_reflections.each do |association_reflection|
+        association = model.association(association_reflection.name)
+        association = association.target
+        if association && association.id
+          model.public_send("#{association_reflection.foreign_key}=", association.id)
+        end
       end
     end
 
