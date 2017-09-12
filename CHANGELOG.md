@@ -1,3 +1,18 @@
+## Changes in 0.20.0
+
+### New Features
+
+* Allow returning columns to be specified for PostgreSQL. Thanks to
+  @tjwp via \#433.
+
+### Fixes
+
+* Fixes an issue when bypassing uniqueness validators. Thanks to @vmaxv via \#444.
+* For AR < 4.2, prevent type casting for binary columns on Postgresql. Thanks to @mwalsher via \#446.
+* Fix issue logging class name on import. Thanks to @sophylee, @jkowens via \#447.
+* Copy belongs_to association id to foreign key column before importing. Thanks to @jkowens via \#448.
+* Reset model instance on validate. Thanks to @vmaxv via \#449.
+
 ## Changes in 0.19.1
 
 ### Fixes
