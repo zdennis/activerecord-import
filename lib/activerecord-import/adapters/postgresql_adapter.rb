@@ -177,7 +177,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
     if constraint_name.present?
       "ON CONSTRAINT #{constraint_name} "
     elsif conflict_target.present?
-      '(' << Array( conflict_target ).reject( &:empty? ).join( ', ' ) << ') '.tap do |sql|
+      '(' << Array( conflict_target ).reject( &:blank? ).join( ', ' ) << ') '.tap do |sql|
         sql << "WHERE #{index_predicate} " if index_predicate
       end
     end
