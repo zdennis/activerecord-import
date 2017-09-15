@@ -415,8 +415,13 @@ class ActiveRecord::Base
       options[:primary_key] = primary_key
 
       # Don't modify incoming arguments
-      if options[:on_duplicate_key_update] && options[:on_duplicate_key_update].duplicable?
-        options[:on_duplicate_key_update] = options[:on_duplicate_key_update].dup
+      on_duplicate_key_update = options[:on_duplicate_key_update]
+      if on_duplicate_key_update && on_duplicate_key_update.duplicable?
+        options[:on_duplicate_key_update] = if on_duplicate_key_update.is_a?(Hash)
+          on_duplicate_key_update.each { |k, v| on_duplicate_key_update[k] = v.dup if v.duplicable? }
+        else
+          on_duplicate_key_update.dup
+        end
       end
 
       is_validating = options[:validate]
