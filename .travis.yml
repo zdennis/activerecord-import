@@ -17,7 +17,7 @@ env:
 
 matrix:
   include:
-    - rvm: jruby-9.1.7.27
+    - rvm: jruby-9.1.7.22
       env: AR_VERSION=4.2
       before_install:
         - gem update --system
