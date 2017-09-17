@@ -309,6 +309,13 @@ def should_support_postgresql_upsert_functionality
             @topic = Topic.find 99
           end
 
+          it "should not modify the passed in :on_duplicate_key_update columns array" do
+            assert_nothing_raised do
+              columns = %w(title author_name).freeze
+              Topic.import columns, [%w(foo, bar)], on_duplicate_key_update: { columns: columns }
+            end
+          end
+
           context "using string hash map" do
             let(:update_columns) { { "title" => "title", "author_email_address" => "author_email_address", "parent_id" => "parent_id" } }
             should_support_on_duplicate_key_update

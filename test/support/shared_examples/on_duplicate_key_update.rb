@@ -7,7 +7,7 @@ def should_support_basic_on_duplicate_key_update
 
     context "with :on_duplicate_key_update" do
       describe "argument safety" do
-        it "should not modify the passed in :on_duplicate_key_update columns array" do
+        it "should not modify the passed in :on_duplicate_key_update array" do
           assert_nothing_raised do
             columns = %w(title author_name).freeze
             Topic.import columns, [%w(foo, bar)], on_duplicate_key_update: columns
