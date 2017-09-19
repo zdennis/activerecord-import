@@ -1,3 +1,9 @@
+## Changes in 0.20.1
+
+### Fixes
+
+* Prevent :on_duplicate_key_update args from being modified. Thanks to @joshuamcginnis, @jkowens via \#451.
+
 ## Changes in 0.20.0
 
 ### New Features
