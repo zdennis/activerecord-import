@@ -30,4 +30,12 @@ describe ".synchronize" do
     assert_equal false, topics[1].changed?, "the second record was dirty"
     assert_equal false, topics[2].changed?, "the third record was dirty"
   end
+
+  it "ignores default scope" do
+    # update records outside of ActiveRecord knowing about it
+    Topic.connection.execute( "UPDATE #{Topic.table_name} SET approved='0' WHERE id=#{topics[0].id}", "Updating record 1 without ActiveRecord" )
+
+    Topic.synchronize topics
+    assert_equal false, topics[0].approved
+  end
 end

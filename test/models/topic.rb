@@ -13,6 +13,8 @@ class Topic < ActiveRecord::Base
 
   composed_of :description, mapping: [%w(title title), %w(author_name author_name)], allow_nil: true, class_name: "TopicDescription"
 
+  default_scope { where(approved: true) }
+
   private
 
   def word_count
