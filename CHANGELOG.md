@@ -1,3 +1,9 @@
+## Changes in 0.20.2
+
+### Fixes
+
+* Unscope model when synchronizing with database. Thanks to @indigoviolet via \#455.
+
 ## Changes in 0.20.1
 
 ### Fixes
