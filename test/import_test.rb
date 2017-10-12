@@ -86,6 +86,54 @@ describe "#import" do
         assert_nil t.author_email_address
       end
     end
+
+    context "with extra keys" do
+      let(:values) do
+        [
+          { title: "LDAP", author_name: "Jerry Carter" },
+          { title: "Rails Recipes", author_name: "Chad Fowler", author_email_address: "cfowler@test.com" } # author_email_address is unknown
+        ]
+      end
+
+      it "should fail when column names are not specified" do
+        err = assert_raises ArgumentError do
+          Topic.import values, validate: false
+        end
+
+        assert err.message.include? 'Extra keys: [:author_email_address]'
+      end
+
+      it "should succeed when column names are specified" do
+        assert_difference "Topic.count", +2 do
+          Topic.import columns, values, validate: false
+        end
+      end
+    end
+
+    context "with missing keys" do
+      let(:values) do
+        [
+          { title: "LDAP", author_name: "Jerry Carter" },
+          { title: "Rails Recipes" } # author_name is missing
+        ]
+      end
+
+      it "should fail when column names are not specified" do
+        err = assert_raises ArgumentError do
+          Topic.import values, validate: false
+        end
+
+        assert err.message.include? 'Missing keys: [:author_name]'
+      end
+
+      it "should fail on missing hash key from specified column names" do
+        err = assert_raises ArgumentError do
+          Topic.import %i(author_name), values, validate: false
+        end
+
+        assert err.message.include? 'Missing keys: [:author_name]'
+      end
+    end
   end
 
   unless ENV["SKIP_COMPOSITE_PK"]

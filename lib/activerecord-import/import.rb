@@ -247,6 +247,9 @@ class ActiveRecord::Base
     #  BlogPost.import posts
     #
     #  # Example using array_of_hash_objects
+    #  # NOTE: column_names will be determined by using the keys of the first hash in the array. If later hashes in the
+    #  # array have different keys an exception will be raised. If you have hashes to import with different sets of keys
+    #  # we recommend grouping these into batches before importing.
     #  values = [ {author_name: 'zdennis', title: 'test post'} ], [ {author_name: 'jdoe', title: 'another test post'} ] ]
     #  BlogPost.import values
     #
@@ -470,12 +473,18 @@ class ActiveRecord::Base
         if args.length == 2
           array_of_hashes = args.last
           column_names = args.first.dup
+          allow_extra_hash_keys = true
         else
           array_of_hashes = args.first
           column_names = array_of_hashes.first.keys
+          allow_extra_hash_keys = false
         end
 
         array_of_attributes = array_of_hashes.map do |h|
+          error_message = validate_hash_import(h, column_names, allow_extra_hash_keys)
+
+          raise ArgumentError, error_message if error_message
+
           column_names.map do |key|
             h[key]
           end
@@ -845,6 +854,43 @@ class ActiveRecord::Base
     # Returns an Array of Hashes for the passed in +column_names+ and +array_of_attributes+.
     def validations_array_for_column_names_and_attributes( column_names, array_of_attributes ) # :nodoc:
       array_of_attributes.map { |values| Hash[column_names.zip(values)] }
+    end
+
+    # Checks that the imported hash has the required_keys, optionally also checks that the hash has
+    # no keys beyond those required when `allow_extra_keys` is false.
+    # returns `nil` if validation passes, or an error message if it fails
+    def validate_hash_import(hash, required_keys, allow_extra_keys) # :nodoc:
+      extra_keys = allow_extra_keys ? [] : hash.keys - required_keys
+      missing_keys = required_keys - hash.keys
+
+      return nil if extra_keys.empty? && missing_keys.empty?
+
+      if allow_extra_keys
+        <<-EOS
+Hash key mis-match.
+
+When importing an array of hashes with provided columns_names, each hash must contain keys for all column_names.
+
+Required keys: #{column_names}
+Missing keys: #{missing_keys}
+
+Hash: #{hash}
+        EOS
+      else
+        <<-EOS
+Hash key mis-match.
+
+When importing an array of hashes, all hashes must have the same keys.
+If you have records that are missing some values, we recommend you either set default values
+for the missing keys or group these records into batches by key set before importing.
+
+Required keys: #{column_names}
+Extra keys: #{extra_keys}
+Missing keys: #{missing_keys}
+
+Hash: #{hash}
+        EOS
+      end
     end
   end
 end
