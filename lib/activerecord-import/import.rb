@@ -713,8 +713,9 @@ class ActiveRecord::Base
       association_reflections.each do |association_reflection|
         association = model.association(association_reflection.name)
         association = association.target
-        if association && association.id
-          model.public_send("#{association_reflection.foreign_key}=", association.id)
+        if association
+          association_primary_key = association_reflection.association_primary_key
+          model.public_send("#{association_reflection.foreign_key}=", association.send(association_primary_key))
         end
       end
     end
