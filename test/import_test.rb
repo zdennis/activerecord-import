@@ -760,5 +760,19 @@ describe "#import" do
         end
       end
     end
+
+    context "with objects that respond to .to_sql as values" do
+      let(:columns) { %w(title author_name) }
+      let(:valid_values) { [["LDAP", Book.select("'Jerry Carter'").limit(1)], ["Rails Recipes", Book.select("'Chad Fowler'").limit(1)]] }
+
+      it "should import data" do
+        assert_difference "Topic.count", +2 do
+          Topic.import! columns, valid_values
+          topics = Topic.all
+          assert_equal "Jerry Carter", topics.first.author_name
+          assert_equal "Chad Fowler", topics.last.author_name
+        end
+      end
+    end
   end
 end
