@@ -545,6 +545,17 @@ describe "#import" do
     end
   end
 
+  context "importing model with polymorphic belongs_to" do
+    it "works without error" do
+      book     = FactoryGirl.create :book
+      discount = Discount.new(discountable: book)
+
+      Discount.import([discount])
+
+      assert_equal 1, Discount.count
+    end
+  end
+
   context 'When importing models with Enum fields' do
     it 'should be able to import enum fields' do
       Book.delete_all if Book.count > 0
