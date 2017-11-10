@@ -711,6 +711,7 @@ class ActiveRecord::Base
     def load_association_ids(model)
       association_reflections = model.class.reflect_on_all_associations(:belongs_to)
       association_reflections.each do |association_reflection|
+        next if association_reflection.options[:polymorphic]
         association = model.association(association_reflection.name)
         association = association.target
         if association
