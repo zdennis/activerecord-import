@@ -613,7 +613,7 @@ class ActiveRecord::Base
           next if column_names.include?(name_as_sym)
 
           is_sti = (name_as_sym == inheritance_column.to_sym && self < base_class)
-          value = value.first if is_sti
+          value = Array(value).first if is_sti
 
           column_names << name_as_sym
           array_of_attributes.each { |attrs| attrs << value }
