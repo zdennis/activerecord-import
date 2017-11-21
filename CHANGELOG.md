@@ -1,3 +1,21 @@
+## Changes in 0.21.0
+
+### New Features
+
+* Allow SQL subqueries (objects that respond to .to_sql) to be passed as values. Thanks
+  to @jalada, @jkowens via \#471
+* Raise an ArgumentError when importing an array of hashes if any of the
+  hash objects have different keys. Thanks to @mbell697 via \#465.
+
+### Fixes
+
+* Fix issue loading incorrect foreign key value when syncing belongs_to
+  associations with custom foreign key columns. Thanks to @marcgreenstock, @jkowens via \#470.
+* Fix issue importing models with polymorphic belongs_to associations.
+  Thanks to @zorab47, @jkowens via \#476.
+* Fix issue importing STI models with ActiveRecord 4.0. Thanks to
+  @kazuki-st, @jkowens via \#478.
+
 ## Changes in 0.20.2
 
 ### Fixes
