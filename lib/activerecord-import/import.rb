@@ -170,14 +170,14 @@ class ActiveRecord::Base
     # supports on duplicate key update functionality, otherwise
     # returns false.
     def supports_on_duplicate_key_update?
-      connection.supports_on_duplicate_key_update?
+      connection.respond_to?(:supports_on_duplicate_key_update?) && connection.supports_on_duplicate_key_update?
     end
 
     # returns true if the current database connection adapter
     # supports setting the primary key of bulk imported models, otherwise
     # returns false
-    def support_setting_primary_key_of_imported_objects?
-      connection.respond_to?(:support_setting_primary_key_of_imported_objects?) && connection.support_setting_primary_key_of_imported_objects?
+    def supports_setting_primary_key_of_imported_objects?
+      connection.respond_to?(:supports_setting_primary_key_of_imported_objects?) && connection.supports_setting_primary_key_of_imported_objects?
     end
 
     # Imports a collection of values to the database.
@@ -463,7 +463,7 @@ class ActiveRecord::Base
         end
 
         array_of_attributes = models.map do |model|
-          if support_setting_primary_key_of_imported_objects?
+          if supports_setting_primary_key_of_imported_objects?
             load_association_ids(model)
           end
 
@@ -563,7 +563,7 @@ class ActiveRecord::Base
       return_obj.num_inserts = 0 if return_obj.num_inserts.nil?
 
       # if we have ids, then set the id on the models and mark the models as clean.
-      if models && support_setting_primary_key_of_imported_objects?
+      if models && supports_setting_primary_key_of_imported_objects?
         set_attributes_and_mark_clean(models, return_obj, timestamps, options)
 
         # if there are auto-save associations on the models we imported that are new, import them as well

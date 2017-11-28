@@ -197,7 +197,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
     current_version >= MIN_VERSION_FOR_UPSERT
   end
 
-  def support_setting_primary_key_of_imported_objects?
+  def supports_setting_primary_key_of_imported_objects?
     true
   end
 end
