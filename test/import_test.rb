@@ -248,7 +248,7 @@ describe "#import" do
       end
 
       it "should set ids in valid models if adapter supports setting primary key of imported objects" do
-        if ActiveRecord::Base.support_setting_primary_key_of_imported_objects?
+        if ActiveRecord::Base.supports_setting_primary_key_of_imported_objects?
           Topic.import (invalid_models + valid_models), validate: true
           assert_nil invalid_models[0].id
           assert_nil invalid_models[1].id
@@ -258,7 +258,7 @@ describe "#import" do
       end
 
       it "should set ActiveRecord timestamps in valid models if adapter supports setting primary key of imported objects" do
-        if ActiveRecord::Base.support_setting_primary_key_of_imported_objects?
+        if ActiveRecord::Base.supports_setting_primary_key_of_imported_objects?
           Timecop.freeze(Time.at(0)) do
             Topic.import (invalid_models + valid_models), validate: true
           end
@@ -368,7 +368,7 @@ describe "#import" do
 
       it "doesn't reload any data (doesn't work)" do
         Topic.import new_topics, synchronize: new_topics
-        if Topic.support_setting_primary_key_of_imported_objects?
+        if Topic.supports_setting_primary_key_of_imported_objects?
           assert new_topics.all?(&:persisted?), "Records should have been reloaded"
         else
           assert new_topics.all?(&:new_record?), "No record should have been reloaded"
