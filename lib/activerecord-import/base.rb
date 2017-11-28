@@ -18,12 +18,9 @@ module ActiveRecord::Import
 
   # Loads the import functionality for a specific database adapter
   def self.require_adapter(adapter)
-    require File.join(ADAPTER_PATH, "/abstract_adapter")
-    begin
-      require File.join(ADAPTER_PATH, "/#{base_adapter(adapter)}_adapter")
-    rescue LoadError
-      # fallback
-    end
+    require File.join(ADAPTER_PATH, "/#{base_adapter(adapter)}_adapter")
+  rescue LoadError
+    # fallback
   end
 
   # Loads the import functionality for the passed in ActiveRecord connection

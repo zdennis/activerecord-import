@@ -151,6 +151,15 @@ end
 
 class ActiveRecord::Base
   class << self
+    def establish_connection_with_activerecord_import(*args)
+      conn = establish_connection_without_activerecord_import(*args)
+      ActiveRecord::Import.load_from_connection_pool connection_pool
+      conn
+    end
+
+    alias establish_connection_without_activerecord_import establish_connection
+    alias establish_connection establish_connection_with_activerecord_import
+
     # Returns true if the current database connection adapter
     # supports import functionality, otherwise returns false.
     def supports_import?(*args)
