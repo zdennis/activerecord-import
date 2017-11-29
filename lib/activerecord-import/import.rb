@@ -103,7 +103,7 @@ class ActiveRecord::Associations::CollectionAssociation
     if args.last.is_a?( Array ) && args.last.first.is_a?(ActiveRecord::Base)
       if args.length == 2
         models = args.last
-        column_names = args.first
+        column_names = args.first.dup
       else
         models = args.first
         column_names = symbolized_column_names
@@ -120,6 +120,45 @@ class ActiveRecord::Associations::CollectionAssociation
 
       return model_klass.import column_names, models, options
 
+    # supports array of hash objects
+    elsif args.last.is_a?( Array ) && args.last.first.is_a?(Hash)
+      if args.length == 2
+        array_of_hashes = args.last
+        column_names = args.first.dup
+        allow_extra_hash_keys = true
+      else
+        array_of_hashes = args.first
+        column_names = array_of_hashes.first.keys
+        allow_extra_hash_keys = false
+      end
+
+      symbolized_column_names = column_names.map(&:to_sym)
+      unless symbolized_column_names.include?(symbolized_foreign_key)
+        column_names << symbolized_foreign_key
+      end
+
+      if reflection.type && !symbolized_column_names.include?(reflection.type.to_sym)
+        column_names << reflection.type.to_sym
+      end
+
+      array_of_attributes = array_of_hashes.map do |h|
+        error_message = model_klass.send(:validate_hash_import, h, symbolized_column_names, allow_extra_hash_keys)
+
+        raise ArgumentError, error_message if error_message
+
+        column_names.map do |key|
+          if key == symbolized_foreign_key
+            owner_primary_key_value
+          elsif reflection.type && key == reflection.type.to_sym
+            owner.class.name
+          else
+            h[key]
+          end
+        end
+      end
+
+      return model_klass.import column_names, array_of_attributes, options
+
     # supports empty array
     elsif args.last.is_a?( Array ) && args.last.empty?
       return ActiveRecord::Import::Result.new([], 0, [])
@@ -127,7 +166,12 @@ class ActiveRecord::Associations::CollectionAssociation
     # supports 2-element array and array
     elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
       column_names, array_of_attributes = args
-      symbolized_column_names = column_names.map(&:to_s)
+
+      # dup the passed args so we don't modify unintentionally
+      column_names = column_names.dup
+      array_of_attributes = array_of_attributes.map(&:dup)
+
+      symbolized_column_names = column_names.map(&:to_sym)
 
       if symbolized_column_names.include?(symbolized_foreign_key)
         index = symbolized_column_names.index(symbolized_foreign_key)
@@ -138,8 +182,14 @@ class ActiveRecord::Associations::CollectionAssociation
       end
 
       if reflection.type
-        column_names << reflection.type
-        array_of_attributes.each { |attrs| attrs << owner.class.name }
+        symbolized_type = reflection.type.to_sym
+        if symbolized_column_names.include?(symbolized_type)
+          index = symbolized_column_names.index(symbolized_type)
+          array_of_attributes.each { |attrs| attrs[index] = owner.class.name }
+        else
+          column_names << symbolized_type
+          array_of_attributes.each { |attrs| attrs << owner.class.name }
+        end
       end
 
       return model_klass.import column_names, array_of_attributes, options
@@ -880,7 +930,7 @@ class ActiveRecord::Base
 
       if allow_extra_keys
         <<-EOS
-Hash key mis-match.
+Hash key mismatch.
 
 When importing an array of hashes with provided columns_names, each hash must contain keys for all column_names.
 
@@ -891,7 +941,7 @@ Hash: #{hash}
         EOS
       else
         <<-EOS
-Hash key mis-match.
+Hash key mismatch.
 
 When importing an array of hashes, all hashes must have the same keys.
 If you have records that are missing some values, we recommend you either set default values

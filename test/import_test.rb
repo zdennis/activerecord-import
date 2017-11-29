@@ -589,6 +589,12 @@ describe "#import" do
 
           assert_equal [val1, val2], scope.map(&column).sort
         end
+
+        it "works importing array of hashes" do
+          scope.import [{ column => val1 }, { column => val2 }]
+
+          assert_equal [val1, val2], scope.map(&column).sort
+        end
       end
     end
   end
