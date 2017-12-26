@@ -82,5 +82,31 @@ def should_support_mysql_import_functionality
         assert_equal "Chad Fowler", topics.last.author_name, "wrong author!"
       end
     end
+
+    describe "ids" do
+      let(:animals) { [Animal.new(name: "dog", size: 50), Animal.new(name: "cat", size: 30)] }
+      let(:result) { Animal.import(animals, on_duplicate_key_update: %i(size)) }
+
+      context "when inserting new records" do
+        it "returns all ids" do
+          result
+          assert_equal animals.count, result.ids.count
+          assert_equal Animal.all[0].id, result.ids[0]
+          assert_equal Animal.all[1].id, result.ids[1]
+        end
+      end
+
+      context "when inserting existing records" do
+        setup do
+          Animal.create!(name: "dog", size: 40)
+        end
+
+        it "returns only inserted ids" do
+          result
+          assert_equal (animals.count - 1), result.ids.count
+          assert_equal Animal.last.id, result.ids[0]
+        end
+      end
+    end
   end
 end
