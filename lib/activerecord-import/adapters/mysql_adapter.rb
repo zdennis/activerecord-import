@@ -10,6 +10,7 @@ module ActiveRecord::Import::MysqlAdapter
   def insert_many( sql, values, options = {}, *args ) # :nodoc:
     # the number of inserts default
     number_of_inserts = 0
+    ids = []
 
     base_sql, post_sql = if sql.is_a?( String )
       [sql, '']
@@ -35,6 +36,7 @@ module ActiveRecord::Import::MysqlAdapter
       number_of_inserts += 1
       sql2insert = base_sql + values.join( ',' ) + post_sql
       insert( sql2insert, *args )
+      ids += inserted_ids(values.count)
     else
       value_sets = ::ActiveRecord::Import::ValueSetsBytesParser.parse(values,
         reserved_bytes: sql_size,
@@ -45,11 +47,12 @@ module ActiveRecord::Import::MysqlAdapter
           number_of_inserts += 1
           sql2insert = base_sql + value_set.join( ',' ) + post_sql
           insert( sql2insert, *args )
+          ids += inserted_ids(value_set.count)
         end
       end
     end
 
-    ActiveRecord::Import::Result.new([], number_of_inserts, [], [])
+    ActiveRecord::Import::Result.new([], number_of_inserts, ids, [])
   end
 
   # Returns the maximum number of bytes that the server will allow
@@ -61,6 +64,18 @@ module ActiveRecord::Import::MysqlAdapter
       val = result.respond_to?(:fetch_row) ? result.fetch_row[1] : result.first[1]
       val.to_i
     end
+  end
+
+  # Returns an array of inserted ids.
+  # This works fine with innodb_autoinc_lock_mode = 0, 1, but not with 2.
+  # See https://dev.mysql.com/doc/refman/5.7/en/innodb-auto-increment-handling.html
+  def inserted_ids(values_count) # :nodoc:
+    result = execute( "SELECT LAST_INSERT_ID(), ROW_COUNT();" )
+    row = result.respond_to?(:fetch_row) ? result.fetch_row : result.first
+    last_insert_id = (row[0] || row["LAST_INSERT_ID()"]).to_i
+    row_count = (row[1] || row["ROW_COUNT()"]).to_i
+    inserted_count = values_count * 2 - row_count
+    (last_insert_id..(last_insert_id + inserted_count - 1)).to_a
   end
 
   def pre_sql_statements( options)
