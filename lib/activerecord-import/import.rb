@@ -592,7 +592,6 @@ class ActiveRecord::Base
         if models
           import_with_validations( column_names, array_of_attributes, options ) do |validator, failed|
             models.each_with_index do |model, i|
-              model = model.dup if options[:recursive]
               next if validator.valid_model? model
               raise(ActiveRecord::RecordInvalid, model) if options[:raise_error]
               array_of_attributes[i] = nil
@@ -812,6 +811,7 @@ class ActiveRecord::Base
     # of class => objects to import.
     def find_associated_objects_for_import(associated_objects_by_class, model)
       associated_objects_by_class[model.class.name] ||= {}
+      return associated_objects_by_class unless model.id
 
       association_reflections =
         model.class.reflect_on_all_associations(:has_one) +
