@@ -1,3 +1,15 @@
+## Changes in 0.22.0
+
+### New Features
+
+* Add support for importing hashes thru a has many association. Thanks
+  to @jkowens via \#483.
+
+### Fixes
+
+* Fix validation logic for recursive import. Thanks to @eric-simonton-sama, @jkowens via
+  \#489.
+
 ## Changes in 0.21.0
 
 ### New Features
