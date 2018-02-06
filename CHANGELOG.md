@@ -7,7 +7,9 @@
 
 ### Fixes
 
-* Fix validation logic for recursive import. Thanks to @eric-simonton-sama, @jkowens via
+* Fix validation logic for recursive import. For those on Rails 5.0 and 5.1,
+  this change requires models with polymorphic associations to specify the `inverse_of`
+  argument (See issue #495). Thanks to @eric-simonton-sama, @jkowens via
   \#489.
 
 ## Changes in 0.21.0
