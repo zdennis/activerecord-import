@@ -2,6 +2,11 @@ source 'https://rubygems.org'
 
 gemspec
 
+version = ENV['AR_VERSION'].to_f
+
+mysql2_version = '0.3.0'
+mysql2_version = '0.4.0' if version >= 4.2
+
 group :development, :test do
   gem 'rubocop', '~> 0.40.0'
   gem 'rake'
@@ -9,7 +14,7 @@ end
 
 # Database Adapters
 platforms :ruby do
-  gem "mysql2",                 "~> 0.3.0"
+  gem "mysql2",                 "~> #{mysql2_version}"
   gem "pg",                     "~> 0.9"
   gem "sqlite3",                "~> 1.3.10"
   gem "seamless_database_pool", "~> 1.0.20"
@@ -43,9 +48,7 @@ platforms :ruby do
   gem "rb-readline"
 end
 
-version = ENV['AR_VERSION'] || "4.2"
-
-if version >= "4.0"
+if version >= 4.0
   gem "minitest"
 else
   gem "test-unit"
