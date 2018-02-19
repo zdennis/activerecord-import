@@ -79,13 +79,14 @@ module ActiveRecord::Import #:nodoc:
 end
 
 class ActiveRecord::Associations::CollectionProxy
-  def import(*args, &block)
-    @association.import(*args, &block)
+  def bulk_import(*args, &block)
+    @association.bulk_import(*args, &block)
   end
+  alias import bulk_import unless respond_to? :import
 end
 
 class ActiveRecord::Associations::CollectionAssociation
-  def import(*args, &block)
+  def bulk_import(*args, &block)
     unless owner.persisted?
       raise ActiveRecord::RecordNotSaved, "You cannot call import unless the parent is saved"
     end
@@ -118,7 +119,7 @@ class ActiveRecord::Associations::CollectionAssociation
         m.public_send "#{reflection.type}=", owner.class.name if reflection.type
       end
 
-      return model_klass.import column_names, models, options
+      return model_klass.bulk_import column_names, models, options
 
     # supports array of hash objects
     elsif args.last.is_a?( Array ) && args.last.first.is_a?(Hash)
@@ -157,7 +158,7 @@ class ActiveRecord::Associations::CollectionAssociation
         end
       end
 
-      return model_klass.import column_names, array_of_attributes, options
+      return model_klass.bulk_import column_names, array_of_attributes, options
 
     # supports empty array
     elsif args.last.is_a?( Array ) && args.last.empty?
@@ -192,11 +193,12 @@ class ActiveRecord::Associations::CollectionAssociation
         end
       end
 
-      return model_klass.import column_names, array_of_attributes, options
+      return model_klass.bulk_import column_names, array_of_attributes, options
     else
       raise ArgumentError, "Invalid arguments!"
     end
   end
+  alias import bulk_import unless respond_to? :import
 end
 
 class ActiveRecord::Base
@@ -447,7 +449,7 @@ class ActiveRecord::Base
     # * num_inserts - the number of insert statements it took to import the data
     # * ids - the primary keys of the imported ids if the adapter supports it, otherwise an empty array.
     # * results - import results if the adapter supports it, otherwise an empty array.
-    def import(*args)
+    def bulk_import(*args)
       if args.first.is_a?( Array ) && args.first.first.is_a?(ActiveRecord::Base)
         options = {}
         options.merge!( args.pop ) if args.last.is_a?(Hash)
@@ -458,17 +460,19 @@ class ActiveRecord::Base
         import_helper(*args)
       end
     end
+    alias import bulk_import unless respond_to? :import
 
     # Imports a collection of values if all values are valid. Import fails at the
     # first encountered validation error and raises ActiveRecord::RecordInvalid
     # with the failed instance.
-    def import!(*args)
+    def bulk_import!(*args)
       options = args.last.is_a?( Hash ) ? args.pop : {}
       options[:validate] = true
       options[:raise_error] = true
 
-      import(*args, options)
+      bulk_import(*args, options)
     end
+    alias import! bulk_import! unless respond_to? :import!
 
     def import_helper( *args )
       options = { validate: true, timestamps: true }
@@ -802,7 +806,7 @@ class ActiveRecord::Base
 
       associated_objects_by_class.each_value do |associations|
         associations.each_value do |associated_records|
-          associated_records.first.class.import(associated_records, options) unless associated_records.empty?
+          associated_records.first.class.bulk_import(associated_records, options) unless associated_records.empty?
         end
       end
     end
