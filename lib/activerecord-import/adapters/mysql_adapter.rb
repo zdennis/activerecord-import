@@ -104,6 +104,7 @@ module ActiveRecord::Import::MysqlAdapter
       qc = quote_column_name( column )
       "#{table_name}.#{qc}=VALUES(#{qc})"
     end
+    increment_locking_column!(results, table_name)
     results.join( ',' )
   end
 
@@ -113,11 +114,27 @@ module ActiveRecord::Import::MysqlAdapter
       qc2 = quote_column_name( column2 )
       "#{table_name}.#{qc1}=VALUES( #{qc2} )"
     end
+    increment_locking_column!(results, table_name)
     results.join( ',')
   end
 
   # Return true if the statement is a duplicate key record error
   def duplicate_key_update_error?(exception) # :nodoc:
     exception.is_a?(ActiveRecord::StatementInvalid) && exception.to_s.include?('Duplicate entry')
+  end
+
+  def increment_locking_column!(results, table_name)
+    model = model(table_name)
+    if locking_column?(model)
+      results << "#{table_name}.`#{model.locking_column}`=`#{model.locking_column}`+1"
+    end
+  end
+
+  def model(table_name)
+    table_name.delete('`').singularize.camelize.constantize
+  end
+
+  def locking_column?(model)
+    model.attribute_names.include?(model.locking_column)
   end
 end

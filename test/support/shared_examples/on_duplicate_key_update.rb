@@ -5,6 +5,146 @@ def should_support_basic_on_duplicate_key_update
     macro(:perform_import) { raise "supply your own #perform_import in a context below" }
     macro(:updated_topic) { Topic.find(@topic.id) }
 
+    context "with lock_version upsert" do
+      describe 'optimistic lock' do
+        it 'lock_version upsert after on_duplcate_key_update by model' do
+          users = [
+            User.new(name: 'Salomon'),
+            User.new(name: 'Nathan')
+          ]
+          User.import(users)
+          assert User.count == users.length
+          User.all.each do |user|
+            assert_equal 0, user.lock_version
+          end
+          updated_users = User.all.map do |user|
+            user.name += ' Rothschild'
+            user
+          end
+          User.import(updated_users, on_duplicate_key_update: [:name])
+          assert User.count == updated_users.length
+          User.all.each_with_index do |user, i|
+            assert_equal user.name, users[i].name + ' Rothschild'
+            assert_equal 1, user.lock_version
+          end
+        end
+
+        it 'lock_version upsert after on_duplcate_key_update by array' do
+          users = [
+            User.new(name: 'Salomon'),
+            User.new(name: 'Nathan')
+          ]
+          User.import(users)
+          assert User.count == users.length
+          User.all.each do |user|
+            assert_equal 0, user.lock_version
+          end
+
+          columns = [:id, :name]
+          updated_values = User.all.map do |user|
+            user.name += ' Rothschild'
+            [user.id, user.name]
+          end
+          User.import(columns, updated_values, on_duplicate_key_update: [:name])
+          assert User.count == updated_values.length
+          User.all.each_with_index do |user, i|
+            assert_equal user.name, users[i].name + ' Rothschild'
+            assert_equal 1, user.lock_version
+          end
+        end
+
+        it 'lock_version upsert after on_duplcate_key_update by hash' do
+          users = [
+            User.new(name: 'Salomon'),
+            User.new(name: 'Nathan')
+          ]
+          User.import(users)
+          assert User.count == users.length
+          User.all.each do |user|
+            assert_equal 0, user.lock_version
+          end
+          updated_values = User.all.map do |user|
+            user.name += ' Rothschild'
+            { id: user.id, name: user.name }
+          end
+          User.import(updated_values, on_duplicate_key_update: [:name])
+          assert User.count == updated_values.length
+          User.all.each_with_index do |user, i|
+            assert_equal user.name, users[i].name + ' Rothschild'
+            assert_equal 1, user.lock_version
+          end
+        end
+
+        it 'upsert optimistic lock columns other than lock_version by model' do
+          accounts = [
+            Account.new(name: 'Salomon'),
+            Account.new(name: 'Nathan')
+          ]
+          Account.import(accounts)
+          assert Account.count == accounts.length
+          Account.all.each do |user|
+            assert_equal 0, user.lock
+          end
+          updated_accounts = Account.all.map do |user|
+            user.name += ' Rothschild'
+            user
+          end
+          Account.import(updated_accounts, on_duplicate_key_update: [:id, :name])
+          assert Account.count == updated_accounts.length
+          Account.all.each_with_index do |user, i|
+            assert_equal user.name, accounts[i].name + ' Rothschild'
+            assert_equal 1, user.lock
+          end
+        end
+
+        it 'upsert optimistic lock columns other than lock_version by array' do
+          accounts = [
+            Account.new(name: 'Salomon'),
+            Account.new(name: 'Nathan')
+          ]
+          Account.import(accounts)
+          assert Account.count == accounts.length
+          Account.all.each do |user|
+            assert_equal 0, user.lock
+          end
+
+          columns = [:id, :name]
+          updated_values = Account.all.map do |user|
+            user.name += ' Rothschild'
+            [user.id, user.name]
+          end
+          Account.import(columns, updated_values, on_duplicate_key_update: [:name])
+          assert Account.count == updated_values.length
+          Account.all.each_with_index do |user, i|
+            assert_equal user.name, accounts[i].name + ' Rothschild'
+            assert_equal 1, user.lock
+          end
+        end
+
+        it 'upsert optimistic lock columns other than lock_version by hash' do
+          accounts = [
+            Account.new(name: 'Salomon'),
+            Account.new(name: 'Nathan')
+          ]
+          Account.import(accounts)
+          assert Account.count == accounts.length
+          Account.all.each do |user|
+            assert_equal 0, user.lock
+          end
+          updated_values = Account.all.map do |user|
+            user.name += ' Rothschild'
+            { id: user.id, name: user.name }
+          end
+          Account.import(updated_values, on_duplicate_key_update: [:name])
+          assert Account.count == updated_values.length
+          Account.all.each_with_index do |user, i|
+            assert_equal user.name, accounts[i].name + ' Rothschild'
+            assert_equal 1, user.lock
+          end
+        end
+      end
+    end
+
     context "with :on_duplicate_key_update" do
       describe "argument safety" do
         it "should not modify the passed in :on_duplicate_key_update array" do
