@@ -142,6 +142,73 @@ def should_support_basic_on_duplicate_key_update
             assert_equal 1, user.lock
           end
         end
+
+        it 'update the lock_version of models separated by namespaces by model' do
+          makers = [
+            Bike::Maker.new(name: 'Yamaha'),
+            Bike::Maker.new(name: 'Honda')
+          ]
+          Bike::Maker.import(makers)
+          assert Bike::Maker.count == makers.length
+          Bike::Maker.all.each do |maker|
+            assert_equal 0, maker.lock_version
+          end
+          updated_makers = Bike::Maker.all.map do |maker|
+            maker.name += ' bikes'
+            maker
+          end
+          Bike::Maker.import(updated_makers, on_duplicate_key_update: [:name])
+          assert Bike::Maker.count == updated_makers.length
+          Bike::Maker.all.each_with_index do |maker, i|
+            assert_equal maker.name, makers[i].name + ' bikes'
+            assert_equal 1, maker.lock_version
+          end
+        end
+        it 'update the lock_version of models separated by namespaces by array' do
+          makers = [
+            Bike::Maker.new(name: 'Yamaha'),
+            Bike::Maker.new(name: 'Honda')
+          ]
+          Bike::Maker.import(makers)
+          assert Bike::Maker.count == makers.length
+          Bike::Maker.all.each do |maker|
+            assert_equal 0, maker.lock_version
+          end
+
+          columns = [:id, :name]
+          updated_values = Bike::Maker.all.map do |maker|
+            maker.name += ' bikes'
+            [maker.id, maker.name]
+          end
+          Bike::Maker.import(columns, updated_values, on_duplicate_key_update: [:name])
+          assert Bike::Maker.count == updated_values.length
+          Bike::Maker.all.each_with_index do |maker, i|
+            assert_equal maker.name, makers[i].name + ' bikes'
+            assert_equal 1, maker.lock_version
+          end
+        end
+
+        it 'update the lock_version of models separated by namespaces by hash' do
+          makers = [
+            Bike::Maker.new(name: 'Yamaha'),
+            Bike::Maker.new(name: 'Honda')
+          ]
+          Bike::Maker.import(makers)
+          assert Bike::Maker.count == makers.length
+          Bike::Maker.all.each do |maker|
+            assert_equal 0, maker.lock_version
+          end
+          updated_values = Bike::Maker.all.map do |maker|
+            maker.name += ' bikes'
+            { id: maker.id, name: maker.name }
+          end
+          Bike::Maker.import(updated_values, on_duplicate_key_update: [:name])
+          assert Bike::Maker.count == updated_values.length
+          Bike::Maker.all.each_with_index do |maker, i|
+            assert_equal maker.name, makers[i].name + ' bikes'
+            assert_equal 1, maker.lock_version
+          end
+        end
       end
     end
 

@@ -131,7 +131,7 @@ module ActiveRecord::Import::MysqlAdapter
   end
 
   def model(table_name)
-    table_name.delete('`').singularize.camelize.constantize
+    ActiveRecord::Base.descendants.find { |t| "`#{t.table_name}`" == table_name }
   end
 
   def locking_column?(model)
