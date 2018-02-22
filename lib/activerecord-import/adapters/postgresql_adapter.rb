@@ -158,6 +158,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
       qc = quote_column_name( column )
       "#{qc}=EXCLUDED.#{qc}"
     end
+    increment_locking_column!(results, table_name)
     results.join( ',' )
   end
 
@@ -167,6 +168,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
       qc2 = quote_column_name( column2 )
       "#{qc1}=EXCLUDED.#{qc2}"
     end
+    increment_locking_column!(results, table_name)
     results.join( ',' )
   end
 
@@ -199,5 +201,21 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
   def supports_setting_primary_key_of_imported_objects?
     true
+  end
+
+  def increment_locking_column!(results, table_name)
+    model = model(table_name)
+    locking_column = model.locking_column
+    if locking_column?(model)
+      results << "\"#{locking_column}\"=EXCLUDED.\"#{locking_column}\"+1"
+    end
+  end
+
+  def model(table_name)
+    table_name.delete('\"').singularize.camelize.constantize
+  end
+
+  def locking_column?(model)
+    model.attribute_names.include?(model.locking_column)
   end
 end
