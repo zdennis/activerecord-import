@@ -84,13 +84,13 @@ module ActiveRecord::Import::MysqlAdapter
 
   # Returns a generated ON DUPLICATE KEY UPDATE statement given the passed
   # in +args+.
-  def sql_for_on_duplicate_key_update( table_name, *args ) # :nodoc:
+  def sql_for_on_duplicate_key_update( table_name, locking_column, *args ) # :nodoc:
     sql = ' ON DUPLICATE KEY UPDATE '
     arg = args.first
     if arg.is_a?( Array )
-      sql << sql_for_on_duplicate_key_update_as_array( table_name, arg )
+      sql << sql_for_on_duplicate_key_update_as_array( table_name, locking_column, arg )
     elsif arg.is_a?( Hash )
-      sql << sql_for_on_duplicate_key_update_as_hash( table_name, arg )
+      sql << sql_for_on_duplicate_key_update_as_hash( table_name, locking_column, arg )
     elsif arg.is_a?( String )
       sql << arg
     else
@@ -99,22 +99,22 @@ module ActiveRecord::Import::MysqlAdapter
     sql
   end
 
-  def sql_for_on_duplicate_key_update_as_array( table_name, arr ) # :nodoc:
+  def sql_for_on_duplicate_key_update_as_array( table_name, locking_column, arr ) # :nodoc:
     results = arr.map do |column|
       qc = quote_column_name( column )
       "#{table_name}.#{qc}=VALUES(#{qc})"
     end
-    increment_locking_column!(results, table_name)
+    increment_locking_column!(results, table_name, locking_column)
     results.join( ',' )
   end
 
-  def sql_for_on_duplicate_key_update_as_hash( table_name, hsh ) # :nodoc:
+  def sql_for_on_duplicate_key_update_as_hash( table_name, locking_column, hsh ) # :nodoc:
     results = hsh.map do |column1, column2|
       qc1 = quote_column_name( column1 )
       qc2 = quote_column_name( column2 )
       "#{table_name}.#{qc1}=VALUES( #{qc2} )"
     end
-    increment_locking_column!(results, table_name)
+    increment_locking_column!(results, table_name, locking_column)
     results.join( ',')
   end
 
@@ -123,18 +123,9 @@ module ActiveRecord::Import::MysqlAdapter
     exception.is_a?(ActiveRecord::StatementInvalid) && exception.to_s.include?('Duplicate entry')
   end
 
-  def increment_locking_column!(results, table_name)
-    model = model(table_name)
-    if locking_column?(model)
-      results << "#{table_name}.`#{model.locking_column}`=`#{model.locking_column}`+1"
+  def increment_locking_column!(results, table_name, locking_column)
+    if locking_column.present?
+      results << "#{table_name}.`#{locking_column}`=`#{locking_column}`+1"
     end
-  end
-
-  def model(table_name)
-    ActiveRecord::Base.descendants.find { |t| "`#{t.table_name}`" == table_name }
-  end
-
-  def locking_column?(model)
-    model.attribute_names.include?(model.locking_column)
   end
 end
