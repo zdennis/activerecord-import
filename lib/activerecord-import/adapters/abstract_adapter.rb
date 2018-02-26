@@ -45,7 +45,7 @@ module ActiveRecord::Import::AbstractAdapter
       post_sql_statements = []
 
       if supports_on_duplicate_key_update? && options[:on_duplicate_key_update]
-        post_sql_statements << sql_for_on_duplicate_key_update( table_name, options[:locking_column], options[:on_duplicate_key_update], options[:primary_key] )
+        post_sql_statements << sql_for_on_duplicate_key_update( table_name, options[:on_duplicate_key_update], options[:primary_key], options[:locking_column] )
       elsif options[:on_duplicate_key_update]
         logger.warn "Ignoring on_duplicate_key_update because it is not supported by the database."
       end

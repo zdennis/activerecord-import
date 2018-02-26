@@ -118,8 +118,8 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
   # Returns a generated ON CONFLICT DO UPDATE statement given the passed
   # in +args+.
-  def sql_for_on_duplicate_key_update( table_name, locking_column, *args ) # :nodoc:
-    arg, primary_key = args
+  def sql_for_on_duplicate_key_update( table_name, *args ) # :nodoc:
+    arg, primary_key, locking_column = args
     arg = { columns: arg } if arg.is_a?( Array ) || arg.is_a?( String )
     return unless arg.is_a?( Hash )
 

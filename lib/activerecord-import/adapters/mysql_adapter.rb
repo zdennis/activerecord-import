@@ -84,9 +84,10 @@ module ActiveRecord::Import::MysqlAdapter
 
   # Returns a generated ON DUPLICATE KEY UPDATE statement given the passed
   # in +args+.
-  def sql_for_on_duplicate_key_update( table_name, locking_column, *args ) # :nodoc:
+  def sql_for_on_duplicate_key_update( table_name, *args ) # :nodoc:
     sql = ' ON DUPLICATE KEY UPDATE '
     arg = args.first
+    locking_column = args.last
     if arg.is_a?( Array )
       sql << sql_for_on_duplicate_key_update_as_array( table_name, locking_column, arg )
     elsif arg.is_a?( Hash )
