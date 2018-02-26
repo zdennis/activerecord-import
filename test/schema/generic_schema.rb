@@ -159,6 +159,21 @@ ActiveRecord::Schema.define do
     t.string :Features
   end
 
+  create_table :users, force: :cascade do |t|
+    t.string :name, null: false
+    t.integer :lock_version, null: false, default: 0
+  end
+
+  create_table :accounts, force: :cascade do |t|
+    t.string :name, null: false
+    t.integer :lock, null: false, default: 0
+  end
+
+  create_table :bike_makers, force: :cascade do |t|
+    t.string :name, null: false
+    t.integer :lock_version, null: false, default: 0
+  end
+
   add_index :cars, :Name, unique: true
 
   unless ENV["SKIP_COMPOSITE_PK"]

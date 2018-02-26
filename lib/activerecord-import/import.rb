@@ -479,6 +479,7 @@ class ActiveRecord::Base
       options.merge!( args.pop ) if args.last.is_a? Hash
       # making sure that current model's primary key is used
       options[:primary_key] = primary_key
+      options[:locking_column] = locking_column if attribute_names.include?(locking_column)
 
       # Don't modify incoming arguments
       on_duplicate_key_update = options[:on_duplicate_key_update]
