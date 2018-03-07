@@ -220,7 +220,11 @@ def should_support_basic_on_duplicate_key_update
             book.tag_id = 2
             book.publisher_id = 3
             book.for_sale = false
-            book.status = 4
+            if ENV['AR_VERSION'].to_f >= 4.1
+              book.draft!
+            else
+              book.status = 0
+            end
             book
           end
           Book.import(updated_books, on_duplicate_key_update: :all)
@@ -228,7 +232,11 @@ def should_support_basic_on_duplicate_key_update
             assert_equal 1, book.topic_id
             assert_equal 2, book.tag_id
             assert_equal 3, book.publisher_id
-            assert_equal 4, book.status
+            if ENV['AR_VERSION'].to_f >= 4.1
+              assert_equal 'draft', book.status
+            else
+              assert_equal 0, book.status
+            end
             assert_equal false, book.for_sale
           end
         end
