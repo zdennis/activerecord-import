@@ -661,7 +661,7 @@ class ActiveRecord::Base
 
       array_of_attributes.compact!
 
-      result = if array_of_attributes.empty? || options[:all_or_none] && failed_instances.any?
+      result = if options[:all_or_none] && failed_instances.any?
         ActiveRecord::Import::Result.new([], 0, [], [])
       else
         import_without_validations_or_callbacks( column_names, array_of_attributes, options )
@@ -676,6 +676,8 @@ class ActiveRecord::Base
     # information on +column_names+, +array_of_attributes_ and
     # +options+.
     def import_without_validations_or_callbacks( column_names, array_of_attributes, options = {} )
+      return ActiveRecord::Import::Result.new([], 0, [], []) if array_of_attributes.empty?
+
       column_names = column_names.map(&:to_sym)
       scope_columns, scope_values = scope_attributes.to_a.transpose
 
