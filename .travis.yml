@@ -28,9 +28,6 @@ matrix:
         - bundle exec rake test:jdbcmysql
         - bundle exec rake test:jdbcpostgresql
 
-  allow_failures:
-    - env: AR_VERSION=5.2
-
   fast_finish: true
 
 before_script:
