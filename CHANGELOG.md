@@ -1,3 +1,17 @@
+## Changes in 0.23.0
+
+### New Features
+
+* Rename `import` method to `bulk_import and alias to `import`. Thanks
+  to @itay-grudev, @jkowens via \#498.
+* Increment lock_version on duplicate key update. Thanks to @aimerald
+  via \#400.
+
+### Fixes
+
+* Fix import_without_validations_or_callbacks exception if array is empty.
+  Thanks to @doloopwhile via \#508.
+
 ## Changes in 0.22.0
 
 ### New Features
