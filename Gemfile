@@ -32,7 +32,7 @@ end
 gem "factory_girl", "~> 4.2.0"
 gem "timecop"
 gem "chronic"
-gem "mocha"
+gem "mocha", "~> 1.3.0"
 
 # Debugging
 platforms :jruby do
