@@ -97,7 +97,7 @@ class ActiveRecord::Associations::CollectionAssociation
     symbolized_foreign_key = reflection.foreign_key.to_sym
     symbolized_column_names = model_klass.column_names.map(&:to_sym)
 
-    owner_primary_key = owner.class.primary_key
+    owner_primary_key = reflection.active_record_primary_key.to_sym
     owner_primary_key_value = owner.send(owner_primary_key)
 
     # assume array of model objects
