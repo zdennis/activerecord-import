@@ -596,6 +596,14 @@ describe "#import" do
           assert_equal [val1, val2], scope.map(&column).sort
         end
       end
+
+      it "works with a non-standard association primary key" do
+        user = User.create(id: 1, name: 'Solomon')
+        user.user_tokens.import [:id, :token], [[5, '12345abcdef67890']]
+
+        token = UserToken.find(5)
+        assert_equal 'Solomon', token.user_name
+      end
     end
   end
 
