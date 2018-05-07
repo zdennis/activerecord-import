@@ -2,7 +2,7 @@
 
 ### New Features
 
-* Rename `import` method to `bulk_import and alias to `import`. Thanks
+* Rename `import` method to `bulk_import` and alias to `import`. Thanks
   to @itay-grudev, @jkowens via \#498.
 * Increment lock_version on duplicate key update. Thanks to @aimerald
   via \#400.
