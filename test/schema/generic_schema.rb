@@ -164,6 +164,11 @@ ActiveRecord::Schema.define do
     t.integer :lock_version, null: false, default: 0
   end
 
+  create_table :user_tokens, force: :cascade do |t|
+    t.string :user_name, null: false
+    t.string :token, null: false
+  end
+
   create_table :accounts, force: :cascade do |t|
     t.string :name, null: false
     t.integer :lock, null: false, default: 0
