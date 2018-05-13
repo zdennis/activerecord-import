@@ -116,7 +116,10 @@ def should_support_recursive_import
     end
 
     it "imports an imported belongs_to association id" do
-      books = new_topics[0].books.to_a
+      first_new_topic = new_topics[0]
+      second_new_topic = new_topics[1]
+
+      books = first_new_topic.books.to_a
       Topic.import new_topics, validate: false
 
       assert_difference "Book.count", books.size do
@@ -124,7 +127,16 @@ def should_support_recursive_import
       end
 
       books.each do |book|
-        assert_not_nil book.topic_id
+        assert_equal book.topic_id, first_new_topic.id
+      end
+
+      books.each { |book| book.topic_id = second_new_topic.id }
+      assert_no_difference "Book.count", books.size do
+        Book.import books, validate: false, on_duplicate_key_update: [:topic_id]
+      end
+
+      books.each do |book|
+        assert_equal book.topic_id, second_new_topic.id
       end
     end
 
