@@ -785,13 +785,14 @@ class ActiveRecord::Base
     def load_association_ids(model)
       association_reflections = model.class.reflect_on_all_associations(:belongs_to)
       association_reflections.each do |association_reflection|
+        column_name = association_reflection.foreign_key
         next if association_reflection.options[:polymorphic]
         association = model.association(association_reflection.name)
         association = association.target
-        if association
-          association_primary_key = association_reflection.association_primary_key
-          model.public_send("#{association_reflection.foreign_key}=", association.send(association_primary_key))
-        end
+        next if association.blank? || model.public_send(column_name).present?
+
+        association_primary_key = association_reflection.association_primary_key
+        model.public_send("#{column_name}=", association.send(association_primary_key))
       end
     end
 
