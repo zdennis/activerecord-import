@@ -276,6 +276,9 @@ class ActiveRecord::Base
     # == Options
     # * +validate+ - true|false, tells import whether or not to use
     #   ActiveRecord validations. Validations are enforced by default.
+    #   It skips the uniqueness validation for performance reasons.
+    #   You can find more details here:
+    #   https://github.com/zdennis/activerecord-import/issues/228
     # * +ignore+ - true|false, an alias for on_duplicate_key_ignore.
     # * +on_duplicate_key_ignore+ - true|false, tells import to discard
     #   records that contain duplicate keys. For Postgres 9.5+ it adds
