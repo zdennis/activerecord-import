@@ -52,13 +52,13 @@ If `fake_name` adapter is needed by a gem (potentially called `activerecord-impo
 activerecord-import-fake_name/
 |-- activerecord-import-fake_name.gemspec
 |-- lib
+|   |-- activerecord-import-fake_name.rb
 |   |-- activerecord-import-fake_name
 |   |   |-- version.rb
 |   |-- activerecord-import
 |   |   |-- active_record
 |   |   |   |-- adapters
 |   |   |       |-- fake_name_adapter.rb
-|--activerecord-import-fake_name.rb
 ```
 
 When rubygems pushes the `lib` folder onto the load path a `require` will now find `activerecord-import/active_record/adapters/fake_name_adapter` as it runs through the lookup process for a ruby file under that path in `$LOAD_PATH`
