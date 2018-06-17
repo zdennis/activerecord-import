@@ -1,3 +1,10 @@
+## Changes in 0.24.0
+
+### Fixes
+
+* Use the association primary key when importing. Thanks to @dpogue via \#512.
+* Allow association ids to be updated. Thanks to @Aristat via \#515.
+
 ## Changes in 0.23.0
 
 ### New Features
