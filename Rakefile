@@ -23,6 +23,7 @@ ADAPTERS = %w(
   postgresql
   postgresql_makara
   postgis
+  makara_postgis
   sqlite3
   spatialite
   seamless_database_pool
