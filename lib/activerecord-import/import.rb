@@ -38,8 +38,14 @@ module ActiveRecord::Import #:nodoc:
         model.errors.clear
 
         validate_callbacks = model._validate_callbacks.dup
+        associations = model.class.reflect_on_all_associations(:belongs_to).map(&:name)
+
         model._validate_callbacks.each do |callback|
-          validate_callbacks.delete(callback) if callback.raw_filter.is_a? ActiveRecord::Validations::UniquenessValidator
+          filter = callback.raw_filter
+          if filter.is_a?(ActiveRecord::Validations::UniquenessValidator) ||
+             (defined?(ActiveRecord::Validations::PresenceValidator) && filter.is_a?(ActiveRecord::Validations::PresenceValidator) && associations.include?(filter.attributes.first))
+            validate_callbacks.delete(callback)
+          end
         end
 
         model.run_callbacks(:validation) do
