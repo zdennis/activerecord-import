@@ -500,8 +500,8 @@ class ActiveRecord::Base
         end
       end
 
-      is_validating = options[:validate]
-      is_validating = true unless options[:validate_with_context].nil?
+      is_validating = options[:validate_with_context].present? ? true : options[:validate]
+      validator = ActiveRecord::Import::Validator.new(options)
 
       # assume array of model objects
       if args.last.is_a?( Array ) && args.last.first.is_a?(ActiveRecord::Base)
@@ -526,12 +526,19 @@ class ActiveRecord::Base
           serialized_attributes
         end
 
-        array_of_attributes = models.map do |model|
+        array_of_attributes = []
+
+        models.each do |model|
           if supports_setting_primary_key_of_imported_objects?
             load_association_ids(model)
           end
 
-          column_names.map do |name|
+          if is_validating && !validator.valid_model?(model)
+            raise(ActiveRecord::RecordInvalid, model) if options[:raise_error]
+            next
+          end
+
+          array_of_attributes << column_names.map do |name|
             if stored_attrs.key?(name.to_sym) ||
                serialized_attrs.key?(name) ||
                default_values.key?(name.to_s)
@@ -603,17 +610,27 @@ class ActiveRecord::Base
       end
 
       return_obj = if is_validating
-        if models
-          import_with_validations( column_names, array_of_attributes, options ) do |validator, failed|
-            models.each_with_index do |model, i|
-              next if validator.valid_model? model
+        import_with_validations( column_names, array_of_attributes, options ) do |failed_instances|
+          if models
+            models.each { |m| failed_instances << m if m.errors.any? }
+          else
+            # create instances for each of our column/value sets
+            arr = validations_array_for_column_names_and_attributes( column_names, array_of_attributes )
+
+            # keep track of the instance and the position it is currently at. if this fails
+            # validation we'll use the index to remove it from the array_of_attributes
+            arr.each_with_index do |hsh, i|
+              model = new
+              hsh.each_pair { |k, v| model[k] = v }
+              next if validator.valid_model?(model)
               raise(ActiveRecord::RecordInvalid, model) if options[:raise_error]
               array_of_attributes[i] = nil
-              failed << model
+              failure = model.dup
+              failure.errors.send(:initialize_dup, model.errors)
+              failed_instances << failure
             end
+            array_of_attributes.compact!
           end
-        else
-          import_with_validations( column_names, array_of_attributes, options )
         end
       else
         import_without_validations_or_callbacks( column_names, array_of_attributes, options )
@@ -646,29 +663,7 @@ class ActiveRecord::Base
     def import_with_validations( column_names, array_of_attributes, options = {} )
       failed_instances = []
 
-      validator = ActiveRecord::Import::Validator.new(options)
-
-      if block_given?
-        yield validator, failed_instances
-      else
-        # create instances for each of our column/value sets
-        arr = validations_array_for_column_names_and_attributes( column_names, array_of_attributes )
-
-        # keep track of the instance and the position it is currently at. if this fails
-        # validation we'll use the index to remove it from the array_of_attributes
-        arr.each_with_index do |hsh, i|
-          model = new
-          hsh.each_pair { |k, v| model[k] = v }
-          next if validator.valid_model? model
-          raise(ActiveRecord::RecordInvalid, model) if options[:raise_error]
-          array_of_attributes[i] = nil
-          failure = model.dup
-          failure.errors.send(:initialize_dup, model.errors)
-          failed_instances << failure
-        end
-      end
-
-      array_of_attributes.compact!
+      yield failed_instances if block_given?
 
       result = if options[:all_or_none] && failed_instances.any?
         ActiveRecord::Import::Result.new([], 0, [], [])
