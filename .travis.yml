@@ -1,7 +1,7 @@
 language: ruby
 cache: bundler
 rvm:
-  - 2.3.5
+  - 2.3.7
 
 env:
   global:
@@ -20,8 +20,6 @@ matrix:
   include:
     - rvm: jruby-9.1.14.0
       env: AR_VERSION=4.2
-      before_install:
-        - gem update --system
 
       script:
         - bundle exec rake test:jdbcsqlite3
@@ -30,6 +28,24 @@ matrix:
 
   fast_finish: true
 
+addons:
+  postgresql: "9.5"
+  apt:
+    sources:
+      - travis-ci/sqlite3
+      - mysql-5.7-trusty
+    packages:
+      - sqlite3
+      - mysql-server
+      - mysql-client
+      - postgresql-9.5-postgis-2.3
+
+before_install:
+  - gem update --system
+  - sudo mysql -e "use mysql; update user set authentication_string=PASSWORD('') where User='root'; update user set plugin='mysql_native_password';FLUSH PRIVILEGES;"
+  - sudo mysql_upgrade
+  - sudo service mysql restart
+
 before_script:
   - mysql -e 'create database activerecord_import_test;'
   - psql -c 'create database activerecord_import_test;' -U postgres
@@ -37,15 +53,6 @@ before_script:
   - psql -c 'create extension if not exists postgis;' -U postgres
   - psql -c 'create extension if not exists "uuid-ossp";' -U postgres
   - cp test/travis/database.yml test/database.yml
-
-addons:
-  postgresql: "9.5"
-  apt:
-    sources:
-      - travis-ci/sqlite3
-    packages:
-      - sqlite3
-      - postgresql-9.5-postgis-2.3
 
 script:
   - bundle exec rake test:mysql2
@@ -60,3 +67,5 @@ script:
   - bundle exec rubocop
 
 dist: trusty
+
+sudo: required

@@ -101,7 +101,12 @@ class ActiveRecord::Associations::CollectionAssociation
 
     model_klass = reflection.klass
     symbolized_foreign_key = reflection.foreign_key.to_sym
-    symbolized_column_names = model_klass.column_names.map(&:to_sym)
+
+    symbolized_column_names = if model_klass.connection.respond_to?(:supports_virtual_columns?) && model_klass.connection.supports_virtual_columns?
+      model_klass.columns.reject(&:virtual?).map { |c| c.name.to_sym }
+    else
+      model_klass.column_names.map(&:to_sym)
+    end
 
     owner_primary_key = reflection.active_record_primary_key.to_sym
     owner_primary_key_value = owner.send(owner_primary_key)
@@ -510,7 +515,11 @@ class ActiveRecord::Base
           column_names = args.first.dup
         else
           models = args.first
-          column_names = self.column_names.dup
+          column_names = if connection.respond_to?(:supports_virtual_columns?) && connection.supports_virtual_columns?
+            columns.reject(&:virtual?).map(&:name)
+          else
+            self.column_names.dup
+          end
         end
 
         if models.first.id.nil? && column_names.include?(primary_key) && columns_hash[primary_key].type == :uuid
@@ -946,7 +955,7 @@ Hash key mismatch.
 
 When importing an array of hashes with provided columns_names, each hash must contain keys for all column_names.
 
-Required keys: #{column_names}
+Required keys: #{required_keys}
 Missing keys: #{missing_keys}
 
 Hash: #{hash}
@@ -959,7 +968,7 @@ When importing an array of hashes, all hashes must have the same keys.
 If you have records that are missing some values, we recommend you either set default values
 for the missing keys or group these records into batches by key set before importing.
 
-Required keys: #{column_names}
+Required keys: #{required_keys}
 Extra keys: #{extra_keys}
 Missing keys: #{missing_keys}
 
