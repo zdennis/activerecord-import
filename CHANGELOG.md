@@ -1,3 +1,17 @@
+## Changes in 0.25.0
+
+### New Features
+
+* Add support for makara_postgis adapter. Thanks to @chadwilken via \#527.
+* Skip validating presence of belongs_to associations. Thanks to @Sohair63, @naiyt, @jkowens via \#528.
+
+### Fixes
+
+* Add missing require for ActiveSupport.on_load. Thanks to @onk via \#529.
+* Support setting attribute values in before_validation callbacks.
+  Thanks to @SirRawlins, @jkowens via \#531.
+* Ignore virtual columns. Thanks to @dbourguignon, @jkowens via \#530.
+
 ## Changes in 0.24.0
 
 ### Fixes
