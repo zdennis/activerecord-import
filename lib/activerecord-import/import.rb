@@ -299,7 +299,7 @@ class ActiveRecord::Base
     #   setting primary keys on imported objects, this option prevents
     #   that from occurring.
     # * +on_duplicate_key_update+ - an Array or Hash, tells import to
-    #   use MySQL's ON DUPLICATE KEY UPDATE or Postgres 9.5+ ON CONFLICT
+    #   use MySQL's ON DUPLICATE KEY UPDATE or Postgres/SQLite ON CONFLICT
     #   DO UPDATE ability. See On Duplicate Key Update below.
     # * +synchronize+ - an array of ActiveRecord instances for the model
     #   that you are currently importing data into. This synchronizes
@@ -377,11 +377,11 @@ class ActiveRecord::Base
     #
     #   BlogPost.import columns, attributes, on_duplicate_key_update: { title: :title }
     #
-    # == On Duplicate Key Update (Postgres 9.5+)
+    # == On Duplicate Key Update (Postgres 9.5+ and SQLite 3.24+)
     #
     # The :on_duplicate_key_update option can be an Array or a Hash with up to
     # three attributes, :conflict_target (and optionally :index_predicate) or
-    # :constraint_name, and :columns.
+    # :constraint_name (Postgres), and :columns.
     #
     # ==== Using an Array
     #
