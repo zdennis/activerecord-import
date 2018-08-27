@@ -298,7 +298,7 @@ class ActiveRecord::Base
     #   recursive import. For database adapters that normally support
     #   setting primary keys on imported objects, this option prevents
     #   that from occurring.
-    # * +on_duplicate_key_update+ - an Array or Hash, tells import to
+    # * +on_duplicate_key_update+ - :all, an Array, or Hash, tells import to
     #   use MySQL's ON DUPLICATE KEY UPDATE or Postgres 9.5+ ON CONFLICT
     #   DO UPDATE ability. See On Duplicate Key Update below.
     # * +synchronize+ - an array of ActiveRecord instances for the model
@@ -358,7 +358,15 @@ class ActiveRecord::Base
     #
     # == On Duplicate Key Update (MySQL)
     #
-    # The :on_duplicate_key_update option can be either an Array or a Hash.
+    # The :on_duplicate_key_update option can be either :all, an Array, or a Hash.
+    #
+    # ==== Using :all
+    #
+    # The :on_duplicate_key_update option can be set to :all. All columns
+    # other than the primary key are updated. If a list of column names is
+    # supplied, only those columns will be updated. Below is an example:
+    #
+    #   BlogPost.import columns, values, on_duplicate_key_update: :all
     #
     # ==== Using an Array
     #
@@ -379,9 +387,17 @@ class ActiveRecord::Base
     #
     # == On Duplicate Key Update (Postgres 9.5+)
     #
-    # The :on_duplicate_key_update option can be an Array or a Hash with up to
+    # The :on_duplicate_key_update option can be :all, an Array, or a Hash with up to
     # three attributes, :conflict_target (and optionally :index_predicate) or
     # :constraint_name, and :columns.
+    #
+    # ==== Using :all
+    #
+    # The :on_duplicate_key_update option can be set to :all. All columns
+    # other than the primary key are updated. If a list of column names is
+    # supplied, only those columns will be updated. Below is an example:
+    #
+    #   BlogPost.import columns, values, on_duplicate_key_update: :all
     #
     # ==== Using an Array
     #
@@ -439,7 +455,15 @@ class ActiveRecord::Base
     #
     # ===== :columns
     #
-    # The :columns attribute can be either an Array or a Hash.
+    # The :columns attribute can be either :all, an Array, or a Hash.
+    #
+    # ===== Using :all
+    #
+    # The :columns attribute can be :all. All columns other than the primary key will be updated.
+    # If a list of column names is supplied, only those columns will be updated.
+    # Below is an example:
+    #
+    #   BlogPost.import columns, values, on_duplicate_key_update: { conflict_target: :slug, columns: :all }
     #
     # ===== Using an Array
     #
@@ -494,16 +518,6 @@ class ActiveRecord::Base
       # making sure that current model's primary key is used
       options[:primary_key] = primary_key
       options[:locking_column] = locking_column if attribute_names.include?(locking_column)
-
-      # Don't modify incoming arguments
-      on_duplicate_key_update = options[:on_duplicate_key_update]
-      if on_duplicate_key_update && on_duplicate_key_update.duplicable?
-        options[:on_duplicate_key_update] = if on_duplicate_key_update.is_a?(Hash)
-          on_duplicate_key_update.each { |k, v| on_duplicate_key_update[k] = v.dup if v.duplicable? }
-        else
-          on_duplicate_key_update.dup
-        end
-      end
 
       is_validating = options[:validate_with_context].present? ? true : options[:validate]
       validator = ActiveRecord::Import::Validator.new(options)
@@ -609,6 +623,27 @@ class ActiveRecord::Base
         columns_added = column_names.size - column_count
         new_fields = Array.new(columns_added)
         array_of_attributes.each { |a| a.concat(new_fields) }
+      end
+
+      # Don't modify incoming arguments
+      on_duplicate_key_update = options[:on_duplicate_key_update]
+      if on_duplicate_key_update
+        updatable_columns = symbolized_column_names.reject { |c| symbolized_primary_key.include? c }
+        options[:on_duplicate_key_update] = if on_duplicate_key_update.is_a?(Hash)
+          on_duplicate_key_update.each do |k, v|
+            if k == :columns && v == :all
+              on_duplicate_key_update[k] = updatable_columns
+            elsif v.duplicable?
+              on_duplicate_key_update[k] = v.dup
+            end
+          end
+        elsif on_duplicate_key_update == :all
+          updatable_columns
+        elsif on_duplicate_key_update.duplicable?
+          on_duplicate_key_update.dup
+        else
+          on_duplicate_key_update
+        end
       end
 
       timestamps = {}
