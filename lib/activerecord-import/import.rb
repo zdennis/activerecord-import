@@ -497,6 +497,7 @@ class ActiveRecord::Base
 
       # Don't modify incoming arguments
       on_duplicate_key_update = options[:on_duplicate_key_update]
+      on_duplicate_key_update = attribute_names.reject { |attr| attr == primary_key }.map(&:to_sym) if on_duplicate_key_update == :all
       if on_duplicate_key_update && on_duplicate_key_update.duplicable?
         options[:on_duplicate_key_update] = if on_duplicate_key_update.is_a?(Hash)
           on_duplicate_key_update.each { |k, v| on_duplicate_key_update[k] = v.dup if v.duplicable? }

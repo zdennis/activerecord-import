@@ -213,6 +213,35 @@ def should_support_basic_on_duplicate_key_update
     end
 
     context "with :on_duplicate_key_update" do
+      describe 'usable :all when on_duplicate_key_update' do
+        it 'usable :all options' do
+          updated_books = Book.all.map do |book|
+            book.topic_id = 1
+            book.tag_id = 2
+            book.publisher_id = 3
+            book.for_sale = false
+            if ENV['AR_VERSION'].to_f >= 4.1
+              book.draft!
+            else
+              book.status = 0
+            end
+            book
+          end
+          Book.import(updated_books, on_duplicate_key_update: :all)
+          Book.all.each do |book|
+            assert_equal 1, book.topic_id
+            assert_equal 2, book.tag_id
+            assert_equal 3, book.publisher_id
+            if ENV['AR_VERSION'].to_f >= 4.1
+              assert_equal 'draft', book.status
+            else
+              assert_equal 0, book.status
+            end
+            assert_equal false, book.for_sale
+          end
+        end
+      end
+
       describe "argument safety" do
         it "should not modify the passed in :on_duplicate_key_update array" do
           assert_nothing_raised do
