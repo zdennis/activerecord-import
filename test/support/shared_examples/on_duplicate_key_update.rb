@@ -213,6 +213,30 @@ def should_support_basic_on_duplicate_key_update
     end
 
     context "with :on_duplicate_key_update" do
+      describe 'using :all' do
+        let(:columns) { %w( id title author_name author_email_address parent_id ) }
+        let(:updated_values) { [[99, "Book - 2nd Edition", "Jane Doe", "janedoe@example.com", 57]] }
+
+        macro(:perform_import) do |*opts|
+          Topic.import columns, updated_values, opts.extract_options!.merge(on_duplicate_key_update: :all, validate: false)
+        end
+
+        setup do
+          values = [[99, "Book", "John Doe", "john@doe.com", 17, 3]]
+          Topic.import columns + ['replies_count'], values, validate: false
+        end
+
+        it 'updates all specified columns' do
+          perform_import
+          updated_topic = Topic.find(99)
+          assert_equal 'Book - 2nd Edition', updated_topic.title
+          assert_equal 'Jane Doe', updated_topic.author_name
+          assert_equal 'janedoe@example.com', updated_topic.author_email_address
+          assert_equal 57, updated_topic.parent_id
+          assert_equal 3, updated_topic.replies_count
+        end
+      end
+
       describe "argument safety" do
         it "should not modify the passed in :on_duplicate_key_update array" do
           assert_nothing_raised do

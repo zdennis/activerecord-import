@@ -295,6 +295,30 @@ def should_support_postgresql_upsert_functionality
       end
 
       context "using a hash" do
+        context "with :columns :all" do
+          let(:columns) { %w( id title author_name author_email_address parent_id ) }
+          let(:updated_values) { [[99, "Book - 2nd Edition", "Jane Doe", "janedoe@example.com", 57]] }
+
+          macro(:perform_import) do |*opts|
+            Topic.import columns, updated_values, opts.extract_options!.merge(on_duplicate_key_update: { conflict_target: :id, columns: :all }, validate: false)
+          end
+
+          setup do
+            values = [[99, "Book", "John Doe", "john@doe.com", 17, 3]]
+            Topic.import columns + ['replies_count'], values, validate: false
+          end
+
+          it "should update all specified columns" do
+            perform_import
+            updated_topic = Topic.find(99)
+            assert_equal 'Book - 2nd Edition', updated_topic.title
+            assert_equal 'Jane Doe', updated_topic.author_name
+            assert_equal 'janedoe@example.com', updated_topic.author_email_address
+            assert_equal 57, updated_topic.parent_id
+            assert_equal 3, updated_topic.replies_count
+          end
+        end
+
         context "with :columns a hash" do
           let(:columns) { %w( id title author_name author_email_address parent_id ) }
           let(:values) { [[99, "Book", "John Doe", "john@doe.com", 17]] }
