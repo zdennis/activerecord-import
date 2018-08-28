@@ -536,8 +536,12 @@ class ActiveRecord::Base
           end
         end
 
-        if models.first.id.nil? && column_names.include?(primary_key) && columns_hash[primary_key].type == :uuid
-          column_names.delete(primary_key)
+        if models.first.id.nil?
+          Array(primary_key).each do |c|
+            if column_names.include?(c) && columns_hash[c].type == :uuid
+              column_names.delete(c)
+            end
+          end
         end
 
         default_values = column_defaults
@@ -681,7 +685,7 @@ class ActiveRecord::Base
       end
 
       if options[:synchronize]
-        sync_keys = options[:synchronize_keys] || [primary_key]
+        sync_keys = options[:synchronize_keys] || Array(primary_key)
         synchronize( options[:synchronize], sync_keys)
       end
       return_obj.num_inserts = 0 if return_obj.num_inserts.nil?
@@ -906,7 +910,7 @@ class ActiveRecord::Base
           column = columns[j]
 
           # be sure to query sequence_name *last*, only if cheaper tests fail, because it's costly
-          if val.nil? && column.name == primary_key && !sequence_name.blank?
+          if val.nil? && Array(primary_key).first == column.name && !sequence_name.blank?
             connection_memo.next_value_for_sequence(sequence_name)
           elsif val.respond_to?(:to_sql)
             "(#{val.to_sql})"
