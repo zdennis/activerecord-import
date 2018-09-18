@@ -9,7 +9,7 @@ FactoryBot.define do
 
   factory :invalid_topic, class: "Topic" do
     sequence(:title) { |n| "Title #{n}" }
-    author_name nil
+    author_name { nil }
   end
 
   factory :topic do
@@ -53,8 +53,8 @@ FactoryBot.define do
   end
 
   factory :book do
-    title 'Tortilla Flat'
-    author_name 'John Steinbeck'
+    title { 'Tortilla Flat' }
+    author_name { 'John Steinbeck' }
   end
 
   factory :car do
