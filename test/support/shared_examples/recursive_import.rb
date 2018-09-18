@@ -11,7 +11,7 @@ def should_support_recursive_import
     let(:num_chapters) { 18 }
     let(:num_endnotes) { 24 }
 
-    let(:new_question_with_rule) { FactoryGirl.build :question, :with_rule }
+    let(:new_question_with_rule) { FactoryBot.build :question, :with_rule }
 
     it 'imports top level' do
       assert_difference "Topic.count", +num_topics do
