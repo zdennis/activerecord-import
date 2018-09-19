@@ -336,7 +336,7 @@ def should_support_postgresql_upsert_functionality
           it "should not modify the passed in :on_duplicate_key_update columns array" do
             assert_nothing_raised do
               columns = %w(title author_name).freeze
-              Topic.import columns, [%w(foo, bar)], on_duplicate_key_update: { columns: columns }
+              Topic.import columns, [%w(foo, bar)], { on_duplicate_key_update: { columns: columns }.freeze }.freeze
             end
           end
 
