@@ -567,7 +567,7 @@ describe "#import" do
 
   context "importing through an association scope" do
     { has_many: :chapters, polymorphic: :discounts }.each do |association_type, association|
-      book   = FactoryGirl.create :book
+      book   = FactoryBot.create :book
       scope  = book.public_send association
       klass  = { chapters: Chapter, discounts: Discount }[association]
       column = { chapters: :title,  discounts: :amount  }[association]
@@ -609,7 +609,7 @@ describe "#import" do
 
   context "importing model with polymorphic belongs_to" do
     it "works without error" do
-      book     = FactoryGirl.create :book
+      book     = FactoryBot.create :book
       discount = Discount.new(discountable: book)
 
       Discount.import([discount])

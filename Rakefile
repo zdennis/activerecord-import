@@ -32,7 +32,7 @@ ADAPTERS.each do |adapter|
   namespace :test do
     desc "Runs #{adapter} database tests."
     Rake::TestTask.new(adapter) do |t|
-      # FactoryGirl has an issue with warnings, so turn off, so noisy
+      # FactoryBot has an issue with warnings, so turn off, so noisy
       # t.warning = true
       t.test_files = FileList["test/adapters/#{adapter}.rb", "test/*_test.rb", "test/active_record/*_test.rb", "test/#{adapter}/**/*_test.rb"]
     end

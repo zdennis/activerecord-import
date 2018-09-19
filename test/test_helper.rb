@@ -58,7 +58,7 @@ ActiveSupport::Notifications.subscribe(/active_record.sql/) do |_, _, _, _, hsh|
   ActiveRecord::Base.logger.info hsh[:sql]
 end
 
-require "factory_girl"
+require "factory_bot"
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each { |file| require file }
 
 # Load base/generic schema

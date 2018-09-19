@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   sequence(:book_title) { |n| "Book #{n}" }
   sequence(:chapter_title) { |n| "Chapter #{n}" }
   sequence(:end_note) { |n| "Endnote #{n}" }
@@ -9,7 +9,7 @@ FactoryGirl.define do
 
   factory :invalid_topic, class: "Topic" do
     sequence(:title) { |n| "Title #{n}" }
-    author_name nil
+    author_name { nil }
   end
 
   factory :topic do
@@ -27,7 +27,7 @@ FactoryGirl.define do
 
     trait :with_rule do
       after(:build) do |question|
-        question.build_rule(FactoryGirl.attributes_for(:rule))
+        question.build_rule(FactoryBot.attributes_for(:rule))
       end
     end
   end
@@ -40,21 +40,21 @@ FactoryGirl.define do
   factory :topic_with_book, parent: :topic do
     after(:build) do |topic|
       2.times do
-        book = topic.books.build(title: FactoryGirl.generate(:book_title), author_name: 'Stephen King')
+        book = topic.books.build(title: FactoryBot.generate(:book_title), author_name: 'Stephen King')
         3.times do
-          book.chapters.build(title: FactoryGirl.generate(:chapter_title))
+          book.chapters.build(title: FactoryBot.generate(:chapter_title))
         end
 
         4.times do
-          book.end_notes.build(note: FactoryGirl.generate(:end_note))
+          book.end_notes.build(note: FactoryBot.generate(:end_note))
         end
       end
     end
   end
 
   factory :book do
-    title 'Tortilla Flat'
-    author_name 'John Steinbeck'
+    title { 'Tortilla Flat' }
+    author_name { 'John Steinbeck' }
   end
 
   factory :car do
