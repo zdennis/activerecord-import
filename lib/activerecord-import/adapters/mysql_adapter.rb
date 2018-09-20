@@ -71,14 +71,12 @@ module ActiveRecord::Import::MysqlAdapter
 
   # Add a column to be updated on duplicate key update
   def add_column_for_on_duplicate_key_update( column, options = {} ) # :nodoc:
-    if options.include?(:on_duplicate_key_update)
+    if options.include?(:on_duplicate_key_update) && !options[:ignore] && !options[:on_duplicate_key_ignore]
       columns = options[:on_duplicate_key_update]
       case columns
       when Array then columns << column.to_sym unless columns.include?(column.to_sym)
       when Hash then columns[column.to_sym] = column.to_sym
       end
-    elsif !options[:ignore] && !options[:on_duplicate_key_ignore]
-      options[:on_duplicate_key_update] = [column.to_sym]
     end
   end
 
