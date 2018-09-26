@@ -21,11 +21,52 @@ and then the reviews:
 That would be about 4M SQL insert statements vs 3, which results in vastly improved performance. In our case, it converted
 an 18 hour batch process to <2 hrs.
 
-### More Information : Usage and Examples in Wiki
+## Usage Table of Contents
 
-For more information on activerecord-import please see its wiki: https://github.com/zdennis/activerecord-import/wiki
+* [Callbacks](#callbacks)
+* [Additional Adapters](#additional-adapters)
+* [Load Path Setup](#load-path-setup)
+* [More Information](#more-information)
 
-## Additional Adapters
+### Callbacks
+
+ActiveRecord callbacks related to [creating](http://guides.rubyonrails.org/active_record_callbacks.html#creating-an-object), [updating](http://guides.rubyonrails.org/active_record_callbacks.html#updating-an-object), or [destroying](http://guides.rubyonrails.org/active_record_callbacks.html#destroying-an-object) records (other than `before_validation` and `after_validation`) will NOT be called when calling the import method. This is because it is mass importing rows of data and doesn't necessarily have access to in-memory ActiveRecord objects.
+
+If you do have a collection of in-memory ActiveRecord objects you can do something like this:
+
+```
+books.each do |book|
+  book.run_callbacks(:save) { false }
+  book.run_callbacks(:create) { false }
+end
+Book.import(books)
+```
+
+This will run before_create and before_save callbacks on each item. The `false` argument is needed to prevent after_save being run, which wouldn't make sense prior to bulk import.
+
+If importing with ActiveRecord models or if validating on import, expect the `after_initialize` callback to run for each record.
+
+Another possible approach is to loop through your models first to do validations and then only import and run callbacks on the valid models.
+
+```
+valid_books = []
+invalid_books = []
+books.each do |book|
+  if book.valid?
+    valid_books << book
+  else
+    invalid_books << book
+  end
+end
+Book.import valid_books, validate: false
+valid_books.each do |book|
+  book.run_callbacks(:save) { false }
+  book.run_callbacks(:create) { false }
+end
+```
+
+### Additional Adapters
+
 Additional adapters can be provided by gems external to activerecord-import by providing an adapter that matches the naming convention setup by activerecord-import (and subsequently activerecord) for dynamically loading adapters.  This involves also providing a folder on the load path that follows the activerecord-import naming convention to allow activerecord-import to dynamically load the file.
 
 When `ActiveRecord::Import.require_adapter("fake_name")` is called the require will be:
@@ -62,6 +103,12 @@ activerecord-import-fake_name/
 ```
 
 When rubygems pushes the `lib` folder onto the load path a `require` will now find `activerecord-import/active_record/adapters/fake_name_adapter` as it runs through the lookup process for a ruby file under that path in `$LOAD_PATH`
+
+### More Information
+
+For more information on activerecord-import please see its wiki: https://github.com/zdennis/activerecord-import/wiki
+
+To document new information, please add to the README instead of the wiki. See https://github.com/zdennis/activerecord-import/issues/397 for discussion.
 
 # License
 
