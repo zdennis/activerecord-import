@@ -21,7 +21,7 @@ and then the reviews:
 That would be about 4M SQL insert statements vs 3, which results in vastly improved performance. In our case, it converted
 an 18 hour batch process to <2 hrs.
 
-## Usage Table of Contents
+## Table of Contents
 
 * [Callbacks](#callbacks)
 * [Additional Adapters](#additional-adapters)
@@ -42,15 +42,14 @@ end
 Book.import(books)
 ```
 
-This will run before_create and before_save callbacks on each item. The `false` argument is needed to prevent after_save being run, which wouldn't make sense prior to bulk import.
+This will run before_create and before_save callbacks on each item. The `false` argument is needed to prevent after_save being run, which wouldn't make sense prior to bulk import. Something to note in this example is that the before_create and before_save callbacks will run before the validation callbacks.
 
-If importing with ActiveRecord models or if validating on import, expect the `after_initialize` callback to run for each record.
-
-Another possible approach is to loop through your models first to do validations and then only import and run callbacks on the valid models.
+If that is an issue, another possible approach is to loop through your models first to do validations and then only run callbacks on and import the valid models.
 
 ```
 valid_books = []
 invalid_books = []
+
 books.each do |book|
   if book.valid?
     valid_books << book
@@ -58,11 +57,13 @@ books.each do |book|
     invalid_books << book
   end
 end
-Book.import valid_books, validate: false
+
 valid_books.each do |book|
   book.run_callbacks(:save) { false }
   book.run_callbacks(:create) { false }
 end
+
+Book.import valid_books, validate: false
 ```
 
 ### Additional Adapters
