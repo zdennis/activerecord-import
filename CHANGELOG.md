@@ -1,3 +1,16 @@
+## Changes in 0.26.0
+
+### New Features
+
+* Add  on_duplicate_key_update for SQLite. Thanks to @jkowens via \#542.
+* Add option to update all fields on_duplicate_key_update. Thanks to @aimerald, @jkowens via \#543.
+
+### Fixes
+
+* Handle deeply frozen options hashes. Thanks to @jturkel via \#546.
+* Switch from FactoryGirl to FactoryBot. Thanks to @koic via \#547.
+* Allow import to work with ProxySQL. Thanks to @GregFarrell via \#550.
+
 ## Changes in 0.25.0
 
 ### New Features
