@@ -42,7 +42,7 @@ module ActiveRecord::Import #:nodoc:
 
         model._validate_callbacks.each do |callback|
           filter = callback.raw_filter
-          if filter.is_a?(ActiveRecord::Validations::UniquenessValidator) ||
+          if (!@options[:validate_uniqueness] && filter.is_a?(ActiveRecord::Validations::UniquenessValidator)) ||
              (defined?(ActiveRecord::Validations::PresenceValidator) && filter.is_a?(ActiveRecord::Validations::PresenceValidator) && associations.include?(filter.attributes.first))
             validate_callbacks.delete(callback)
           end

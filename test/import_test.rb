@@ -210,9 +210,9 @@ describe "#import" do
       end
 
       it "should ignore uniqueness validators" do
-        Topic.import columns, valid_values, validate: true
+        Topic.import columns, valid_values
         assert_difference "Topic.count", +2 do
-          Topic.import columns, valid_values, validate: true
+          Topic.import columns, valid_values
         end
       end
 
@@ -291,6 +291,15 @@ describe "#import" do
       it "should call validation methods" do
         assert_no_difference "Topic.count" do
           Topic.import columns, [["validate_failed", "Jerry Carter"]], validate: true
+        end
+      end
+    end
+
+    context "with uniqueness validators included" do
+      it "should not import duplicate records" do
+        Topic.import columns, valid_values
+        assert_no_difference "Topic.count" do
+          Topic.import columns, valid_values, validate_uniqueness: true
         end
       end
     end
