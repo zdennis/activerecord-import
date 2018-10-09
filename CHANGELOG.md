@@ -1,3 +1,12 @@
+## Changes in 0.27.0
+
+### New Features
+
+* Add "secret" option validate_uniqueness to enable uniqueness
+  validators when validating import. This is not a recommended
+  approach (See #228), but is being added back in for projects
+  that depended on this feature. Thanks to @jkowens via \#554.
+
 ## Changes in 0.26.0
 
 ### New Features
