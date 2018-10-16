@@ -25,6 +25,9 @@ an 18 hour batch process to <2 hrs.
 
 * [Callbacks](#callbacks)
 * [Additional Adapters](#additional-adapters)
+* [Requiring](#requiring)
+  * [Autoloading via Bundler](#autoloading-via-bundler)
+  * [Manually Loading](#manually-loading)
 * [Load Path Setup](#load-path-setup)
 * [More Information](#more-information)
 
@@ -77,6 +80,42 @@ When `ActiveRecord::Import.require_adapter("fake_name")` is called the require w
 ```
 
 This allows an external gem to dynamically add an adapter without the need to add any file/code to the core activerecord-import gem.
+
+### Requiring
+
+Note: These instructions will only work if you are using version 0.2.0 or higher.
+
+#### Autoloading via Bundler
+
+If you are using Rails or otherwise autoload your dependencies via Bundler, all you need to do add the gem to your `Gemfile` like so:
+
+```ruby
+gem 'activerecord-import'
+```
+
+#### Manually Loading
+
+You may want to manually load activerecord-import for one reason or another. First, add the `require: false` argument like so:
+
+```ruby
+ gem 'activerecord-import', require: false
+ ```
+
+This will allow you to load up activerecord-import in the file or files where you are using it and only load the parts you need.
+If you are doing this within Rails and ActiveRecord has established a database connection (such as within a controller), you will need to do extra initialization work:
+
+```ruby
+require 'activerecord-import/base'
+# load the appropriate database adapter (postgresql, mysql2, sqlite3, etc)
+require 'activerecord-import/active_record/adapters/postgresql_adapter'
+```
+
+If your gem dependencies aren’t autoloaded, and your script will be establishing a database connection, then simply require activerecord-import after ActiveRecord has been loaded, i.e.:
+
+```ruby
+require 'active_record'
+require 'activerecord-import'
+```
 
 ### Load Path Setup
 To understand how rubygems loads code you can reference the following:
