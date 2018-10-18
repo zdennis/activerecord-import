@@ -111,6 +111,29 @@ When rubygems pushes the `lib` folder onto the load path a `require` will now fi
 
 `activerecord-import` adds the `.import` method onto `ActiveRecord::Base`. There are other gems, such as `elasticsearch-rails`, that do the same thing. In conflicts such as this, there is an aliased method named `.bulk_import` that can be used interchangeably.
 
+If you are using the `apartment` gem, there is a weird triple interaction between that gem, `activerecord-import`, and `activerecord` involving caching of the `sequence_name` of a model. This can be worked around by explcitly setting this value within the model. For example:
+
+```ruby
+class Post < ActiveRecord::Base
+  self.sequence_name = "posts_seq"
+end
+```
+
+Another way to work around the issue is to call `.reset_sequence_name` on the model. For example:
+
+```ruby
+schemas.all.each do |schema|
+  Apartment::Tenant.switch! schema.name
+  ActiveRecord::Base.transaction do
+    Post.reset_sequence_name
+
+    Post.import posts
+  end
+end
+```
+
+See https://github.com/zdennis/activerecord-import/issues/233 for further discussion.
+
 ### More Information
 
 For more information on activerecord-import please see its wiki: https://github.com/zdennis/activerecord-import/wiki
