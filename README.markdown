@@ -26,6 +26,7 @@ an 18 hour batch process to <2 hrs.
 * [Callbacks](#callbacks)
 * [Additional Adapters](#additional-adapters)
 * [Load Path Setup](#load-path-setup)
+* [Conflicts With Other Gems](#conflicts-with-other-gems)
 * [More Information](#more-information)
 
 ### Callbacks
@@ -104,6 +105,11 @@ activerecord-import-fake_name/
 ```
 
 When rubygems pushes the `lib` folder onto the load path a `require` will now find `activerecord-import/active_record/adapters/fake_name_adapter` as it runs through the lookup process for a ruby file under that path in `$LOAD_PATH`
+
+
+### Conflicts With Other Gems
+
+`activerecord-import` adds the `.import` method onto `ActiveRecord::Base`. There are other gems, such as `elasticsearch-rails`, that do the same thing. In conflicts such as this, there is an aliased method named `.bulk_import` that can be used interchangeably.
 
 ### More Information
 
