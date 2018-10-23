@@ -29,6 +29,7 @@ an 18 hour batch process to <2 hrs.
   * [Autoloading via Bundler](#autoloading-via-bundler)
   * [Manually Loading](#manually-loading)
 * [Load Path Setup](#load-path-setup)
+* [Conflicts With Other Gems](#conflicts-with-other-gems)
 * [More Information](#more-information)
 
 ### Callbacks
@@ -143,6 +144,34 @@ activerecord-import-fake_name/
 ```
 
 When rubygems pushes the `lib` folder onto the load path a `require` will now find `activerecord-import/active_record/adapters/fake_name_adapter` as it runs through the lookup process for a ruby file under that path in `$LOAD_PATH`
+
+
+### Conflicts With Other Gems
+
+`activerecord-import` adds the `.import` method onto `ActiveRecord::Base`. There are other gems, such as `elasticsearch-rails`, that do the same thing. In conflicts such as this, there is an aliased method named `.bulk_import` that can be used interchangeably.
+
+If you are using the `apartment` gem, there is a weird triple interaction between that gem, `activerecord-import`, and `activerecord` involving caching of the `sequence_name` of a model. This can be worked around by explcitly setting this value within the model. For example:
+
+```ruby
+class Post < ActiveRecord::Base
+  self.sequence_name = "posts_seq"
+end
+```
+
+Another way to work around the issue is to call `.reset_sequence_name` on the model. For example:
+
+```ruby
+schemas.all.each do |schema|
+  Apartment::Tenant.switch! schema.name
+  ActiveRecord::Base.transaction do
+    Post.reset_sequence_name
+
+    Post.import posts
+  end
+end
+```
+
+See https://github.com/zdennis/activerecord-import/issues/233 for further discussion.
 
 ### More Information
 
