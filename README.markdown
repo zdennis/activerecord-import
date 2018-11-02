@@ -26,6 +26,7 @@ an 18 hour batch process to <2 hrs.
 * [Array of Hashes](#array-of-hashes)
 * [Uniqueness Validation](#uniqueness-validation)
 * [Counter Cache](#counter-cache)
+* [ActiveRecord Timestamps](#activerecord-timestamps)
 * [Callbacks](#callbacks)
 * [Additional Adapters](#additional-adapters)
 * [Requiring](#requiring)
@@ -72,6 +73,16 @@ When running `import`, `activerecord-import` does not automatically update count
 
 * Provide values to the column as an argument on your object that is passed in.
 * Manually update the column after the record has been imported.
+
+### ActiveRecord Timestamps
+
+If you're familiar with ActiveRecord you're probably familiar with its timestamp columns: created_at, created_on, updated_at, updated_on, etc. When importing data the timestamp fields will continue to work as expected and each timestamp column will be set.
+
+Should you wish to specify those columns, you may use the option @timestamps: false@.
+
+However, it is also possible to set just @:created_at@ in specific records. In this case despite using @timestamps: true@,  @:created_at@ will be updated only in records where that field is @nil@. Same rule applies for record associations when enabling the option @recursive: true@.
+
+If you are using custom time zones, these will be respected when performing imports as well as long as @ActiveRecord::Base.default_timezone@ is set, which for practically all Rails apps it is
 
 ### Callbacks
 
