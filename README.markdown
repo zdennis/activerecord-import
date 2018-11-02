@@ -23,6 +23,10 @@ an 18 hour batch process to <2 hrs.
 
 ## Table of Contents
 
+* [Examples](#examples)
+  * [Columns and Arrays](#columns-and-arrays)
+  * [ActiveRecord Models](#activerecord-models)
+  * [Batching](#batching)
 * [Array of Hashes](#array-of-hashes)
 * [Uniqueness Validation](#uniqueness-validation)
 * [Counter Cache](#counter-cache)
@@ -38,7 +42,91 @@ an 18 hour batch process to <2 hrs.
 * [Contributing](#contributing)
   * [Running Tests](#running-tests)
 
-## Array of Hashes
+### Examples
+
+#### Columns and Arrays
+
+The @#import@ method can take an array of column names (string or symbols) and an array of arrays. Each child array represents an individual record and its list of values in the same order as the columns. This is the fastest import mechanism and also the most primitive.
+
+```ruby
+columns = [ :title, :author ]
+values = [ ['Book1', 'FooManChu'], ['Book2', 'Bob Jones'] ]
+
+# Importing without model validations
+Book.import columns, values, :validate => false
+
+# Import with model validations
+Book.import columns, values, :validate => true
+
+# when not specified :validate defaults to true
+Book.import columns, values
+```
+
+#### ActiveRecord Models
+
+The @#import@ method can take an array of models. The attributes will be pulled off from each model by looking at the columns available on the model.
+
+```ruby
+books = [
+  Book.new(:title => "Book 1", :author => "FooManChu"),
+  Book.new(:title => "Book 2", :author => "Bob Jones")
+]
+
+# without validations
+Book.import books, :validate => false
+
+# with validations
+Book.import books, :validate => true
+
+# when not specified :validate defaults to true
+Book.import books
+```
+
+The @#import@ method can take an array of column names and an array of models. The column names are used to determine what fields of data should be imported. The following example will only import books with the @:title@ field:
+
+```ruby
+books = [
+  Book.new(:title => "Book 1", :author => "FooManChu"),
+  Book.new(:title => "Book 2", :author => "Bob Jones")
+]
+columns = [ :title ]
+
+# without validations
+Book.import columns, books, :validate => false
+
+# with validations
+Book.import columns, books, :validate => true
+
+# when not specified :validate defaults to true
+Book.import columns, books
+
+# result in table books
+# title  | author
+#--------|--------
+# Book 1 | NULL
+# Book 2 | NULL
+
+```
+
+#### Batching
+
+The @#import@ method can take a @:batch_size@ option to control the number of rows to insert per INSERT statement. The default is the total number of records being inserted so there is a single INSERT statement.
+
+```ruby
+books = [
+  Book.new(:title => "Book 1", :author => "FooManChu"),
+  Book.new(:title => "Book 2", :author => "Bob Jones"),
+  Book.new(:title => "Book 1", :author => "John Doe"),
+  Book.new(:title => "Book 2", :author => "Richard Wright")
+]
+columns = [ :title ]
+
+# 2 INSERT statements for 4 records
+Book.import columns, books, :batch_size => 2
+
+```
+
+### Array of Hashes
 
 Due to the counter-intuitive behavior that can occur when dealing with hashes instead of ActiveRecord objects, `activerecord-import` will raise an exception when passed an array of hashes. If you have an array of hash attributes, you should instead use them to instantiate an array of ActiveRecord objects and then pass that into `import`.
 
