@@ -23,6 +23,7 @@ an 18 hour batch process to <2 hrs.
 
 ## Table of Contents
 
+* [Uniqueness Validation](#uniqueness-validation)
 * [Callbacks](#callbacks)
 * [Additional Adapters](#additional-adapters)
 * [Requiring](#requiring)
@@ -31,6 +32,14 @@ an 18 hour batch process to <2 hrs.
 * [Load Path Setup](#load-path-setup)
 * [Conflicts With Other Gems](#conflicts-with-other-gems)
 * [More Information](#more-information)
+
+### Uniqueness Validation
+
+By default, `activerecord-import` will not validate for uniquness when importing records. Starting with `v0.27.0`, there is a  parameter called `validate_uniqueness` that can be passed in to trigger this behavior. This option is provided with caution as there are many potential pitfalls. Please use with caution.
+
+```ruby
+Book.import books, validate_uniqueness: true
+```
 
 ### Callbacks
 
