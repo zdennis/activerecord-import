@@ -35,6 +35,7 @@ an 18 hour batch process to <2 hrs.
 * [Counter Cache](#counter-cache)
 * [ActiveRecord Timestamps](#activerecord-timestamps)
 * [Callbacks](#callbacks)
+* [Supported Adapters](#supported-adapters)
 * [Additional Adapters](#additional-adapters)
 * [Requiring](#requiring)
   * [Autoloading via Bundler](#autoloading-via-bundler)
@@ -318,6 +319,24 @@ end
 
 Book.import valid_books, validate: false
 ```
+
+### Supported Adapters
+
+The following database adapters are currently supported:
+
+* MySQL - supports core import functionality plus on duplicate key update support (included in activerecord-import 0.1.0 and higher)
+* MySQL2 - supports core import functionality plus on duplicate key update support (included in activerecord-import 0.2.0 and higher)
+* PostgreSQL - supports core import functionality (included in activerecord-import 0.1.0 and higher)
+* SQLite3 - supports core import functionality (included in activerecord-import 0.1.0 and higher)
+* Oracle - supports core import functionality through DML trigger (available as an external gem: "activerecord-import-oracle_enhanced":https://github.com/keeguon/activerecord-import-oracle_enhanced)
+* SQL Server - supports core import functionality (available as an external gem: "activerecord-import-sqlserver":https://github.com/keeguon/activerecord-import-sqlserver)
+
+If your adapter isn't listed here, please consider creating an external gem as described in the README to provide support. If you do, feel free to update this wiki to include a link to the new adapter's repository!
+
+To test which features are supported by your adapter, use the following methods on a model class:
+* supports_import?(*args)
+* supports_on_duplicate_key_update?
+* supports_setting_primary_key_of_imported_objects?
 
 ### Additional Adapters
 
