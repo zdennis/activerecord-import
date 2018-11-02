@@ -33,6 +33,7 @@ The gem provides the following high-level features:
 * [Examples](#examples)
   * [Introduction](#introduction)
   * [Columns and Arrays](#columns-and-arrays)
+  * [Hashes](#hashes)
   * [ActiveRecord Models](#activerecord-models)
   * [Batching](#batching)
   * [Recursive](#recursive)
@@ -40,7 +41,6 @@ The gem provides the following high-level features:
   * [Duplicate Key Ignore](#duplicate-key-ignore)
   * [Duplicate Key Update](#duplicate-key-update)
   * [Uniqueness Validation](#uniqueness-validation)
-* [Array of Hashes](#array-of-hashes)
 * [Counter Cache](#counter-cache)
 * [ActiveRecord Timestamps](#activerecord-timestamps)
 * [Callbacks](#callbacks)
@@ -96,6 +96,74 @@ Book.import columns, values, :validate => true
 
 # when not specified :validate defaults to true
 Book.import columns, values
+```
+
+#### Hashes
+
+The `import` method can take an array of hashes. The keys map to the column names in the database.
+
+```ruby
+values = [{ title: 'Book1', author: 'FooManChu' }, { title: 'Book2', author: 'Bob Jones'}]
+
+# Importing without model validations
+Book.import values, validate: false
+
+# Import with model validations
+Book.import values, validate: true
+
+# when not specified :validate defaults to true
+Book.import values
+```
+h2. Import Using Hashes and Explicit Column Names
+
+The `import` method can take an array of column names and an array of hash objects. The column names are used to determine what fields of data should be imported. The following example will only import books with the `title` field:
+
+```ruby
+books = [
+  { title: "Book 1", author: "FooManChu" },
+  { title: "Book 2", author: "Bob Jones" }
+]
+columns = [ :title ]
+
+# without validations
+Book.import columns, books, validate: false
+
+# with validations
+Book.import columns, books, validate: true
+
+# when not specified :validate defaults to true
+Book.import columns, books
+
+# result in table books
+# title  | author
+#--------|--------
+# Book 1 | NULL
+# Book 2 | NULL
+
+```
+
+Using hashes will only work if the columns are consistent in every hash of the array. If this does not hold, an exception will be raised. There are two workarounds: use the array to instantiate an array of ActiveRecord objects and then pass that into `import` or divide the array into multiple ones with consistent columns and import each one separately.
+
+See https://github.com/zdennis/activerecord-import/issues/507 for discussion.
+
+```ruby
+arr = [
+  { bar: 'abc' },
+  { baz: 'xyz' },
+  { bar: '123', baz: '456' }
+]
+
+# An exception will be raised
+Foo.import arr
+
+# better
+arr.map! { |args| Foo.new(args) }
+Foo.import arr
+
+# better... though somewhat defeats the purpose of activerecord-import
+Foo.import [{ bar: 'abc' }]
+Foo.import [{ baz: 'xyz' }]
+Foo.import [{ bar: '123', baz: '456' }]
 ```
 
 #### ActiveRecord Models
@@ -289,27 +357,6 @@ By default, `activerecord-import` will not validate for uniquness when importing
 
 ```ruby
 Book.import books, validate_uniqueness: true
-```
-
-### Array of Hashes
-
-Due to the counter-intuitive behavior that can occur when dealing with hashes instead of ActiveRecord objects, `activerecord-import` will raise an exception when passed an array of hashes. If you have an array of hash attributes, you should instead use them to instantiate an array of ActiveRecord objects and then pass that into `import`.
-
-See https://github.com/zdennis/activerecord-import/issues/507 for discussion.
-
-```ruby
-arr = [
-  { bar: 'abc' },
-  { baz: 'xyz' },
-  { bar: '123', baz: '456' }
-]
-
-# An exception will be raised
-Foo.import arr
-
-# better
-arr.map! { |args| Foo.new(args) }
-Foo.import arr
 ```
 
 ### Counter Cache
