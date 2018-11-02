@@ -27,8 +27,11 @@ an 18 hour batch process to <2 hrs.
   * [Columns and Arrays](#columns-and-arrays)
   * [ActiveRecord Models](#activerecord-models)
   * [Batching](#batching)
+* [Options](#options)
+  * [Duplicate Key Ignore](#duplicate-key-ignore)
+  * [Duplicate Key Update](#duplicate-key-update)
+  * [Uniqueness Validation](#uniqueness-validation)
 * [Array of Hashes](#array-of-hashes)
-* [Uniqueness Validation](#uniqueness-validation)
 * [Counter Cache](#counter-cache)
 * [ActiveRecord Timestamps](#activerecord-timestamps)
 * [Callbacks](#callbacks)
@@ -126,6 +129,120 @@ Book.import columns, books, :batch_size => 2
 
 ```
 
+### Options
+
+#### Duplicate Key Ignore
+
+[MySQL](http://dev.mysql.com/doc/refman/5.0/en/insert-on-duplicate.html), [SQLite](https://www.sqlite.org/lang_insert.html), and [PostgreSQL](https://www.postgresql.org/docs/current/static/sql-insert.html#SQL-ON-CONFLICT) (9.5+) support `on_duplicate_key_ignore` which allows you to skip records if a primary or unique key constraint is violated.
+
+```ruby
+book = Book.create! title: "Book1", author: "FooManChu"
+book.title = "Updated Book Title"
+book.author = "Bob Barker"
+
+Book.import [book], on_duplicate_key_ignore: true
+
+book.reload.title  # => "Book1"     (stayed the same)
+book.reload.author # => "FooManChu" (stayed the same)
+```
+
+The option `:on_duplicate_key_ignore` is bypassed when `:recursive` is enabled for [PostgreSQL imports](https://github.com/zdennis/activerecord-import/wiki#recursive-example-postgresql-only).
+
+#### Duplicate Key Update
+
+MySQL, PostgreSQL (9.5+), and SQLite (3.24.0+) support @on duplicate key update@ (also known as "upsert") which allows you to specify fields whose values should be updated if a primary or unique key constraint is violated.
+
+One big difference between MySQL and PostgreSQL support is that MySQL will handle any conflict that happens, but PostgreSQL requires that you specify which columns the conflict would occur over. SQLite models its upsert support after PostgreSQL.
+
+h2. Basic Update
+
+```ruby
+book = Book.create! title: "Book1", author: "FooManChu"
+book.title = "Updated Book Title"
+book.author = "Bob Barker"
+
+# MySQL version
+Book.import [book], on_duplicate_key_update: [:title]
+
+# PostgreSQL version
+Book.import [book], on_duplicate_key_update: {conflict_target: [:id], columns: [:title]}
+
+# PostgreSQL shorthand version (conflict target must be primary key)
+Book.import [book], on_duplicate_key_update: [:title]
+
+book.reload.title  # => "Updated Book Title" (changed)
+book.reload.author # => "FooManChu"          (stayed the same)
+```
+
+h2. Using the value from another column
+
+```ruby
+book = Book.create! title: "Book1", author: "FooManChu"
+book.title = "Updated Book Title"
+
+# MySQL version
+Book.import [book], on_duplicate_key_update: {author: :title}
+
+# PostgreSQL version (no shorthand version)
+Book.import [book], on_duplicate_key_update: {
+  conflict_target: [:id], columns: {author: :title}
+}
+
+book.reload.title  # => "Book1"              (stayed the same)
+book.reload.author # => "Updated Book Title" (changed)
+```
+
+h2. Using Custom SQL
+
+```ruby
+book = Book.create! title: "Book1", author: "FooManChu"
+book.author = "Bob Barker"
+
+# MySQL version
+Book.import [book], on_duplicate_key_update: "author = values(author)"
+
+# PostgreSQL version
+Book.import [book], on_duplicate_key_update: {
+  conflict_target: [:id], columns: "author = excluded.author"
+}
+
+# PostgreSQL shorthand version (conflict target must be primary key)
+Book.import [book], on_duplicate_key_update: "author = excluded.author"
+
+book.reload.title  # => "Book1"      (stayed the same)
+book.reload.author # => "Bob Barker" (changed)
+```
+
+h2. PostgreSQL Using constraints
+
+```ruby
+book = Book.create! title: "Book1", author: "FooManChu", edition: 3, published_at: nil
+book.published_at = Time.now
+
+# in migration
+execute <<-SQL
+      ALTER TABLE books
+        ADD CONSTRAINT for_upsert UNIQUE (title, author, edition);
+    SQL
+
+# PostgreSQL version
+Book.import [book], on_duplicate_key_update: {constraint_name: :for_upsert, columns: [:published_at]}
+
+
+book.reload.title  # => "Book1"          (stayed the same)
+book.reload.author # => "FooManChu"      (stayed the same)
+book.reload.edition # => 3               (stayed the same)
+book.reload.published_at # => 2017-10-09 (changed)
+```
+
+#### Uniqueness Validation
+
+By default, `activerecord-import` will not validate for uniquness when importing records. Starting with `v0.27.0`, there is a  parameter called `validate_uniqueness` that can be passed in to trigger this behavior. This option is provided with caution as there are many potential pitfalls. Please use with caution.
+
+```ruby
+Book.import books, validate_uniqueness: true
+```
+
 ### Array of Hashes
 
 Due to the counter-intuitive behavior that can occur when dealing with hashes instead of ActiveRecord objects, `activerecord-import` will raise an exception when passed an array of hashes. If you have an array of hash attributes, you should instead use them to instantiate an array of ActiveRecord objects and then pass that into `import`.
@@ -145,14 +262,6 @@ Foo.import arr
 # better
 arr.map! { |args| Foo.new(args) }
 Foo.import arr
-```
-
-### Uniqueness Validation
-
-By default, `activerecord-import` will not validate for uniquness when importing records. Starting with `v0.27.0`, there is a  parameter called `validate_uniqueness` that can be passed in to trigger this behavior. This option is provided with caution as there are many potential pitfalls. Please use with caution.
-
-```ruby
-Book.import books, validate_uniqueness: true
 ```
 
 ### Counter Cache
