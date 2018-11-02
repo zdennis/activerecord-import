@@ -82,7 +82,7 @@ and only have 1 SQL call. Much better!
 
 #### Columns and Arrays
 
-The @#import@ method can take an array of column names (string or symbols) and an array of arrays. Each child array represents an individual record and its list of values in the same order as the columns. This is the fastest import mechanism and also the most primitive.
+The `import` method can take an array of column names (string or symbols) and an array of arrays. Each child array represents an individual record and its list of values in the same order as the columns. This is the fastest import mechanism and also the most primitive.
 
 ```ruby
 columns = [ :title, :author ]
@@ -100,7 +100,7 @@ Book.import columns, values
 
 #### ActiveRecord Models
 
-The @#import@ method can take an array of models. The attributes will be pulled off from each model by looking at the columns available on the model.
+The `import` method can take an array of models. The attributes will be pulled off from each model by looking at the columns available on the model.
 
 ```ruby
 books = [
@@ -118,7 +118,7 @@ Book.import books, :validate => true
 Book.import books
 ```
 
-The @#import@ method can take an array of column names and an array of models. The column names are used to determine what fields of data should be imported. The following example will only import books with the @:title@ field:
+The `import` method can take an array of column names and an array of models. The column names are used to determine what fields of data should be imported. The following example will only import books with the `title` field:
 
 ```ruby
 books = [
@@ -146,7 +146,7 @@ Book.import columns, books
 
 #### Batching
 
-The @#import@ method can take a @:batch_size@ option to control the number of rows to insert per INSERT statement. The default is the total number of records being inserted so there is a single INSERT statement.
+The `import` method can take a `batch_size` option to control the number of rows to insert per INSERT statement. The default is the total number of records being inserted so there is a single INSERT statement.
 
 ```ruby
 books = [
@@ -198,11 +198,11 @@ The option `:on_duplicate_key_ignore` is bypassed when `:recursive` is enabled f
 
 #### Duplicate Key Update
 
-MySQL, PostgreSQL (9.5+), and SQLite (3.24.0+) support @on duplicate key update@ (also known as "upsert") which allows you to specify fields whose values should be updated if a primary or unique key constraint is violated.
+MySQL, PostgreSQL (9.5+), and SQLite (3.24.0+) support `on duplicate key update` (also known as "upsert") which allows you to specify fields whose values should be updated if a primary or unique key constraint is violated.
 
 One big difference between MySQL and PostgreSQL support is that MySQL will handle any conflict that happens, but PostgreSQL requires that you specify which columns the conflict would occur over. SQLite models its upsert support after PostgreSQL.
 
-h2. Basic Update
+Basic Update
 
 ```ruby
 book = Book.create! title: "Book1", author: "FooManChu"
@@ -222,7 +222,7 @@ book.reload.title  # => "Updated Book Title" (changed)
 book.reload.author # => "FooManChu"          (stayed the same)
 ```
 
-h2. Using the value from another column
+Using the value from another column
 
 ```ruby
 book = Book.create! title: "Book1", author: "FooManChu"
@@ -240,7 +240,7 @@ book.reload.title  # => "Book1"              (stayed the same)
 book.reload.author # => "Updated Book Title" (changed)
 ```
 
-h2. Using Custom SQL
+Using Custom SQL
 
 ```ruby
 book = Book.create! title: "Book1", author: "FooManChu"
@@ -261,7 +261,7 @@ book.reload.title  # => "Book1"      (stayed the same)
 book.reload.author # => "Bob Barker" (changed)
 ```
 
-h2. PostgreSQL Using constraints
+PostgreSQL Using constraints
 
 ```ruby
 book = Book.create! title: "Book1", author: "FooManChu", edition: 3, published_at: nil
@@ -323,11 +323,11 @@ When running `import`, `activerecord-import` does not automatically update count
 
 If you're familiar with ActiveRecord you're probably familiar with its timestamp columns: created_at, created_on, updated_at, updated_on, etc. When importing data the timestamp fields will continue to work as expected and each timestamp column will be set.
 
-Should you wish to specify those columns, you may use the option @timestamps: false@.
+Should you wish to specify those columns, you may use the option `timestamps: false`.
 
-However, it is also possible to set just @:created_at@ in specific records. In this case despite using @timestamps: true@,  @:created_at@ will be updated only in records where that field is @nil@. Same rule applies for record associations when enabling the option @recursive: true@.
+However, it is also possible to set just `:created_at` in specific records. In this case despite using `timestamps: true`,  `:created_at` will be updated only in records where that field is `nil`. Same rule applies for record associations when enabling the option `recursive: true`.
 
-If you are using custom time zones, these will be respected when performing imports as well as long as @ActiveRecord::Base.default_timezone@ is set, which for practically all Rails apps it is
+If you are using custom time zones, these will be respected when performing imports as well as long as `ActiveRecord::Base.default_timezone` is set, which for practically all Rails apps it is
 
 ### Callbacks
 
@@ -375,15 +375,15 @@ The following database adapters are currently supported:
 * MySQL2 - supports core import functionality plus on duplicate key update support (included in activerecord-import 0.2.0 and higher)
 * PostgreSQL - supports core import functionality (included in activerecord-import 0.1.0 and higher)
 * SQLite3 - supports core import functionality (included in activerecord-import 0.1.0 and higher)
-* Oracle - supports core import functionality through DML trigger (available as an external gem: "activerecord-import-oracle_enhanced":https://github.com/keeguon/activerecord-import-oracle_enhanced)
-* SQL Server - supports core import functionality (available as an external gem: "activerecord-import-sqlserver":https://github.com/keeguon/activerecord-import-sqlserver)
+* Oracle - supports core import functionality through DML trigger (available as an external gem: [activerecord-import-oracle_enhanced](https://github.com/keeguon/activerecord-import-oracle_enhanced)
+* SQL Server - supports core import functionality (available as an external gem: [activerecord-import-sqlserver](https://github.com/keeguon/activerecord-import-sqlserver)
 
 If your adapter isn't listed here, please consider creating an external gem as described in the README to provide support. If you do, feel free to update this wiki to include a link to the new adapter's repository!
 
 To test which features are supported by your adapter, use the following methods on a model class:
-* supports_import?(*args)
-* supports_on_duplicate_key_update?
-* supports_setting_primary_key_of_imported_objects?
+* `supports_import?(*args)`
+* `supports_on_duplicate_key_update?`
+* `supports_setting_primary_key_of_imported_objects?`
 
 ### Additional Adapters
 
