@@ -25,6 +25,7 @@ an 18 hour batch process to <2 hrs.
 
 * [Array of Hashes](#array-of-hashes)
 * [Uniqueness Validation](#uniqueness-validation)
+* [Counter Cache](#counter-cache)
 * [Callbacks](#callbacks)
 * [Additional Adapters](#additional-adapters)
 * [Requiring](#requiring)
@@ -62,6 +63,13 @@ By default, `activerecord-import` will not validate for uniquness when importing
 ```ruby
 Book.import books, validate_uniqueness: true
 ```
+
+### Counter Cache
+
+When running `import`, `activerecord-import` does not automatically update counter cache columns. To update these columns, you will need to do one of the following:
+
+* Provide values to the column as an argument on your object that is passed in.
+* Manually update the column after the record has been imported.
 
 ### Callbacks
 
