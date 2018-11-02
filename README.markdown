@@ -34,6 +34,8 @@ an 18 hour batch process to <2 hrs.
 * [Load Path Setup](#load-path-setup)
 * [Conflicts With Other Gems](#conflicts-with-other-gems)
 * [More Information](#more-information)
+* [Contributing](#contributing)
+  * [Running Tests](#running-tests)
 
 ## Array of Hashes
 
@@ -217,6 +219,28 @@ See https://github.com/zdennis/activerecord-import/issues/233 for further discus
 For more information on activerecord-import please see its wiki: https://github.com/zdennis/activerecord-import/wiki
 
 To document new information, please add to the README instead of the wiki. See https://github.com/zdennis/activerecord-import/issues/397 for discussion.
+
+### Contributing
+
+#### Running Tests
+
+The first thing you need to do is set up your database(s):
+
+* copy `test/database.yml.sample` to `test/database.yml`
+* modify `test/database.yml` for your database settings
+* create databases as needed
+
+After that, you can run the tests. They run against multiple tests and ActiveRecord versions.
+
+This is one example of how to run the tests:
+
+```ruby
+rm Gemfile.lock
+AR_VERSION=4.2 bundle install
+AR_VERSION=4.2 bundle exec rake test:postgresql test:sqlite3 test:mysql2
+```
+
+Once you have pushed up your changes, you can find your CI results [here](https://travis-ci.org/zdennis/activerecord-import/).
 
 # License
 
