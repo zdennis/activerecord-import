@@ -21,12 +21,21 @@ and then the reviews:
 That would be about 4M SQL insert statements vs 3, which results in vastly improved performance. In our case, it converted
 an 18 hour batch process to <2 hrs.
 
+The gem provides the following high-level features:
+
+* activerecord-import can work with raw columns and arrays of values (fastest)
+* activerecord-import works with model objects (faster)
+* activerecord-import can perform validations (fast)
+* activerecord-import can perform on duplicate key updates (requires MySQL or Postgres 9.5+)
+
 ## Table of Contents
 
 * [Examples](#examples)
+  * [Introduction](#introduction)
   * [Columns and Arrays](#columns-and-arrays)
   * [ActiveRecord Models](#activerecord-models)
   * [Batching](#batching)
+  * [Recursive](#recursive)
 * [Options](#options)
   * [Duplicate Key Ignore](#duplicate-key-ignore)
   * [Duplicate Key Update](#duplicate-key-update)
@@ -47,6 +56,29 @@ an 18 hour batch process to <2 hrs.
   * [Running Tests](#running-tests)
 
 ### Examples
+
+#### Introduction
+
+Without `activerecord-import`, you'd write something like this:
+
+```ruby
+10.times do |i|
+  Book.create! :name => "book #{i}"
+end
+```
+
+This would end up making 10 SQL calls. YUCK!  With `activerecord-import`, you can instead do this:
+
+```ruby
+```ruby
+books = []
+10.times do |i|
+  books << Book.new(:name => "book #{i}")
+end
+Book.import books    # or use import!
+```
+
+and only have 1 SQL call. Much better!
 
 #### Columns and Arrays
 
@@ -127,7 +159,22 @@ columns = [ :title ]
 
 # 2 INSERT statements for 4 records
 Book.import columns, books, :batch_size => 2
+```
 
+#### Recursive
+
+NOTE: This only works with PostgreSQL.
+
+Assume that Books <code>has_many</code> Reviews.
+
+```ruby
+books = []
+10.times do |i|
+  book = Book.new(:name => "book #{i}")
+  book.reviews.build(:title => "Excellent")
+  books << book
+end
+Book.import books, recursive: true
 ```
 
 ### Options
