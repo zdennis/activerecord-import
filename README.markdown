@@ -23,6 +23,7 @@ an 18 hour batch process to <2 hrs.
 
 ## Table of Contents
 
+* [Array of Hashes](#array-of-hashes)
 * [Uniqueness Validation](#uniqueness-validation)
 * [Callbacks](#callbacks)
 * [Additional Adapters](#additional-adapters)
@@ -32,6 +33,27 @@ an 18 hour batch process to <2 hrs.
 * [Load Path Setup](#load-path-setup)
 * [Conflicts With Other Gems](#conflicts-with-other-gems)
 * [More Information](#more-information)
+
+## Array of Hashes
+
+Due to the counter-intuitive behavior that can occur when dealing with hashes instead of ActiveRecord objects, `activerecord-import` will raise an exception when passed an array of hashes. If you have an array of hash attributes, you should instead use them to instantiate an array of ActiveRecord objects and then pass that into `import`.
+
+See https://github.com/zdennis/activerecord-import/issues/507 for discussion.
+
+```ruby
+arr = [
+  { bar: 'abc' },
+  { baz: 'xyz' },
+  { bar: '123', baz: '456' }
+]
+
+# An exception will be raised
+Foo.import arr
+
+# better
+arr.map! { |args| Foo.new(args) }
+Foo.import arr
+```
 
 ### Uniqueness Validation
 
