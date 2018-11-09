@@ -160,10 +160,10 @@ Foo.import arr
 arr.map! { |args| Foo.new(args) }
 Foo.import arr
 
-# better... though somewhat defeats the purpose of activerecord-import
-Foo.import [{ bar: 'abc' }]
-Foo.import [{ baz: 'xyz' }]
-Foo.import [{ bar: '123', baz: '456' }]
+# better
+arr.group_by(&:keys).each_value do |v|
+ Foo.import v
+end
 ```
 
 #### ActiveRecord Models
