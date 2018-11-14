@@ -70,7 +70,6 @@ end
 This would end up making 10 SQL calls. YUCK!  With `activerecord-import`, you can instead do this:
 
 ```ruby
-```ruby
 books = []
 10.times do |i|
   books << Book.new(:name => "book #{i}")
@@ -382,7 +381,7 @@ ActiveRecord callbacks related to [creating](http://guides.rubyonrails.org/activ
 
 If you do have a collection of in-memory ActiveRecord objects you can do something like this:
 
-```
+```ruby
 books.each do |book|
   book.run_callbacks(:save) { false }
   book.run_callbacks(:create) { false }
@@ -394,7 +393,7 @@ This will run before_create and before_save callbacks on each item. The `false` 
 
 If that is an issue, another possible approach is to loop through your models first to do validations and then only run callbacks on and import the valid models.
 
-```
+```ruby
 valid_books = []
 invalid_books = []
 
@@ -439,7 +438,7 @@ Additional adapters can be provided by gems external to activerecord-import by p
 When `ActiveRecord::Import.require_adapter("fake_name")` is called the require will be:
 
 ```ruby
-  require 'activerecord-import/active_record/adapters/fake_name_adapter'
+require 'activerecord-import/active_record/adapters/fake_name_adapter'
 ```
 
 This allows an external gem to dynamically add an adapter without the need to add any file/code to the core activerecord-import gem.
@@ -461,8 +460,8 @@ gem 'activerecord-import'
 You may want to manually load activerecord-import for one reason or another. First, add the `require: false` argument like so:
 
 ```ruby
- gem 'activerecord-import', require: false
- ```
+gem 'activerecord-import', require: false
+```
 
 This will allow you to load up activerecord-import in the file or files where you are using it and only load the parts you need.
 If you are doing this within Rails and ActiveRecord has established a database connection (such as within a controller), you will need to do extra initialization work:
@@ -486,6 +485,7 @@ To understand how rubygems loads code you can reference the following:
   http://guides.rubygems.org/patterns/#loading_code
 
 And an example of how active_record dynamically load adapters:
+
   https://github.com/rails/rails/blob/master/activerecord/lib/active_record/connection_adapters/connection_specification.rb
 
 In summary, when a gem is loaded rubygems adds the `lib` folder of the gem to the global load path `$LOAD_PATH` so that all `require` lookups will not propagate through all of the folders on the load path. When a `require` is issued each folder on the `$LOAD_PATH` is checked for the file and/or folder referenced. This allows a gem (like activerecord-import) to define push the activerecord-import folder (or namespace) on the `$LOAD_PATH` and any adapters provided by activerecord-import will be found by rubygems when the require is issued.
