@@ -41,6 +41,7 @@ The gem provides the following high-level features:
   * [Duplicate Key Ignore](#duplicate-key-ignore)
   * [Duplicate Key Update](#duplicate-key-update)
   * [Uniqueness Validation](#uniqueness-validation)
+* [Return Info](#return-info)
 * [Counter Cache](#counter-cache)
 * [ActiveRecord Timestamps](#activerecord-timestamps)
 * [Callbacks](#callbacks)
@@ -356,6 +357,34 @@ By default, `activerecord-import` will not validate for uniquness when importing
 
 ```ruby
 Book.import books, validate_uniqueness: true
+```
+
+### Return Info
+
+The `import` method returns a `Result` object that responds to `failed_instances` and `num_inserts`. Additionally, for users of Postgres, there will be two arrays `ids` and `results` that can be accessed`.
+
+```ruby
+articles = [
+  Article.new(author_id: 1, title: 'First Article', content: 'This is the first article'),
+  Article.new(author_id: 2, title: 'Second Article', content: ''),
+  Article.new(author_id: 3, content: '')
+]
+
+demo = Article.import(articles), returning: :title # => #<struct ActiveRecord::Import::Result
+
+demo.failed_instances
+=> [#<Article id: 3, author_id: 3, title: nil, content: "", created_at: nil, updated_at: nil>]
+
+demo.num_inserts
+=> 1,
+
+demo.ids
+=> ["1", "2"] # for Postgres
+=> [] # for other DBs
+
+demo.results
+=> ["First Article", "Second Article"] # for Postgres
+=> [] for other DBs
 ```
 
 ### Counter Cache
