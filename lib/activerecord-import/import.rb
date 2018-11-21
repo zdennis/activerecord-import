@@ -635,8 +635,7 @@ class ActiveRecord::Base
         updatable_columns = symbolized_column_names.reject { |c| symbolized_primary_key.include? c }
         options[:on_duplicate_key_update] = if on_duplicate_key_update.is_a?(Hash)
           on_duplicate_key_update.each_with_object({}) do |(k, v), duped_options|
-            duped_options[k] = if k == :columns && v == 
-            
+            duped_options[k] = if k == :columns && v == :all
               updatable_columns
             elsif v.duplicable?
               v.dup
