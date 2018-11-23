@@ -553,6 +553,14 @@ class ActiveRecord::Base
           serialized_attributes
         end
 
+        update_attrs = if record_timestamps && options[:timestamps]
+          if respond_to?(:timestamp_attributes_for_update, true)
+            send(:timestamp_attributes_for_update).map(&:to_sym)
+          else
+            new.send(:timestamp_attributes_for_update_in_model)
+          end
+        end
+
         array_of_attributes = []
 
         models.each do |model|
@@ -566,9 +574,13 @@ class ActiveRecord::Base
           end
 
           array_of_attributes << column_names.map do |name|
-            if stored_attrs.key?(name.to_sym) ||
-               serialized_attrs.key?(name) ||
-               default_values.key?(name.to_s)
+            if model.persisted? &&
+               update_attrs && update_attrs.include?(name.to_sym) &&
+               !model.send("#{name}_changed?")
+              nil
+            elsif stored_attrs.key?(name.to_sym) ||
+                  serialized_attrs.key?(name.to_s) ||
+                  default_values[name.to_s]
               model.read_attribute(name.to_s)
             else
               model.read_attribute_before_type_cast(name.to_s)
@@ -655,7 +667,7 @@ class ActiveRecord::Base
       timestamps = {}
 
       # record timestamps unless disabled in ActiveRecord::Base
-      if record_timestamps && options.delete( :timestamps )
+      if record_timestamps && options[:timestamps]
         timestamps = add_special_rails_stamps column_names, array_of_attributes, options
       end
 
@@ -961,7 +973,7 @@ class ActiveRecord::Base
           index = column_names.index(column) || column_names.index(column.to_sym)
           if index
             # replace every instance of the array of attributes with our value
-            array_of_attributes.each { |arr| arr[index] = timestamp if arr[index].nil? || action == :update }
+            array_of_attributes.each { |arr| arr[index] = timestamp if arr[index].nil? }
           else
             column_names << column
             array_of_attributes.each { |arr| arr << timestamp }

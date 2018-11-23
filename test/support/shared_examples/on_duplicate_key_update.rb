@@ -246,6 +246,26 @@ def should_support_basic_on_duplicate_key_update
         end
       end
 
+      context "with timestamps enabled" do
+        let(:time) { Chronic.parse("5 minutes from now") }
+
+        it 'should not overwrite changed updated_at with current timestamp' do
+          topic = Topic.create(author_name: "Jane Doe", title: "Book")
+          timestamp = Time.now.utc
+          topic.updated_at = timestamp
+          Topic.import [topic], on_duplicate_key_update: :all, validate: false
+          assert_equal timestamp.to_s, Topic.last.updated_at.to_s
+        end
+
+        it 'should update updated_at with current timestamp' do
+          topic = Topic.create(author_name: "Jane Doe", title: "Book")
+          Timecop.freeze(time) do
+            Topic.import [topic], on_duplicate_key_update: [:updated_at], validate: false
+            assert_in_delta time.to_i, topic.reload.updated_at.to_i, 1.second
+          end
+        end
+      end
+
       context "with validation checks turned off" do
         asssertion_group(:should_support_on_duplicate_key_update) do
           should_not_update_fields_not_mentioned
