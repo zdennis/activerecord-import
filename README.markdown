@@ -40,7 +40,6 @@ The gem provides the following high-level features:
 * [Options](#options)
   * [Duplicate Key Ignore](#duplicate-key-ignore)
   * [Duplicate Key Update](#duplicate-key-update)
-  * [Uniqueness Validation](#uniqueness-validation)
 * [Return Info](#return-info)
 * [Counter Cache](#counter-cache)
 * [ActiveRecord Timestamps](#activerecord-timestamps)
@@ -247,9 +246,25 @@ Book.import books, recursive: true
 
 ### Options
 
+Key                     | Options               | Default            | Description
+----------------------- | --------------------- | ------------------ | -----------
+:validate               | `true`/`false`        | `true`             | Whether or not to run `ActiveRecord` validations (uniqueness skipped).
+:validate_uniqueness    | `true`/`false`        | `false`            | Whether or not to run uniqueness validations, has potential pitfalls, use with caution (requires `>= v0.27.0`).
+:on_duplicate_key_ignore| `true`/`false`        | `false`            | Allows skipping records with duplicate keys. See [here](https://github.com/zdennis/activerecord-import/#duplicate-key-ignore) for more details.
+:ignore                 | `true`/`false`        | `false`            | Alias for :on_duplicate_key_ignore.
+:on_duplicate_key_update| :all, `Array`, `Hash` | N/A                | Allows upsert logic to be used. See [here](https://github.com/zdennis/activerecord-import/#duplicate-key-update) for more details.
+:synchronize            | `Array`               | N/A                | An array of ActiveRecord instances. This synchronizes existing instances in memory with updates from the import.
+:timestamps             | `true`/`false`        | `true`             | Enables/disables timestamps on imported records.
+:recursive              | `true`/`false`        | `false`            | Imports has_many/has_one associations (PostgreSQL only).
+:batch_size             | `Integer`             | total # of records | Max number of records to insert per import
+:raise_error            | `true`/`false`        | `false`            | Throws an exception if there are invalid records. `import!` is a shortcut for this.
+
+
 #### Duplicate Key Ignore
 
 [MySQL](http://dev.mysql.com/doc/refman/5.0/en/insert-on-duplicate.html), [SQLite](https://www.sqlite.org/lang_insert.html), and [PostgreSQL](https://www.postgresql.org/docs/current/static/sql-insert.html#SQL-ON-CONFLICT) (9.5+) support `on_duplicate_key_ignore` which allows you to skip records if a primary or unique key constraint is violated.
+
+For Postgres 9.5+ it adds `ON CONFLICT DO NOTHING`, for MySQL it uses `INSERT IGNORE`, and for SQLite it uses `INSERT OR IGNORE`. Cannot be enabled on a recursive import. For database adapters that normally support setting primary keys on imported objects, this option prevents that from occurring.
 
 ```ruby
 book = Book.create! title: "Book1", author: "FooManChu"
@@ -269,6 +284,8 @@ The option `:on_duplicate_key_ignore` is bypassed when `:recursive` is enabled f
 MySQL, PostgreSQL (9.5+), and SQLite (3.24.0+) support `on duplicate key update` (also known as "upsert") which allows you to specify fields whose values should be updated if a primary or unique key constraint is violated.
 
 One big difference between MySQL and PostgreSQL support is that MySQL will handle any conflict that happens, but PostgreSQL requires that you specify which columns the conflict would occur over. SQLite models its upsert support after PostgreSQL.
+
+This will use MySQL's `ON DUPLICATE KEY UPDATE` or Postgres/SQLite `ON CONFLICT DO UPDATE` to do upsert.
 
 Basic Update
 
@@ -350,10 +367,6 @@ book.reload.author # => "FooManChu"      (stayed the same)
 book.reload.edition # => 3               (stayed the same)
 book.reload.published_at # => 2017-10-09 (changed)
 ```
-
-#### Uniqueness Validation
-
-By default, `activerecord-import` will not validate for uniquness when importing records. Starting with `v0.27.0`, there is a  parameter called `validate_uniqueness` that can be passed in to trigger this behavior. This option is provided with caution as there are many potential pitfalls. Please use with caution.
 
 ```ruby
 Book.import books, validate_uniqueness: true
