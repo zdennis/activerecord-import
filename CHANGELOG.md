@@ -1,3 +1,15 @@
+## Changes in 0.28.0
+
+### New Features
+
+* Allow updated timestamps to be manually set.Thanks to @Rob117, @jkowens via \#570.
+
+### Fixes
+
+* Fix validating presence of belongs_to associations. Existence
+  of the parent record is not validated, but the foreign key field
+  cannot be empty. Thanks to @Rob117, @jkowens via \#575.
+
 ## Changes in 0.27.0
 
 ### New Features
