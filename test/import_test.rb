@@ -303,6 +303,20 @@ describe "#import" do
         end
       end
     end
+
+    context "when validatoring presence of belongs_to association" do
+      it "should not import records without foreign key" do
+        assert_no_difference "UserToken.count" do
+          UserToken.import [:token], [['12345abcdef67890']]
+        end
+      end
+
+      it "should import records with foreign key" do
+        assert_difference "UserToken.count", +1 do
+          UserToken.import [:user_name, :token], [%w("Bob", "12345abcdef67890")]
+        end
+      end
+    end
   end
 
   context "without :validation option" do
