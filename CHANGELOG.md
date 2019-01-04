@@ -1,3 +1,10 @@
+## Changes in 0.28.1
+
+### Fixes
+
+* Fix issue where ActiveRecord presence validations were being mutated.
+  Limited custom presence validation to bulk imports.
+
 ## Changes in 0.28.0
 
 ### New Features
