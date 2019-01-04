@@ -39,12 +39,14 @@ module ActiveRecord::Import #:nodoc:
 
         validate_callbacks = model._validate_callbacks.dup
 
-        model._validate_callbacks.each do |callback|
+        model._validate_callbacks.each_with_index do |callback, i|
           filter = callback.raw_filter
 
           if filter.class.name =~ /Validations::PresenceValidator/
+            callback = callback.dup
+            filter = filter.dup
             associations = model.class.reflect_on_all_associations(:belongs_to)
-            attrs = filter.instance_variable_get(:@attributes)
+            attrs = filter.instance_variable_get(:@attributes).dup
             associations.each do |assoc|
               if (index = attrs.index(assoc.name))
                 key = assoc.foreign_key.to_sym
@@ -52,6 +54,10 @@ module ActiveRecord::Import #:nodoc:
               end
             end
             filter.instance_variable_set(:@attributes, attrs)
+            validate_callbacks.send(:chain).tap do |chain|
+              callback.instance_variable_set(:@filter, filter)
+              chain[i] = callback
+            end
           elsif !@options[:validate_uniqueness] && filter.is_a?(ActiveRecord::Validations::UniquenessValidator)
             validate_callbacks.delete(callback)
           end

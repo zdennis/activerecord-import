@@ -316,6 +316,13 @@ describe "#import" do
           UserToken.import [:user_name, :token], [%w("Bob", "12345abcdef67890")]
         end
       end
+
+      it "should not mutate the defined validations" do
+        UserToken.import [:user_name, :token], [%w("Bob", "12345abcdef67890")]
+        ut = UserToken.new
+        ut.valid?
+        assert_includes ut.errors.details, :user
+      end
     end
   end
 
