@@ -24,48 +24,57 @@ module ActiveRecord::Import #:nodoc:
   end
 
   class Validator
-    def initialize(options = {})
+    def initialize(klass, options = {})
       @options = options
+      init_validations(klass)
+    end
+
+    def init_validations(klass)
+      @validate_callbacks = klass._validate_callbacks.dup
+
+      klass._validate_callbacks.each_with_index do |callback, i|
+        filter = callback.raw_filter
+
+        if filter.class.name =~ /Validations::PresenceValidator/
+          callback = callback.dup
+          filter = filter.dup
+          associations = klass.reflect_on_all_associations(:belongs_to)
+          attrs = filter.instance_variable_get(:@attributes).dup
+          associations.each do |assoc|
+            if (index = attrs.index(assoc.name))
+              key = assoc.foreign_key.to_sym
+              attrs[index] = key unless attrs.include?(key)
+            end
+          end
+          filter.instance_variable_set(:@attributes, attrs)
+          if @validate_callbacks.respond_to?(:chain, true)
+            @validate_callbacks.send(:chain).tap do |chain|
+              callback.instance_variable_set(:@filter, filter)
+              chain[i] = callback
+            end
+          else
+            callback.raw_filter = filter
+            callback.filter = callback.send(:_compile_filter, filter)
+            @validate_callbacks[i] = callback
+          end
+        elsif !@options[:validate_uniqueness] && filter.is_a?(ActiveRecord::Validations::UniquenessValidator)
+          @validate_callbacks.delete(callback)
+        end
+      end
     end
 
     def valid_model?(model)
       validation_context = @options[:validate_with_context]
       validation_context ||= (model.new_record? ? :create : :update)
-
       current_context = model.send(:validation_context)
+
       begin
         model.send(:validation_context=, validation_context)
         model.errors.clear
 
-        validate_callbacks = model._validate_callbacks.dup
-
-        model._validate_callbacks.each_with_index do |callback, i|
-          filter = callback.raw_filter
-
-          if filter.class.name =~ /Validations::PresenceValidator/
-            callback = callback.dup
-            filter = filter.dup
-            associations = model.class.reflect_on_all_associations(:belongs_to)
-            attrs = filter.instance_variable_get(:@attributes).dup
-            associations.each do |assoc|
-              if (index = attrs.index(assoc.name))
-                key = assoc.foreign_key.to_sym
-                attrs[index] = key unless attrs.include?(key)
-              end
-            end
-            filter.instance_variable_set(:@attributes, attrs)
-            validate_callbacks.send(:chain).tap do |chain|
-              callback.instance_variable_set(:@filter, filter)
-              chain[i] = callback
-            end
-          elsif !@options[:validate_uniqueness] && filter.is_a?(ActiveRecord::Validations::UniquenessValidator)
-            validate_callbacks.delete(callback)
-          end
-        end
-
         model.run_callbacks(:validation) do
           if defined?(ActiveSupport::Callbacks::Filters::Environment) # ActiveRecord >= 4.1
-            runner = validate_callbacks.compile
+            runner = @validate_callbacks.compile
             env = ActiveSupport::Callbacks::Filters::Environment.new(model, false, nil)
             if runner.respond_to?(:call) # ActiveRecord < 5.1
               runner.call(env)
@@ -84,10 +93,10 @@ module ActiveRecord::Import #:nodoc:
               runner.invoke_before(env)
               runner.invoke_after(env)
             end
-          elsif validate_callbacks.method(:compile).arity == 0 # ActiveRecord = 4.0
-            model.instance_eval validate_callbacks.compile
+          elsif @validate_callbacks.method(:compile).arity == 0 # ActiveRecord = 4.0
+            model.instance_eval @validate_callbacks.compile
           else # ActiveRecord 3.x
-            model.instance_eval validate_callbacks.compile(nil, model)
+            model.instance_eval @validate_callbacks.compile(nil, model)
           end
         end
 
@@ -535,7 +544,7 @@ class ActiveRecord::Base
       options[:locking_column] = locking_column if attribute_names.include?(locking_column)
 
       is_validating = options[:validate_with_context].present? ? true : options[:validate]
-      validator = ActiveRecord::Import::Validator.new(options)
+      validator = ActiveRecord::Import::Validator.new(self, options)
 
       # assume array of model objects
       if args.last.is_a?( Array ) && args.last.first.is_a?(ActiveRecord::Base)

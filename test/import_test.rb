@@ -321,7 +321,7 @@ describe "#import" do
         UserToken.import [:user_name, :token], [%w("Bob", "12345abcdef67890")]
         ut = UserToken.new
         ut.valid?
-        assert_includes ut.errors.details, :user
+        assert_includes ut.errors.messages, :user
       end
     end
   end
