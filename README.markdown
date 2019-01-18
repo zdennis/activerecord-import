@@ -113,7 +113,7 @@ Book.import values, validate: true
 # when not specified :validate defaults to true
 Book.import values
 ```
-h2. Import Using Hashes and Explicit Column Names
+#### Import Using Hashes and Explicit Column Names
 
 The `import` method can take an array of column names and an array of hash objects. The column names are used to determine what fields of data should be imported. The following example will only import books with the `title` field:
 
