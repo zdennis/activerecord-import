@@ -37,6 +37,12 @@ def should_support_postgresql_import_functionality
         assert !topic.changed?
       end
 
+      if ENV['AR_VERSION'].to_f > 4.1
+        it "moves the dirty changes to previous_changes" do
+          assert topic.previous_changes.present?
+        end
+      end
+
       it "marks models as persisted" do
         assert !topic.new_record?
         assert topic.persisted?
