@@ -862,7 +862,10 @@ class ActiveRecord::Base
       end
 
       models.each do |model|
-        if model.respond_to?(:clear_changes_information) # Rails 4.0 and higher
+        if model.respond_to?(:changes_applied) # Rails 4.1.8 and higher
+          model.changes_internally_applied if model.respond_to?(:changes_internally_applied) # legacy behavior for Rails 5.1
+          model.changes_applied
+        elsif model.respond_to?(:clear_changes_information) # Rails 4.0 and higher
           model.clear_changes_information
         else # Rails 3.2
           model.instance_variable_get(:@changed_attributes).clear
