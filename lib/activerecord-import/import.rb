@@ -32,33 +32,39 @@ module ActiveRecord::Import #:nodoc:
     def init_validations(klass)
       @validate_callbacks = klass._validate_callbacks.dup
 
-      klass._validate_callbacks.each_with_index do |callback, i|
+      @validate_callbacks.each_with_index do |callback, i|
         filter = callback.raw_filter
+        next unless filter.class.name =~ /Validations::PresenceValidator/ ||
+                    (!@options[:validate_uniqueness] &&
+                     filter.is_a?(ActiveRecord::Validations::UniquenessValidator))
 
-        if filter.class.name =~ /Validations::PresenceValidator/
-          callback = callback.dup
-          filter = filter.dup
+        callback = callback.dup
+        filter = filter.dup
+        attrs = filter.instance_variable_get(:@attributes).dup
+
+        if filter.is_a?(ActiveRecord::Validations::UniquenessValidator)
+          attrs = []
+        else
           associations = klass.reflect_on_all_associations(:belongs_to)
-          attrs = filter.instance_variable_get(:@attributes).dup
           associations.each do |assoc|
             if (index = attrs.index(assoc.name))
               key = assoc.foreign_key.to_sym
               attrs[index] = key unless attrs.include?(key)
             end
           end
-          filter.instance_variable_set(:@attributes, attrs)
-          if @validate_callbacks.respond_to?(:chain, true)
-            @validate_callbacks.send(:chain).tap do |chain|
-              callback.instance_variable_set(:@filter, filter)
-              chain[i] = callback
-            end
-          else
-            callback.raw_filter = filter
-            callback.filter = callback.send(:_compile_filter, filter)
-            @validate_callbacks[i] = callback
+        end
+
+        filter.instance_variable_set(:@attributes, attrs)
+
+        if @validate_callbacks.respond_to?(:chain, true)
+          @validate_callbacks.send(:chain).tap do |chain|
+            callback.instance_variable_set(:@filter, filter)
+            chain[i] = callback
           end
-        elsif !@options[:validate_uniqueness] && filter.is_a?(ActiveRecord::Validations::UniquenessValidator)
-          @validate_callbacks.delete(callback)
+        else
+          callback.raw_filter = filter
+          callback.filter = callback.send(:_compile_filter, filter)
+          @validate_callbacks[i] = callback
         end
       end
     end
