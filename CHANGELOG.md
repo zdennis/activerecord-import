@@ -1,3 +1,10 @@
+## Changes in 0.28.2
+
+### Fixes
+
+* Fix issue where validations where not working in certain scenarios.
+  Thanks to @CASIXx1 via \#579.
+
 ## Changes in 0.28.1
 
 ### Fixes
