@@ -1,3 +1,18 @@
+## Changes in 1.0.0
+
+### New Features
+
+* Move ActiveRecord::Dirty changes to previous_changes after import.
+  Thanks to @stokarenko via \#584.
+
+### Breaking Changes
+
+* Previously :on_duplicate_key_update was enabled by default for MySQL.
+  The update timestamp columns (updated_at, updated_on) would be updated
+  on duplicate key. This was behavior is inconsistent with the other database
+  adapters and could also be considered surprising. Going forward it must
+  be explicitly enabled. See \#548.
+
 ## Changes in 0.28.2
 
 ### Fixes
