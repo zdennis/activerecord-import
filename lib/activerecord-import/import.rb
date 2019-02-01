@@ -976,6 +976,8 @@ class ActiveRecord::Base
               val = column.type_cast(val) unless column.type.to_sym == :binary
               connection_memo.quote(val, column)
             end
+          else
+            raise ArgumentError, "Too much values (#{arr.length} compared to columns #{columns.length})"
           end
         end
         "(#{my_values.join(',')})"
