@@ -977,7 +977,7 @@ class ActiveRecord::Base
               connection_memo.quote(val, column)
             end
           else
-            raise ArgumentError, "Too much values (#{arr.length} compared to columns #{columns.length})"
+            raise ArgumentError, "Number of values (#{arr.length}) exceeds number of columns (#{columns.length})"
           end
         end
         "(#{my_values.join(',')})"
