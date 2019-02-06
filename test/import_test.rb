@@ -17,6 +17,11 @@ describe "#import" do
     assert_equal error.message, "Last argument should be a two dimensional array '[[]]'. First element in array was a String"
   end
 
+  it "warns you that you're passing more data than you ought to" do
+    error = assert_raise(ArgumentError) { Topic.import %w(title author_name), [['Author #1', 'Book #1', 0]] }
+    assert_equal error.message, "Number of values (8) exceeds number of columns (7)"
+  end
+
   it "should not produce an error when importing empty arrays" do
     assert_nothing_raised do
       Topic.import []
