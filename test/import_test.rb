@@ -19,7 +19,7 @@ describe "#import" do
 
   it "warns you that you're passing more data than you ought to" do
     error = assert_raise(ArgumentError) { Topic.import %w(title author_name), [['Author #1', 'Book #1', 0]] }
-    assert_equal error.message, "Too much values (8 compared to columns 7)"
+    assert_equal error.message, "Number of values (8) exceeds number of columns (7)"
   end
 
   it "should not produce an error when importing empty arrays" do
