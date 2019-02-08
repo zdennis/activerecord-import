@@ -528,7 +528,7 @@ class ActiveRecord::Base
         import_helper(*args)
       end
     end
-    alias import bulk_import unless respond_to? :import
+    alias import bulk_import unless ActiveRecord::Base.respond_to? :import
 
     # Imports a collection of values if all values are valid. Import fails at the
     # first encountered validation error and raises ActiveRecord::RecordInvalid
@@ -540,7 +540,7 @@ class ActiveRecord::Base
 
       bulk_import(*args, options)
     end
-    alias import! bulk_import! unless respond_to? :import!
+    alias import! bulk_import! unless ActiveRecord::Base.respond_to? :import!
 
     def import_helper( *args )
       options = { validate: true, timestamps: true }
