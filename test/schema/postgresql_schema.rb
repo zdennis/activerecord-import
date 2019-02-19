@@ -8,6 +8,7 @@ ActiveRecord::Schema.define do
     t.text :preferences
 
     if t.respond_to?(:json)
+      t.json :pure_json_data
       t.json :data
     else
       t.text :data
@@ -20,6 +21,7 @@ ActiveRecord::Schema.define do
     end
 
     if t.respond_to?(:jsonb)
+      t.jsonb :pure_jsonb_data
       t.jsonb :settings
       t.jsonb :json_data, null: false, default: {}
     else

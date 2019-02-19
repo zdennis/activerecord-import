@@ -234,6 +234,19 @@ def should_support_postgresql_import_functionality
         assert_equal({}, Vendor.first.json_data)
       end
     end
+
+    %w(json jsonb).each do |json_type|
+      describe "with pure #{json_type} fields" do
+        let(:data) { { a: :b } }
+        let(:json_field_name) { "pure_#{json_type}_data" }
+        it "imports the values from saved records" do
+          vendor = Vendor.create!(name: 'Vendor 1', json_field_name => data)
+
+          Vendor.import [vendor], on_duplicate_key_update: [json_field_name]
+          assert_equal(data.as_json, vendor.reload[json_field_name])
+        end
+      end
+    end
   end
 
   describe "with binary field" do
