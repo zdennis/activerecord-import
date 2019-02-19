@@ -904,8 +904,9 @@ class ActiveRecord::Base
       associated_objects_by_class = {}
       models.each { |model| find_associated_objects_for_import(associated_objects_by_class, model) }
 
-      # :on_duplicate_key_update not supported for associations
+      # :on_duplicate_key_update and :returning not supported for associations
       options.delete(:on_duplicate_key_update)
+      options.delete(:returning)
 
       associated_objects_by_class.each_value do |associations|
         associations.each_value do |associated_records|
