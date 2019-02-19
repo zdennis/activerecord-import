@@ -235,9 +235,9 @@ def should_support_postgresql_import_functionality
       end
     end
 
-    %w[json jsonb].each do |json_type|
+    %w(json jsonb).each do |json_type|
       describe "with pure #{json_type} fields" do
-        let(:data) { {a: :b} }
+        let(:data) { { a: :b } }
         let(:json_field_name) { "pure_#{json_type}_data" }
         it "imports the values from saved records" do
           vendor = Vendor.create!(name: 'Vendor 1', json_field_name => data)

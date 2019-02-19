@@ -577,10 +577,10 @@ class ActiveRecord::Base
         default_values = column_defaults
         stored_attrs = respond_to?(:stored_attributes) ? stored_attributes : {}
         serialized_attrs = if defined?(ActiveRecord::Type::Serialized)
-          attrs = column_names.select { |c|
+          attrs = column_names.select do |c|
             attribute_type = type_for_attribute(c.to_s)
-            attribute_type.class == ActiveRecord::Type::Serialized || %i[json jsonb].include?(attribute_type.type)
-          }
+            attribute_type.class == ActiveRecord::Type::Serialized || %i(json jsonb).include?(attribute_type.type)
+          end
           Hash[attrs.map { |a| [a, nil] }]
         else
           serialized_attributes
