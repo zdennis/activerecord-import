@@ -19,7 +19,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
     sql2insert = base_sql + values.join( ',' ) + post_sql
 
     columns = returning_columns(options)
-    if columns.blank? || options[:no_returning]
+    if columns.blank? || (options[:no_returning] && !options[:recursive])
       insert( sql2insert, *args )
     else
       returned_values = if columns.size > 1
@@ -80,7 +80,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
     sql += super(table_name, options)
 
     columns = returning_columns(options)
-    unless columns.blank? || options[:no_returning]
+    unless columns.blank? || (options[:no_returning] && !options[:recursive])
       sql << " RETURNING \"#{columns.join('", "')}\""
     end
 

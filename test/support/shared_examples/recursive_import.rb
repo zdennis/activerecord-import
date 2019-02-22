@@ -198,5 +198,19 @@ def should_support_recursive_import
         end
       end
     end
+
+    # If no returning option is provided, it is ignored
+    describe "no returning" do
+      let(:new_topics) { Build(1, :topic_with_book) }
+
+      it "is ignored and imports objects with associations" do
+        assert_difference "Topic.count", +1 do
+          Topic.import new_topics, recursive: true, no_returning: true, validate: false
+          new_topics.each do |topic|
+            assert_not_nil topic.id
+          end
+        end
+      end
+    end
   end
 end
