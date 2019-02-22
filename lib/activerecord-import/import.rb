@@ -574,18 +574,6 @@ class ActiveRecord::Base
           end
         end
 
-        default_values = column_defaults
-        stored_attrs = respond_to?(:stored_attributes) ? stored_attributes : {}
-        serialized_attrs = if defined?(ActiveRecord::Type::Serialized)
-          attrs = column_names.select do |c|
-            attribute_type = type_for_attribute(c.to_s)
-            attribute_type.class == ActiveRecord::Type::Serialized || %i(json jsonb).include?(attribute_type.type)
-          end
-          Hash[attrs.map { |a| [a, nil] }]
-        else
-          serialized_attributes
-        end
-
         update_attrs = if record_timestamps && options[:timestamps]
           if respond_to?(:timestamp_attributes_for_update, true)
             send(:timestamp_attributes_for_update).map(&:to_sym)
@@ -611,12 +599,8 @@ class ActiveRecord::Base
                update_attrs && update_attrs.include?(name.to_sym) &&
                !model.send("#{name}_changed?")
               nil
-            elsif stored_attrs.key?(name.to_sym) ||
-                  serialized_attrs.key?(name.to_s) ||
-                  default_values[name.to_s]
-              model.read_attribute(name.to_s)
             else
-              model.read_attribute_before_type_cast(name.to_s)
+              model.read_attribute(name.to_s)
             end
           end
         end
