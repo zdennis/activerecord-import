@@ -1,3 +1,20 @@
+## Changes in 1.0.1
+
+### Fixes
+
+* Raise an error with a helpful message if array of values exceeds the number of
+  columns for a table. Thanks to @golddranks via \#589.
+* Properly check if model responds to import before creating alias.
+  Thanks to @jcw- via \#591.
+* No longer pass :returning option to child associations on recursive
+  import. Thanks to @dmitriy-kiriyenko via \#595.
+* Fix import issue for models with Postgresql json/jsonb fields. Thanks
+  to @stokarenko via \#594.
+* Fix issue importing models with timestamps that contain timezone
+  information. Thaks to @dekaikiwi, @jkowens via \#598.
+* Ignore :no_returning when using :recursive option. Thanks to @dgollahon, @jkowens
+  via \#599.
+
 ## Changes in 1.0.0
 
 ### New Features
