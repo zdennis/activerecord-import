@@ -63,7 +63,7 @@ Without `activerecord-import`, you'd write something like this:
 
 ```ruby
 10.times do |i|
-  Book.create! :name => "book #{i}"
+  Book.create! name: "book #{i}"
 end
 ```
 
@@ -72,7 +72,7 @@ This would end up making 10 SQL calls. YUCK!  With `activerecord-import`, you ca
 ```ruby
 books = []
 10.times do |i|
-  books << Book.new(:name => "book #{i}")
+  books << Book.new(name: "book #{i}")
 end
 Book.import books    # or use import!
 ```
@@ -88,10 +88,10 @@ columns = [ :title, :author ]
 values = [ ['Book1', 'FooManChu'], ['Book2', 'Bob Jones'] ]
 
 # Importing without model validations
-Book.import columns, values, :validate => false
+Book.import columns, values, validate: false
 
 # Import with model validations
-Book.import columns, values, :validate => true
+Book.import columns, values, validate: true
 
 # when not specified :validate defaults to true
 Book.import columns, values
@@ -171,15 +171,15 @@ The `import` method can take an array of models. The attributes will be pulled o
 
 ```ruby
 books = [
-  Book.new(:title => "Book 1", :author => "FooManChu"),
-  Book.new(:title => "Book 2", :author => "Bob Jones")
+  Book.new(title: "Book 1", author: "FooManChu"),
+  Book.new(title: "Book 2", author: "Bob Jones")
 ]
 
 # without validations
-Book.import books, :validate => false
+Book.import books, validate: false
 
 # with validations
-Book.import books, :validate => true
+Book.import books, validate: true
 
 # when not specified :validate defaults to true
 Book.import books
@@ -189,16 +189,16 @@ The `import` method can take an array of column names and an array of models. Th
 
 ```ruby
 books = [
-  Book.new(:title => "Book 1", :author => "FooManChu"),
-  Book.new(:title => "Book 2", :author => "Bob Jones")
+  Book.new(title: "Book 1", author: "FooManChu"),
+  Book.new(title: "Book 2", author: "Bob Jones")
 ]
 columns = [ :title ]
 
 # without validations
-Book.import columns, books, :validate => false
+Book.import columns, books, validate: false
 
 # with validations
-Book.import columns, books, :validate => true
+Book.import columns, books, validate: true
 
 # when not specified :validate defaults to true
 Book.import columns, books
@@ -217,15 +217,15 @@ The `import` method can take a `batch_size` option to control the number of rows
 
 ```ruby
 books = [
-  Book.new(:title => "Book 1", :author => "FooManChu"),
-  Book.new(:title => "Book 2", :author => "Bob Jones"),
-  Book.new(:title => "Book 1", :author => "John Doe"),
-  Book.new(:title => "Book 2", :author => "Richard Wright")
+  Book.new(title: "Book 1", author: "FooManChu"),
+  Book.new(title: "Book 2", author: "Bob Jones"),
+  Book.new(title: "Book 1", author: "John Doe"),
+  Book.new(title: "Book 2", author: "Richard Wright")
 ]
 columns = [ :title ]
 
 # 2 INSERT statements for 4 records
-Book.import columns, books, :batch_size => 2
+Book.import columns, books, batch_size: 2
 ```
 
 #### Recursive
@@ -237,8 +237,8 @@ Assume that Books <code>has_many</code> Reviews.
 ```ruby
 books = []
 10.times do |i|
-  book = Book.new(:name => "book #{i}")
-  book.reviews.build(:title => "Excellent")
+  book = Book.new(name: "book #{i}")
+  book.reviews.build(title: "Excellent")
   books << book
 end
 Book.import books, recursive: true
