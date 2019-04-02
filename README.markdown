@@ -397,7 +397,7 @@ demo.ids
 
 demo.results
 => ["First Article", "Second Article"] # for Postgres
-=> [] for other DBs
+=> [] # for other DBs
 ```
 
 ### Counter Cache
