@@ -73,7 +73,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
       if (options[:ignore] || options[:on_duplicate_key_ignore]) && !options[:on_duplicate_key_update] && !options[:recursive]
         sql << sql_for_on_duplicate_key_ignore( table_name, options[:on_duplicate_key_ignore] )
       end
-    elsif options[:on_duplicate_key_ignore] && !options[:on_duplicate_key_update]
+    elsif logger && options[:on_duplicate_key_ignore] && !options[:on_duplicate_key_update]
       logger.warn "Ignoring on_duplicate_key_ignore because it is not supported by the database."
     end
 
