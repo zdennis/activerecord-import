@@ -383,7 +383,7 @@ articles = [
   Article.new(author_id: 3, content: '')
 ]
 
-demo = Article.import(articles), returning: :title # => #<struct ActiveRecord::Import::Result
+demo = Article.import(articles, returning: :title) # => #<struct ActiveRecord::Import::Result
 
 demo.failed_instances
 => [#<Article id: 3, author_id: 3, title: nil, content: "", created_at: nil, updated_at: nil>]
