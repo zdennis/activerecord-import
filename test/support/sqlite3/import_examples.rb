@@ -5,21 +5,8 @@ def should_support_sqlite3_import_functionality
   end
 
   describe "#supports_imports?" do
-    context "and SQLite is 3.7.11 or higher" do
-      it "supports import" do
-        version = ActiveRecord::ConnectionAdapters::SQLite3Adapter::Version.new("3.7.11")
-        assert ActiveRecord::Base.supports_import?(version)
-
-        version = ActiveRecord::ConnectionAdapters::SQLite3Adapter::Version.new("3.7.12")
-        assert ActiveRecord::Base.supports_import?(version)
-      end
-    end
-
-    context "and SQLite less than 3.7.11" do
-      it "doesn't support import" do
-        version = ActiveRecord::ConnectionAdapters::SQLite3Adapter::Version.new("3.7.10")
-        assert !ActiveRecord::Base.supports_import?(version)
-      end
+    it "should support import" do
+      assert ActiveRecord::Base.supports_import?
     end
   end
 

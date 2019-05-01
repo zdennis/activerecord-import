@@ -195,8 +195,8 @@ module ActiveRecord::Import::PostgreSQLAdapter
     exception.is_a?(ActiveRecord::StatementInvalid) && exception.to_s.include?('duplicate key')
   end
 
-  def supports_on_duplicate_key_update?(current_version = postgresql_version)
-    current_version >= MIN_VERSION_FOR_UPSERT
+  def supports_on_duplicate_key_update?
+    database_version >= MIN_VERSION_FOR_UPSERT
   end
 
   def supports_setting_primary_key_of_imported_objects?
@@ -207,5 +207,11 @@ module ActiveRecord::Import::PostgreSQLAdapter
     if locking_column.present?
       results << "\"#{locking_column}\"=EXCLUDED.\"#{locking_column}\"+1"
     end
+  end
+
+  private
+
+  def database_version
+    defined?(postgresql_version) ? postgresql_version : super
   end
 end

@@ -9,16 +9,12 @@ module ActiveRecord::Import::SQLite3Adapter
   # Override our conformance to ActiveRecord::Import::ImportSupport interface
   # to ensure that we only support import in supported version of SQLite.
   # Which INSERT statements with multiple value sets was introduced in 3.7.11.
-  def supports_import?(current_version = sqlite_version)
-    if current_version >= MIN_VERSION_FOR_IMPORT
-      true
-    else
-      false
-    end
+  def supports_import?
+    database_version >= MIN_VERSION_FOR_IMPORT
   end
 
-  def supports_on_duplicate_key_update?(current_version = sqlite_version)
-    current_version >= MIN_VERSION_FOR_UPSERT
+  def supports_on_duplicate_key_update?
+    database_version >= MIN_VERSION_FOR_UPSERT
   end
 
   # +sql+ can be a single string or an array. If it is an array all
@@ -174,5 +170,11 @@ module ActiveRecord::Import::SQLite3Adapter
     if locking_column.present?
       results << "\"#{locking_column}\"=EXCLUDED.\"#{locking_column}\"+1"
     end
+  end
+
+  private
+
+  def database_version
+    defined?(sqlite_version) ? sqlite_version : super
   end
 end

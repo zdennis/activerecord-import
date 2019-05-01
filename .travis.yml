@@ -1,30 +1,29 @@
 language: ruby
 cache: bundler
 rvm:
-  - 2.3.7
+  - 2.5.5
 
 env:
   global:
     # https://github.com/discourse/discourse/blob/master/.travis.yml
     - RUBY_GC_MALLOC_LIMIT=50000000
   matrix:
-    - AR_VERSION=3.2
-    - AR_VERSION=4.0
-    - AR_VERSION=4.1
-    - AR_VERSION=4.2
-    - AR_VERSION=5.0
     - AR_VERSION=5.1
     - AR_VERSION=5.2
+    - AR_VERSION=6.0
 
 matrix:
   include:
-    - rvm: jruby-9.1.14.0
+    - rvm: 2.3.8
+      env: AR_VERSION=3.2
+    - rvm: 2.3.8
+      env: AR_VERSION=4.0
+    - rvm: 2.3.8
+      env: AR_VERSION=4.1
+    - rvm: 2.3.8
       env: AR_VERSION=4.2
-
-      script:
-        - bundle exec rake test:jdbcsqlite3
-        - bundle exec rake test:jdbcmysql
-        - bundle exec rake test:jdbcpostgresql
+    - rvm: 2.3.8
+      env: AR_VERSION=5.0
 
   fast_finish: true
 
