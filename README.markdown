@@ -248,7 +248,7 @@ Book.import books, recursive: true
 
 Key                     | Options               | Default            | Description
 ----------------------- | --------------------- | ------------------ | -----------
-:validate               | `true`/`false`        | `true`             | Whether or not to run `ActiveRecord` validations (uniqueness skipped). (Can not be used with `import!`)
+:validate               | `true`/`false`        | `true`             | Whether or not to run `ActiveRecord` validations (uniqueness skipped). This option will always be true when using `import!`.
 :validate_uniqueness    | `true`/`false`        | `false`            | Whether or not to run uniqueness validations, has potential pitfalls, use with caution (requires `>= v0.27.0`).
 :on_duplicate_key_ignore| `true`/`false`        | `false`            | Allows skipping records with duplicate keys. See [here](https://github.com/zdennis/activerecord-import/#duplicate-key-ignore) for more details.
 :ignore                 | `true`/`false`        | `false`            | Alias for :on_duplicate_key_ignore.
