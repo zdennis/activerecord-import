@@ -39,8 +39,8 @@ module ActiveRecord # :nodoc:
 
         next unless matched_instance
 
-        instance.send :clear_aggregation_cache
         instance.send :clear_association_cache
+        instance.send :clear_aggregation_cache if instance.respond_to?(:clear_aggregation_cache, true)
         instance.instance_variable_set :@attributes, matched_instance.instance_variable_get(:@attributes)
 
         if instance.respond_to?(:clear_changes_information)
