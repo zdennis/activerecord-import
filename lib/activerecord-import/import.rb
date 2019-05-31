@@ -26,6 +26,7 @@ module ActiveRecord::Import #:nodoc:
   class Validator
     def initialize(klass, options = {})
       @options = options
+      @validator_class = klass
       init_validations(klass)
     end
 
@@ -70,6 +71,8 @@ module ActiveRecord::Import #:nodoc:
     end
 
     def valid_model?(model)
+      init_validations(model.class) unless model.class == @validator_class
+
       validation_context = @options[:validate_with_context]
       validation_context ||= (model.new_record? ? :create : :update)
       current_context = model.send(:validation_context)
