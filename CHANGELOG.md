@@ -1,3 +1,18 @@
+## Changes in 1.0.2
+
+### New Features
+
+* Add support for CockroachDB adapter. Thanks to @willie via \#605.
+* Add support for ActiveRecord 6.0.0.rc1. Thanks to @madeindjs, @bill-filler,
+  @jkowens via \#619, \#623.
+
+### Fixes
+
+* Fixes NoMethodError when attempting to use nil logger. Thanks to @MattMecel,
+  @khiav22357.
+* Fix issue validating STI models. Thanks to @thejbsmith, @jkowens via
+  \#626.
+
 ## Changes in 1.0.1
 
 ### Fixes
