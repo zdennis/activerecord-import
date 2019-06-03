@@ -54,6 +54,7 @@ The gem provides the following high-level features:
 * [More Information](#more-information)
 * [Contributing](#contributing)
   * [Running Tests](#running-tests)
+  * [Issue Triage](#issue-triage)
 
 ### Examples
 
@@ -604,6 +605,10 @@ AR_VERSION=4.2 bundle exec rake test:postgresql test:sqlite3 test:mysql2
 ```
 
 Once you have pushed up your changes, you can find your CI results [here](https://travis-ci.org/zdennis/activerecord-import/).
+
+## Issue Triage [![Open Source Helpers](https://www.codetriage.com/zdennis/activerecord-import/badges/users.svg)](https://www.codetriage.com/zdennis/activerecord-import)
+
+You can triage issues which may include reproducing bug reports or asking for vital information, such as version numbers or reproduction instructions. If you would like to start triaging issues, one easy way to get started is to [subscribe to activerecord-import on CodeTriage](https://www.codetriage.com/zdennis/activerecord-import).
 
 # License
 
