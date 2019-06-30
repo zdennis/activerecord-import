@@ -1,6 +1,6 @@
-# activerecord-import [![Build Status](https://travis-ci.org/zdennis/activerecord-import.svg?branch=master)](https://travis-ci.org/zdennis/activerecord-import)
+# Activerecord-Import [![Build Status](https://travis-ci.org/zdennis/activerecord-import.svg?branch=master)](https://travis-ci.org/zdennis/activerecord-import)
 
-activerecord-import is a library for bulk inserting data using ActiveRecord.
+Activerecord-Import is a library for bulk inserting data using ActiveRecord.
 
 One of its major features is following activerecord associations and generating the minimal
 number of SQL insert statements required, avoiding the N+1 insert problem. An example probably
@@ -23,10 +23,10 @@ an 18 hour batch process to <2 hrs.
 
 The gem provides the following high-level features:
 
-* activerecord-import can work with raw columns and arrays of values (fastest)
-* activerecord-import works with model objects (faster)
-* activerecord-import can perform validations (fast)
-* activerecord-import can perform on duplicate key updates (requires MySQL or Postgres 9.5+)
+* Works with raw columns and arrays of values (fastest)
+* Works with model objects (faster)
+* Performs validations (fast)
+* Performs on duplicate key updates (requires MySQL, SQLite 3.24.0+, or Postgres 9.5+)
 
 ## Table of Contents
 
@@ -553,7 +553,7 @@ When rubygems pushes the `lib` folder onto the load path a `require` will now fi
 
 ### Conflicts With Other Gems
 
-`activerecord-import` adds the `.import` method onto `ActiveRecord::Base`. There are other gems, such as `elasticsearch-rails`, that do the same thing. In conflicts such as this, there is an aliased method named `.bulk_import` that can be used interchangeably.
+Activerecord-Import adds the `.import` method onto `ActiveRecord::Base`. There are other gems, such as `elasticsearch-rails`, that do the same thing. In conflicts such as this, there is an aliased method named `.bulk_import` that can be used interchangeably.
 
 If you are using the `apartment` gem, there is a weird triple interaction between that gem, `activerecord-import`, and `activerecord` involving caching of the `sequence_name` of a model. This can be worked around by explcitly setting this value within the model. For example:
 
@@ -580,7 +580,7 @@ See https://github.com/zdennis/activerecord-import/issues/233 for further discus
 
 ### More Information
 
-For more information on activerecord-import please see its wiki: https://github.com/zdennis/activerecord-import/wiki
+For more information on Activerecord-Import please see its wiki: https://github.com/zdennis/activerecord-import/wiki
 
 To document new information, please add to the README instead of the wiki. See https://github.com/zdennis/activerecord-import/issues/397 for discussion.
 
@@ -617,17 +617,3 @@ This is licensed under the ruby license.
 # Author
 
 Zach Dennis (zach.dennis@gmail.com)
-
-# Contributors
-
-* Jordan Owens (@jkowens)
-* Erik Michaels-Ober (@sferik)
-* Blythe Dunham
-* Gabe da Silveira
-* Henry Work
-* James Herdman
-* Marcus Crafter
-* Thibaud Guillaume-Gentil
-* Mark Van Holstyn
-* Victor Costan
-* Dillon Welch
