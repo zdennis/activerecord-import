@@ -69,5 +69,6 @@ dist: xenial
 
 services:
   - mysql
+  - postgresql
 
 sudo: required
