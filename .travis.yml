@@ -37,7 +37,7 @@ addons:
       - sqlite3
       - mysql-server
       - mysql-client
-      - postgresql-9.5-postgis-2.3
+      - postgresql-9.5-postgis-2.4
 
 before_install:
   - gem update --system
