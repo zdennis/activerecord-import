@@ -67,4 +67,7 @@ script:
 
 dist: xenial
 
+services:
+  - mysql
+
 sudo: required
