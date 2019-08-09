@@ -630,7 +630,7 @@ class ActiveRecord::Base
         end
         # supports empty array
       elsif args.last.is_a?( Array ) && args.last.empty?
-        return ActiveRecord::Import::Result.new([], 0, [])
+        return ActiveRecord::Import::Result.new([], 0, [], [])
         # supports 2-element array and array
       elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
 

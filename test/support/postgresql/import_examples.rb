@@ -116,6 +116,17 @@ def should_support_postgresql_import_functionality
         assert_equal [%w(King It)], result.results
       end
 
+      context "when given an empty array" do
+        let(:result) { Book.import([], returning: %w(title)) }
+
+        setup { result }
+
+        it "returns empty arrays for ids and results" do
+          assert_equal [], result.ids
+          assert_equal [], result.results
+        end
+      end
+
       context "when primary key and returning overlap" do
         let(:result) { Book.import(books, returning: %w(id title)) }
 
