@@ -86,7 +86,7 @@ The `import` method can take an array of column names (string or symbols) and an
 
 ```ruby
 columns = [ :title, :author ]
-values = [ ['Book1', 'FooManChu'], ['Book2', 'Bob Jones'] ]
+values = [ ['Book1', 'George Orwell'], ['Book2', 'Bob Jones'] ]
 
 # Importing without model validations
 Book.import columns, values, validate: false
@@ -103,7 +103,7 @@ Book.import columns, values
 The `import` method can take an array of hashes. The keys map to the column names in the database.
 
 ```ruby
-values = [{ title: 'Book1', author: 'FooManChu' }, { title: 'Book2', author: 'Bob Jones'}]
+values = [{ title: 'Book1', author: 'George Orwell' }, { title: 'Book2', author: 'Bob Jones'}]
 
 # Importing without model validations
 Book.import values, validate: false
@@ -120,7 +120,7 @@ The `import` method can take an array of column names and an array of hash objec
 
 ```ruby
 books = [
-  { title: "Book 1", author: "FooManChu" },
+  { title: "Book 1", author: "George Orwell" },
   { title: "Book 2", author: "Bob Jones" }
 ]
 columns = [ :title ]
@@ -172,7 +172,7 @@ The `import` method can take an array of models. The attributes will be pulled o
 
 ```ruby
 books = [
-  Book.new(title: "Book 1", author: "FooManChu"),
+  Book.new(title: "Book 1", author: "George Orwell"),
   Book.new(title: "Book 2", author: "Bob Jones")
 ]
 
@@ -190,7 +190,7 @@ The `import` method can take an array of column names and an array of models. Th
 
 ```ruby
 books = [
-  Book.new(title: "Book 1", author: "FooManChu"),
+  Book.new(title: "Book 1", author: "George Orwell"),
   Book.new(title: "Book 2", author: "Bob Jones")
 ]
 columns = [ :title ]
@@ -218,7 +218,7 @@ The `import` method can take a `batch_size` option to control the number of rows
 
 ```ruby
 books = [
-  Book.new(title: "Book 1", author: "FooManChu"),
+  Book.new(title: "Book 1", author: "George Orwell"),
   Book.new(title: "Book 2", author: "Bob Jones"),
   Book.new(title: "Book 1", author: "John Doe"),
   Book.new(title: "Book 2", author: "Richard Wright")
@@ -268,14 +268,14 @@ Key                     | Options               | Default            | Descripti
 For Postgres 9.5+ it adds `ON CONFLICT DO NOTHING`, for MySQL it uses `INSERT IGNORE`, and for SQLite it uses `INSERT OR IGNORE`. Cannot be enabled on a recursive import. For database adapters that normally support setting primary keys on imported objects, this option prevents that from occurring.
 
 ```ruby
-book = Book.create! title: "Book1", author: "FooManChu"
+book = Book.create! title: "Book1", author: "George Orwell"
 book.title = "Updated Book Title"
 book.author = "Bob Barker"
 
 Book.import [book], on_duplicate_key_ignore: true
 
 book.reload.title  # => "Book1"     (stayed the same)
-book.reload.author # => "FooManChu" (stayed the same)
+book.reload.author # => "George Orwell" (stayed the same)
 ```
 
 The option `:on_duplicate_key_ignore` is bypassed when `:recursive` is enabled for [PostgreSQL imports](https://github.com/zdennis/activerecord-import/wiki#recursive-example-postgresql-only).
@@ -291,7 +291,7 @@ This will use MySQL's `ON DUPLICATE KEY UPDATE` or Postgres/SQLite `ON CONFLICT 
 Basic Update
 
 ```ruby
-book = Book.create! title: "Book1", author: "FooManChu"
+book = Book.create! title: "Book1", author: "George Orwell"
 book.title = "Updated Book Title"
 book.author = "Bob Barker"
 
@@ -305,13 +305,13 @@ Book.import [book], on_duplicate_key_update: {conflict_target: [:id], columns: [
 Book.import [book], on_duplicate_key_update: [:title]
 
 book.reload.title  # => "Updated Book Title" (changed)
-book.reload.author # => "FooManChu"          (stayed the same)
+book.reload.author # => "George Orwell"          (stayed the same)
 ```
 
 Using the value from another column
 
 ```ruby
-book = Book.create! title: "Book1", author: "FooManChu"
+book = Book.create! title: "Book1", author: "George Orwell"
 book.title = "Updated Book Title"
 
 # MySQL version
@@ -329,7 +329,7 @@ book.reload.author # => "Updated Book Title" (changed)
 Using Custom SQL
 
 ```ruby
-book = Book.create! title: "Book1", author: "FooManChu"
+book = Book.create! title: "Book1", author: "George Orwell"
 book.author = "Bob Barker"
 
 # MySQL version
@@ -350,7 +350,7 @@ book.reload.author # => "Bob Barker" (changed)
 PostgreSQL Using constraints
 
 ```ruby
-book = Book.create! title: "Book1", author: "FooManChu", edition: 3, published_at: nil
+book = Book.create! title: "Book1", author: "George Orwell", edition: 3, published_at: nil
 book.published_at = Time.now
 
 # in migration
@@ -364,7 +364,7 @@ Book.import [book], on_duplicate_key_update: {constraint_name: :for_upsert, colu
 
 
 book.reload.title  # => "Book1"          (stayed the same)
-book.reload.author # => "FooManChu"      (stayed the same)
+book.reload.author # => "George Orwell"      (stayed the same)
 book.reload.edition # => 3               (stayed the same)
 book.reload.published_at # => 2017-10-09 (changed)
 ```
