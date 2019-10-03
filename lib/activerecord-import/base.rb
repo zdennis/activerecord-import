@@ -27,7 +27,13 @@ module ActiveRecord::Import
 
   # Loads the import functionality for the passed in ActiveRecord connection
   def self.load_from_connection_pool(connection_pool)
-    require_adapter connection_pool.spec.config[:adapter]
+    adapter =
+      if connection_pool.respond_to?(:db_config) # ActiveRecord >= 6.1
+        connection_pool.db_config.adapter
+      else
+        connection_pool.spec.config[:adapter]
+      end
+    require_adapter adapter
   end
 end
 
