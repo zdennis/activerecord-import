@@ -1,3 +1,15 @@
+## Changes in 1.0.3
+
+### New Features
+
+* Add support for ActiveRecord 6.1.0.alpha. Thanks to @imtayadeway via
+  \#642.
+
+### Fixes
+
+* Return an empty array for results instead of nil when importing empty
+  array. Thanks to @gyfis via \#636.
+
 ## Changes in 1.0.2
 
 ### New Features
