@@ -245,16 +245,16 @@ class ActiveRecord::Associations::CollectionAssociation
   alias import bulk_import unless respond_to? :import
 end
 
+module ActiveRecord::Import::Connection
+  def establish_connection(args = nil)
+    super(args)
+    ActiveRecord::Import.load_from_connection_pool connection_pool
+  end
+end
+
 class ActiveRecord::Base
   class << self
-    def establish_connection_with_activerecord_import(*args)
-      conn = establish_connection_without_activerecord_import(*args)
-      ActiveRecord::Import.load_from_connection_pool connection_pool
-      conn
-    end
-
-    alias establish_connection_without_activerecord_import establish_connection
-    alias establish_connection establish_connection_with_activerecord_import
+    prepend ActiveRecord::Import::Connection
 
     # Returns true if the current database connection adapter
     # supports import functionality, otherwise returns false.
