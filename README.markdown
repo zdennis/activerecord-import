@@ -259,6 +259,7 @@ Key                     | Options               | Default            | Descripti
 :recursive              | `true`/`false`        | `false`            | Imports has_many/has_one associations (PostgreSQL only).
 :batch_size             | `Integer`             | total # of records | Max number of records to insert per import
 :raise_error            | `true`/`false`        | `false`            | Raises an exception at the first invalid record. This means there will not be a result object returned. The `import!` method is a shortcut for this.
+:all_or_none            | `true`/`false`        | `false`            | Will not import any records if there is a record with validation errors.
 
 #### Duplicate Key Ignore
 
