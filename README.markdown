@@ -258,7 +258,7 @@ Key                     | Options               | Default            | Descripti
 :timestamps             | `true`/`false`        | `true`             | Enables/disables timestamps on imported records.
 :recursive              | `true`/`false`        | `false`            | Imports has_many/has_one associations (PostgreSQL only).
 :batch_size             | `Integer`             | total # of records | Max number of records to insert per import
-:raise_error            | `true`/`false`        | `false`            | Throws an exception if there are invalid records. `import!` is a shortcut for this.
+:raise_error            | `true`/`false`        | `false`            | Throws an exception if there are invalid records. `import!` is a shortcut for this. But note that, it throws exception in the first validation failure without setting the result object.
 
 
 #### Duplicate Key Ignore
