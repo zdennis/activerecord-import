@@ -260,6 +260,17 @@ def should_support_postgresql_import_functionality
     end
   end
 
+  describe "with enum field" do
+    let(:vendor_type) { "retailer" }
+    it "imports the correct values for enum fields" do
+      vendor = Vendor.new(name: 'Vendor 1', vendor_type: vendor_type)
+      assert_difference "Vendor.count", +1 do
+        Vendor.import [vendor]
+      end
+      assert_equal(vendor_type, Vendor.first.vendor_type)
+    end
+  end
+
   describe "with binary field" do
     let(:binary_value) { "\xE0'c\xB2\xB0\xB3Bh\\\xC2M\xB1m\\I\xC4r".force_encoding('ASCII-8BIT') }
     it "imports the correct values for binary fields" do
