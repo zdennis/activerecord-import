@@ -7,6 +7,8 @@ ActiveRecord::Schema.define do
   begin
     execute('CREATE TYPE vendor_type AS ENUM (\'wholesaler\', \'retailer\');')
   rescue ActiveRecord::StatementInvalid => e
+    # since PostgreSQL does not support IF NOT EXISTS when creating a TYPE,
+    # rescue the error and check the error class
     raise unless e.cause.is_a? PG::DuplicateObject
     execute('ALTER TYPE vendor_type ADD VALUE IF NOT EXISTS \'wholesaler\';')
     execute('ALTER TYPE vendor_type ADD VALUE IF NOT EXISTS \'retailer\';')
