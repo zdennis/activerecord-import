@@ -3,6 +3,17 @@ ActiveRecord::Schema.define do
   execute('CREATE extension IF NOT EXISTS "pgcrypto";')
   execute('CREATE extension IF NOT EXISTS "uuid-ossp";')
 
+  # create ENUM if it does not exist yet
+  begin
+    execute('CREATE TYPE vendor_type AS ENUM (\'wholesaler\', \'retailer\');')
+  rescue ActiveRecord::StatementInvalid => e
+    # since PostgreSQL does not support IF NOT EXISTS when creating a TYPE,
+    # rescue the error and check the error class
+    raise unless e.cause.is_a? PG::DuplicateObject
+    execute('ALTER TYPE vendor_type ADD VALUE IF NOT EXISTS \'wholesaler\';')
+    execute('ALTER TYPE vendor_type ADD VALUE IF NOT EXISTS \'retailer\';')
+  end
+
   create_table :vendors, id: :uuid, force: :cascade do |t|
     t.string :name, null: true
     t.text :preferences
@@ -28,6 +39,8 @@ ActiveRecord::Schema.define do
       t.text :settings
       t.text :json_data
     end
+
+    t.column :vendor_type, :vendor_type
 
     t.datetime :created_at
     t.datetime :updated_at
