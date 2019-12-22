@@ -158,7 +158,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
       qc = quote_column_name( column )
       "#{qc}=EXCLUDED.#{qc}"
     end
-    increment_locking_column!(results, locking_column)
+    increment_locking_column!(table_name, results, locking_column)
     results.join( ',' )
   end
 
@@ -168,7 +168,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
       qc2 = quote_column_name( column2 )
       "#{qc1}=EXCLUDED.#{qc2}"
     end
-    increment_locking_column!(results, locking_column)
+    increment_locking_column!(table_name, results, locking_column)
     results.join( ',' )
   end
 
@@ -203,9 +203,9 @@ module ActiveRecord::Import::PostgreSQLAdapter
     true
   end
 
-  def increment_locking_column!(results, locking_column)
+  def increment_locking_column!(table_name, results, locking_column)
     if locking_column.present?
-      results << "\"#{locking_column}\"=EXCLUDED.\"#{locking_column}\"+1"
+      results << "\"#{locking_column}\"=#{table_name}.\"#{locking_column}\"+1"
     end
   end
 

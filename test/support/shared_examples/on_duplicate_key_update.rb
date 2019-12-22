@@ -73,6 +73,16 @@ def should_support_basic_on_duplicate_key_update
             assert_equal user.name, users[i].name + ' Rothschild'
             assert_equal 1, user.lock_version
           end
+          updated_values2 = User.all.map do |user|
+            user.name += ' jr.'
+            { id: user.id, name: user.name }
+          end
+          User.import(updated_values2, on_duplicate_key_update: [:name])
+          assert User.count == updated_values2.length
+          User.all.each_with_index do |user, i|
+            assert_equal user.name, users[i].name + ' Rothschild jr.'
+            assert_equal 2, user.lock_version
+          end
         end
 
         it 'upsert optimistic lock columns other than lock_version by model' do
