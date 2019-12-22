@@ -1,6 +1,5 @@
 module ActiveRecord::Import::MysqlAdapter
   include ActiveRecord::Import::ImportSupport
-  include ActiveRecord::Import::OnDuplicateKeyUpdateSupport
 
   NO_MAX_PACKET = 0
   QUERY_OVERHEAD = 8 # This was shown to be true for MySQL, but it's not clear where the overhead is from.
@@ -102,7 +101,7 @@ module ActiveRecord::Import::MysqlAdapter
       qc = quote_column_name( column )
       "#{table_name}.#{qc}=VALUES(#{qc})"
     end
-    increment_locking_column!(results, table_name, locking_column)
+    increment_locking_column!(table_name, results, locking_column)
     results.join( ',' )
   end
 
@@ -112,7 +111,7 @@ module ActiveRecord::Import::MysqlAdapter
       qc2 = quote_column_name( column2 )
       "#{table_name}.#{qc1}=VALUES( #{qc2} )"
     end
-    increment_locking_column!(results, table_name, locking_column)
+    increment_locking_column!(table_name, results, locking_column)
     results.join( ',')
   end
 
@@ -121,9 +120,9 @@ module ActiveRecord::Import::MysqlAdapter
     exception.is_a?(ActiveRecord::StatementInvalid) && exception.to_s.include?('Duplicate entry')
   end
 
-  def increment_locking_column!(results, table_name, locking_column)
+  def increment_locking_column!(table_name, results, locking_column)
     if locking_column.present?
-      results << "#{table_name}.`#{locking_column}`=`#{locking_column}`+1"
+      results << "`#{locking_column}`=#{table_name}.`#{locking_column}`+1"
     end
   end
 end

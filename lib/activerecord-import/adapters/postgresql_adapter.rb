@@ -1,6 +1,5 @@
 module ActiveRecord::Import::PostgreSQLAdapter
   include ActiveRecord::Import::ImportSupport
-  include ActiveRecord::Import::OnDuplicateKeyUpdateSupport
 
   MIN_VERSION_FOR_UPSERT = 90_500
 
@@ -201,12 +200,6 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
   def supports_setting_primary_key_of_imported_objects?
     true
-  end
-
-  def increment_locking_column!(table_name, results, locking_column)
-    if locking_column.present?
-      results << "\"#{locking_column}\"=#{table_name}.\"#{locking_column}\"+1"
-    end
   end
 
   private

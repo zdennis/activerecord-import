@@ -59,8 +59,14 @@ module ActiveRecord::Import::AbstractAdapter
       post_sql_statements
     end
 
+    def increment_locking_column!(table_name, results, locking_column)
+      if locking_column.present?
+        results << "\"#{locking_column}\"=#{table_name}.\"#{locking_column}\"+1"
+      end
+    end
+
     def supports_on_duplicate_key_update?
-      false
+      true
     end
   end
 end
