@@ -1,6 +1,5 @@
 module ActiveRecord::Import::SQLite3Adapter
   include ActiveRecord::Import::ImportSupport
-  include ActiveRecord::Import::OnDuplicateKeyUpdateSupport
 
   MIN_VERSION_FOR_IMPORT = "3.7.11".freeze
   MIN_VERSION_FOR_UPSERT = "3.24.0".freeze
@@ -92,7 +91,7 @@ module ActiveRecord::Import::SQLite3Adapter
 
   # Returns a generated ON CONFLICT DO UPDATE statement given the passed
   # in +args+.
-  def sql_for_on_duplicate_key_update( _table_name, *args ) # :nodoc:
+  def sql_for_on_duplicate_key_update( table_name, *args ) # :nodoc:
     arg, primary_key, locking_column = args
     arg = { columns: arg } if arg.is_a?( Array ) || arg.is_a?( String )
     return unless arg.is_a?( Hash )
@@ -113,9 +112,9 @@ module ActiveRecord::Import::SQLite3Adapter
 
     sql << "#{conflict_target}DO UPDATE SET "
     if columns.is_a?( Array )
-      sql << sql_for_on_duplicate_key_update_as_array( locking_column, columns )
+      sql << sql_for_on_duplicate_key_update_as_array( table_name, locking_column, columns )
     elsif columns.is_a?( Hash )
-      sql << sql_for_on_duplicate_key_update_as_hash( locking_column, columns )
+      sql << sql_for_on_duplicate_key_update_as_hash( table_name, locking_column, columns )
     elsif columns.is_a?( String )
       sql << columns
     else
@@ -127,22 +126,22 @@ module ActiveRecord::Import::SQLite3Adapter
     sql
   end
 
-  def sql_for_on_duplicate_key_update_as_array( locking_column, arr ) # :nodoc:
+  def sql_for_on_duplicate_key_update_as_array( table_name, locking_column, arr ) # :nodoc:
     results = arr.map do |column|
       qc = quote_column_name( column )
       "#{qc}=EXCLUDED.#{qc}"
     end
-    increment_locking_column!(results, locking_column)
+    increment_locking_column!(table_name, results, locking_column)
     results.join( ',' )
   end
 
-  def sql_for_on_duplicate_key_update_as_hash( locking_column, hsh ) # :nodoc:
+  def sql_for_on_duplicate_key_update_as_hash( table_name, locking_column, hsh ) # :nodoc:
     results = hsh.map do |column1, column2|
       qc1 = quote_column_name( column1 )
       qc2 = quote_column_name( column2 )
       "#{qc1}=EXCLUDED.#{qc2}"
     end
-    increment_locking_column!(results, locking_column)
+    increment_locking_column!(table_name, results, locking_column)
     results.join( ',' )
   end
 
@@ -164,12 +163,6 @@ module ActiveRecord::Import::SQLite3Adapter
   # Return true if the statement is a duplicate key record error
   def duplicate_key_update_error?(exception) # :nodoc:
     exception.is_a?(ActiveRecord::StatementInvalid) && exception.to_s.include?('duplicate key')
-  end
-
-  def increment_locking_column!(results, locking_column)
-    if locking_column.present?
-      results << "\"#{locking_column}\"=EXCLUDED.\"#{locking_column}\"+1"
-    end
   end
 
   private
