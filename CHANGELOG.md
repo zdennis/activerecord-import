@@ -1,3 +1,12 @@
+## Changes in 1.0.4
+
+### Fixes
+
+* Use prepend pattern for ActiveRecord::Base#establish_connection patching. Thanks to @dombesz via \#648.
+* Fix NoMethodError when using PostgreSQL ENUM types. Thanks to @sebcoetzee via \#651.
+* Fix issue updating optimistic lock in Postgres. Thanks to @timanovsky
+  via \#656.
+
 ## Changes in 1.0.3
 
 ### New Features
