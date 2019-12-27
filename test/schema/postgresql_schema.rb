@@ -16,6 +16,7 @@ ActiveRecord::Schema.define do
 
   create_table :vendors, id: :uuid, force: :cascade do |t|
     t.string :name, null: true
+    t.text :hours
     t.text :preferences
 
     if t.respond_to?(:json)
