@@ -127,6 +127,15 @@ def should_support_postgresql_import_functionality
         end
       end
 
+      context "when a returning column is a serialized attribute" do
+        let(:vendor) { Vendor.new(hours: { monday: '8-5' }) }
+        let(:result) { Vendor.import([vendor], returning: %w(hours)) }
+
+        it "creates records" do
+          assert_difference("Vendor.count", +1) { result }
+        end
+      end
+
       context "when primary key and returning overlap" do
         let(:result) { Book.import(books, returning: %w(id title)) }
 

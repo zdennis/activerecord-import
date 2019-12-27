@@ -835,6 +835,19 @@ class ActiveRecord::Base
         end
       end
 
+      deserialize_value = lambda do |column, value|
+        column = columns_hash[column]
+        return value unless column
+        if respond_to?(:type_caster)
+          type = type_for_attribute(column.name)
+          type.deserialize(value)
+        elsif column.respond_to?(:type_cast_from_database)
+          column.type_cast_from_database(value)
+        else
+          value
+        end
+      end
+
       if models.size == import_result.results.size
         columns = Array(options[:returning])
         single_column = "#{columns.first}=" if columns.size == 1
@@ -842,10 +855,12 @@ class ActiveRecord::Base
           model = models[index]
 
           if single_column
-            model.send(single_column, result)
+            val = deserialize_value.call(columns.first, result)
+            model.send(single_column, val)
           else
             columns.each_with_index do |column, col_index|
-              model.send("#{column}=", result[col_index])
+              val = deserialize_value.call(column, result[col_index])
+              model.send("#{column}=", val)
             end
           end
         end
