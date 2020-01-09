@@ -582,6 +582,17 @@ class ActiveRecord::Base
 
         array_of_attributes = []
 
+        if options.key?(:unique_records_by)
+          columns = options.fetch(:unique_records_by, :all)
+
+          # If :all is specified, let's use all available column names to filter records
+          # if not, let's use the specified array of symbols/strings and public send those
+          # to the active record object.
+          columns = column_names if columns == :all
+
+          models.uniq! { |model| columns.map { |c| model.public_send(c) } }
+        end
+
         models.each do |model|
           if supports_setting_primary_key_of_imported_objects?
             load_association_ids(model)
@@ -612,6 +623,17 @@ class ActiveRecord::Base
           array_of_hashes = args.first
           column_names = array_of_hashes.first.keys
           allow_extra_hash_keys = false
+        end
+
+        if options.key?(:unique_records_by)
+          columns = options.fetch(:unique_records_by, :all)
+
+          # If :all is specified, let's use all available column names to filter records
+          # if not, let's use the specified array of symbols/strings and public send those
+          # to the active record object.
+          columns = column_names if columns == :all
+
+          array_of_hashes.uniq! { |hash| columns.map { |c| hash[c] } }
         end
 
         array_of_attributes = array_of_hashes.map do |h|
