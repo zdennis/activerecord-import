@@ -251,7 +251,7 @@ Key                     | Options               | Default            | Descripti
 ----------------------- | --------------------- | ------------------ | -----------
 :validate               | `true`/`false`        | `true`             | Whether or not to run `ActiveRecord` validations (uniqueness skipped). This option will always be true when using `import!`.
 :validate_uniqueness    | `true`/`false`        | `false`            | Whether or not to run uniqueness validations, has potential pitfalls, use with caution (requires `>= v0.27.0`).
-:validate_with_context  | `Symbol`              |`:create`/`:update` | Allows passing an ActiveModel validation context for each model. Default is `:create` for new records and `:update` for existing ones. 
+:validate_with_context  | `Symbol`              |`:create`/`:update` | Allows passing an ActiveModel validation context for each model. Default is `:create` for new records and `:update` for existing ones.
 :on_duplicate_key_ignore| `true`/`false`        | `false`            | Allows skipping records with duplicate keys. See [here](https://github.com/zdennis/activerecord-import/#duplicate-key-ignore) for more details.
 :ignore                 | `true`/`false`        | `false`            | Alias for :on_duplicate_key_ignore.
 :on_duplicate_key_update| :all, `Array`, `Hash` | N/A                | Allows upsert logic to be used. See [here](https://github.com/zdennis/activerecord-import/#duplicate-key-update) for more details.
@@ -261,6 +261,7 @@ Key                     | Options               | Default            | Descripti
 :batch_size             | `Integer`             | total # of records | Max number of records to insert per import
 :raise_error            | `true`/`false`        | `false`            | Raises an exception at the first invalid record. This means there will not be a result object returned. The `import!` method is a shortcut for this.
 :all_or_none            | `true`/`false`        | `false`            | Will not import any records if there is a record with validation errors.
+:unique_records_by      | `:all`, `Array`.       | N/A               | Will filter repeated instances passed to the import method.
 
 #### Duplicate Key Ignore
 
@@ -372,6 +373,84 @@ book.reload.published_at # => 2017-10-09 (changed)
 
 ```ruby
 Book.import books, validate_uniqueness: true
+```
+#### with Unique Records By
+
+there are certain use cases where we might ended up with multiple instances of the same object within
+the array that is passed to the import. Depending on the DB constraints and indexes defined, the import
+might fail due to a duplicated upsert of the same element. In this case, we might want to remove all
+repeated instances passed to the import method, so we can make sure only one instance is inserted.
+
+This is a common pattern seen in denormalized data being transformed to normalized, also while
+ constructing ETLs that merge multiple sources and other data manipulation cases where an instance
+ is built from a source that does not guarantee uniqueness.
+
+##### Using :all
+In this case, the import will use _all_ columns of the instances to identify if an instance
+is duplicated in the list. Let's assume we have a Book table with three columns: title,
+author name and city. If we specify :all to :unique_records_by, it will compare each instance
+with _all_ fields and remove the ones that share the same values.
+
+```ruby
+books = [
+  Book.new(title: 'Book 1', author_name: 'John Doe', city: 'Melbourne'),
+  Book.new(title: 'Book 1', author_name: 'John Doe', city: 'Melbourne'),
+  Book.new(title: 'Book 1', author_name: 'John Doe', city: 'Melbourne')
+]
+
+Book.import books, unique_records_by: :all
+# Inserted rows: 1
+# Book with title Book 1, author name John Doe and city Melbourne has been inserted.
+```
+
+if one of the instances have a different value in one of the columns, that object won't be removed
+and it will be marked for import:
+
+```ruby
+books = [
+  Book.new(title: 'Book 1', author_name: 'John Doe', city: 'Melbourne'),
+  Book.new(title: 'Book 1', author_name: 'John Doe', city: 'Melbourne'),
+  Book.new(title: 'Book 1', author_name: 'John Doe', city: 'Paris')
+]
+
+Book.import books, unique_records_by: :all
+# Inserted rows: 2
+# Book with title Book 1, author name John Doe and city Melbourne has been inserted.
+# Book with title Book 1, author name John Doe and city Paris has been inserted.
+```
+
+#### Using Array
+
+In this case, the import will iterate for each of the records passed for import and will remove
+from the list all the instances that share the same value in the specified column:
+
+```ruby
+books = [
+  Book.new(title: 'Book 1', author_name: 'John Doe'),
+  Book.new(title: 'Book 2', author_name: 'John Doe'),
+  Book.new(title: 'Book 1', author_name: 'Lady Di')
+]
+Book.import books, unique_records_by: %i[title]
+
+# Inserted rows: 2
+# Book with title Book 1 and author name John Doe has been inserted.
+# Book with title Book 2 and author name John Doe has been inserted.
+# Book with title Book 1 and author name Lady Di has been removed and not inserted.
+```
+
+Now, if we specify both `title` and `author_name` as columns, the result differs
+
+```ruby
+books = [
+  Book.new(title: 'Book 1', author_name: 'John Doe'),
+  Book.new(title: 'Book 2', author_name: 'John Doe'),
+  Book.new(title: 'Book 1', author_name: 'Lady Di')
+]
+Book.import books, unique_records_by: %i[title]
+# Inserted rows: 2
+# Book with title Book 1 and author name John Doe has been inserted.
+# Book with title Book 2 and author name John Doe has been inserted.
+# Book with title Book 1 and author name Lady Di has been inserted.
 ```
 
 ### Return Info

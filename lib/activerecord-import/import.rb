@@ -340,6 +340,10 @@ class ActiveRecord::Base
     # * +batch_size+ - an integer value to specify the max number of records to
     #   include per insert. Defaults to the total number of records to import.
     #
+    # * +unique_records_by+ - :all or Array. It tells the import to ignore instances or hashes that
+    # have the same values either by comparing the values of all columns or by comparing the values of
+    # the specified columns in the array.
+    #
     # == Examples
     #  class BlogPost < ActiveRecord::Base ; end
     #
@@ -508,6 +512,68 @@ class ActiveRecord::Base
     # with what attributes on your model. Below is an example:
     #
     #   BlogPost.import columns, attributes, on_duplicate_key_update: { conflict_target: :slug, columns: { title: :title } }
+    #
+    # == with Unique Records By
+    #
+    # there are certain use cases where we might ended up with multiple instances of the same object within
+    # the array that is passed to the import. Depending on the DB constraints and indexes defined, the import
+    # might fail due to a duplicated upsert of the same element. In this case, we might want to remove all
+    # repeated instances passed to the import method, so we can make sure only one instance is inserted.
+    #
+    # This is a common pattern seen in denormalized data being transformed to normalized, also while
+    # constructing ETLs that merge multiple sources and other data manipulation cases where an instance
+    # is built from a source that does not guarantee uniqueness.
+    #
+    # === Using :all
+    # In this case, the import will use _all_ columns of the instances to identify if an instance
+    # is duplicated in the list. Let's assume we have a Book table with three columns: title,
+    # author name and city. If we specify :all to :unique_records_by, it will compare each instance
+    # with _all_ fields and remove the ones that share the same values.
+    #
+    #   books = [
+    #     Book.new(title: 'Book 1', author_name: 'John Doe', city: 'Melbourne'),
+    #     Book.new(title: 'Book 1', author_name: 'John Doe', city: 'Melbourne'),
+    #     Book.new(title: 'Book 1', author_name: 'John Doe', city: 'Melbourne')
+    #   ]
+    #
+    #   Book.import books, unique_records_by: :all
+    #   # Inserted rows: 1
+    #   # Book with title Book 1, author name John Doe and city Melbourne has been inserted.
+    #
+    # if one of the instances have a different value in one of the columns, that object won't be removed
+    # and it will be marked for import:
+    #
+    #   books = [
+    #     Book.new(title: 'Book 1', author_name: 'John Doe', city: 'Melbourne'),
+    #     Book.new(title: 'Book 1', author_name: 'John Doe', city: 'Melbourne'),
+    #     Book.new(title: 'Book 1', author_name: 'John Doe', city: 'Paris')
+    #   ]
+    #
+    #   Book.import books, unique_records_by: :all
+    #   # Inserted rows: 2
+    #   # Book with title Book 1, author name John Doe and city Melbourne has been inserted.
+    #   # Book with title Book 1, author name John Doe and city Paris has been inserted.
+    #
+    # === Using Array
+    #
+    # In this case, the import will iterate for each of the records passed for import and will remove
+    # from the list all the instances that share the same value in the specified column:
+    #
+    #   books = [Book.new(title: 'Book 1', author_name: 'John Doe'), Book.new(title: 'Book 2', author_name: 'John Doe'), Book.new(title: 'Book 1', author_name: 'Lady Di')]
+    #   Book.import books, unique_records_by: %i[title]
+    #   # Inserted rows: 2
+    #   # Book with title Book 1 and author name John Doe has been inserted.
+    #   # Book with title Book 2 and author name John Doe has been inserted.
+    #   # Book with title Book 1 and author name Lady Di has been removed and not inserted.
+    #
+    # Now, if we specify both `title` and `author_name` as columns, the result differs
+    #
+    #   books = [Book.new(title: 'Book 1', author_name: 'John Doe'), Book.new(title: 'Book 2', author_name: 'John Doe'), Book.new(title: 'Book 1', author_name: 'Lady Di')]
+    #   Book.import books, unique_records_by: %i[title]
+    #   # Inserted rows: 2
+    #   # Book with title Book 1 and author name John Doe has been inserted.
+    #   # Book with title Book 2 and author name John Doe has been inserted.
+    #   # Book with title Book 1 and author name Lady Di has been inserted.
     #
     # = Returns
     # This returns an object which responds to +failed_instances+ and +num_inserts+.
