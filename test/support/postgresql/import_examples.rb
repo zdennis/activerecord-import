@@ -1,6 +1,7 @@
 # encoding: UTF-8
 def should_support_postgresql_import_functionality
   should_support_recursive_import
+  should_support_import_unique_records
 
   if ActiveRecord::Base.connection.supports_on_duplicate_key_update?
     should_support_postgresql_upsert_functionality

@@ -4,6 +4,8 @@ def should_support_sqlite3_import_functionality
     should_support_sqlite_upsert_functionality
   end
 
+  should_support_import_unique_records
+
   describe "#supports_imports?" do
     it "should support import" do
       assert ActiveRecord::Base.supports_import?
