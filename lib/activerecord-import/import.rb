@@ -241,8 +241,9 @@ end
 
 module ActiveRecord::Import::Connection
   def establish_connection(args = nil)
-    super(args)
+    conn = super(args)
     ActiveRecord::Import.load_from_connection_pool connection_pool
+    conn
   end
 end
 
