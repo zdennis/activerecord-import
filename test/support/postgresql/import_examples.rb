@@ -25,6 +25,26 @@ def should_support_postgresql_import_functionality
       end
     end
 
+    # We need to do this here, because the recursive option is only supported by postgres implementation.
+    context 'when specifying associations on the models' do
+      let(:topics) do
+        Array.new(5) do |n|
+          Topic.new(
+            author_name: 'John Doe',
+            books: [Book.new(title: "Book #{n}", author_name: 'John Doe')],
+            content: 'Content Doe',
+            title: 'Sir John'
+          )
+        end
+      end
+
+      it 'does not fail when trying to perform the import' do
+        assert_difference [->{ Topic.count }, ->{ Book.count }], 1 do
+          res = Topic.import topics, unique_records_by: :all, recursive: true
+        end
+      end
+    end
+
     context "setting attributes and marking clean" do
       let(:topic) { Build(:topics) }
 
