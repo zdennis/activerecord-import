@@ -39,8 +39,8 @@ def should_support_postgresql_import_functionality
       end
 
       it 'does not fail when trying to perform the import' do
-        assert_difference [->{ Topic.count }, ->{ Book.count }], 1 do
-          res = Topic.import topics, unique_records_by: :all, recursive: true
+        assert_difference [-> { Topic.count }, -> { Book.count }], 1 do
+          Topic.import topics, unique_records_by: :all, recursive: true
         end
       end
     end
