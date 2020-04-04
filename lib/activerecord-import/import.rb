@@ -961,7 +961,7 @@ class ActiveRecord::Base
           if val.nil? && Array(primary_key).first == column.name && !sequence_name.blank?
             connection_memo.next_value_for_sequence(sequence_name)
           elsif val.respond_to?(:to_sql)
-            "(#{val.to_sql})"
+            "('#{val.to_sql}')"
           elsif column
             if respond_to?(:type_caster)                                         # Rails 5.0 and higher
               type = type_for_attribute(column.name)
