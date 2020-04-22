@@ -60,6 +60,8 @@ The gem provides the following high-level features:
 
 #### Introduction
 
+This gem adds an `import` method (or `bulk_import`, for compatibility with gems like `elasticsearch-model`; see [Conflicts With Other Gems](#conflicts-with-other-gems) to ActiveRecord classes.
+
 Without `activerecord-import`, you'd write something like this:
 
 ```ruby
