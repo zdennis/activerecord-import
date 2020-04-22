@@ -138,6 +138,15 @@ def should_support_recursive_import
       books.each do |book|
         assert_equal book.topic_id, second_new_topic.id
       end
+
+      books.each { |book| book.topic_id = nil }
+      assert_no_difference "Book.count", books.size do
+        Book.import books, validate: false, on_duplicate_key_update: [:topic_id]
+      end
+
+      books.each do |book|
+        assert_equal book.topic_id, nil
+      end
     end
 
     unless ENV["SKIP_COMPOSITE_PK"]
