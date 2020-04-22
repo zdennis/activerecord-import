@@ -882,10 +882,12 @@ class ActiveRecord::Base
 
     # Sync belongs_to association ids with foreign key field
     def load_association_ids(model)
+      changed_columns = model.changed
       association_reflections = model.class.reflect_on_all_associations(:belongs_to)
       association_reflections.each do |association_reflection|
         column_name = association_reflection.foreign_key
         next if association_reflection.options[:polymorphic]
+        next if changed_columns.include?(column_name)
         association = model.association(association_reflection.name)
         association = association.target
         next if association.blank? || model.public_send(column_name).present?
