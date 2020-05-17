@@ -233,7 +233,8 @@ Book.import columns, books, batch_size: 2
 
 #### Recursive
 
-NOTE: This only works with PostgreSQL.
+NOTE: This only works with PostgreSQL and ActiveRecord objects. This won't work with
+hashes or arrays as recursive inputs.
 
 Assume that Books <code>has_many</code> Reviews.
 
