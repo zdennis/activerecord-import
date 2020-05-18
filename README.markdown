@@ -616,7 +616,7 @@ You can triage issues which may include reproducing bug reports or asking for vi
 
 # License
 
-This is licensed under the ruby license.
+This is licensed under the MIT license.
 
 # Author
 
