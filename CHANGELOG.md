@@ -1,3 +1,15 @@
+## Changes in 1.0.5
+
+### Fixes
+
+* Allow serialized attributes to be returned from import. Thanks to @timanovsky, @jkowens via \#660.
+* Return ActiveRecord::Connection from
+  ActiveREcord::Base#establish_connection. Thanks to @reverentF via
+\#663.
+* Support PostgreSQL array. Thanks to @ujihisa via \#669.
+* Skip loading association ids when column changed. Thanks to @Aristat
+  via \#673.
+
 ## Changes in 1.0.4
 
 ### Fixes
