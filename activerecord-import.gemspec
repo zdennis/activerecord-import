@@ -7,7 +7,7 @@ Gem::Specification.new do |gem|
   gem.summary       = "Bulk insert extension for ActiveRecord"
   gem.description   = "A library for bulk inserting data using ActiveRecord."
   gem.homepage      = "http://github.com/zdennis/activerecord-import"
-  gem.license       = "Ruby"
+  gem.license       = "MIT"
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map { |f| File.basename(f) }
