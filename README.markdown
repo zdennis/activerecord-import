@@ -529,7 +529,7 @@ require 'activerecord-import'
 ### Load Path Setup
 To understand how rubygems loads code you can reference the following:
 
-  http://guides.rubygems.org/patterns/#loading_code
+  http://guides.rubygems.org/patterns/#loading-code
 
 And an example of how active_record dynamically load adapters:
 
