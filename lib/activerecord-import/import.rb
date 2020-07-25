@@ -576,7 +576,7 @@ class ActiveRecord::Base
           if respond_to?(:timestamp_attributes_for_update, true)
             send(:timestamp_attributes_for_update).map(&:to_sym)
           else
-            new.send(:timestamp_attributes_for_update_in_model)
+            allocate.send(:timestamp_attributes_for_update_in_model)
           end
         end
 
@@ -995,7 +995,7 @@ class ActiveRecord::Base
         timestamp_columns[:create] = timestamp_attributes_for_create_in_model
         timestamp_columns[:update] = timestamp_attributes_for_update_in_model
       else
-        instance = new
+        instance = allocate
         timestamp_columns[:create] = instance.send(:timestamp_attributes_for_create_in_model)
         timestamp_columns[:update] = instance.send(:timestamp_attributes_for_update_in_model)
       end
