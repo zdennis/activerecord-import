@@ -900,4 +900,33 @@ describe "#import" do
       end
     end
   end
+  describe "importing model with after_initialize callback" do
+    let(:columns) { %w(name size) }
+    let(:valid_values) { [%w("Deer", "Small"), %w("Monkey", "Medium")] }
+    let(:invalid_values) do
+      [
+        { name: "giraffe", size: "Large" },
+        { size: "Medium" } # name is missing
+      ]
+    end
+    context "with validation checks turned off" do
+      it "should import valid data" do
+        Animal.import(columns, valid_values, validate: false)
+        assert_equal 2, Animal.count
+      end
+      it "should raise ArgumentError" do
+        assert_raise(ArgumentError) { Animal.import(invalid_values, validate: false) }
+      end
+    end
+
+    context "with validation checks turned on" do
+      it "should import valid data" do
+        Animal.import(columns, valid_values, validate: true)
+        assert_equal 2, Animal.count
+      end
+      it "should raise ArgumentError" do
+        assert_raise(ArgumentError) { Animal.import(invalid_values, validate: true) }
+      end
+    end
+  end
 end
