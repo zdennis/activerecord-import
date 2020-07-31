@@ -11,6 +11,12 @@ module ActiveRecord::Import #:nodoc:
     end
   end
 
+  module OnDuplicateKeyUpdateSupport #:nodoc:
+    def supports_on_duplicate_key_update? #:nodoc:
+      true
+    end
+  end
+
   class MissingColumnError < StandardError
     def initialize(name, index)
       super "Missing column for value <#{name}> at index #{index}"

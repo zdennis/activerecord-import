@@ -66,7 +66,7 @@ module ActiveRecord::Import::AbstractAdapter
     end
 
     def supports_on_duplicate_key_update?
-      true
+      false
     end
   end
 end
