@@ -1,3 +1,12 @@
+## Changes in 1.0.6
+
+### Fixes
+
+* Handle after_initialize callbacks. Thanks to @AhMohsen46 via \#691 and
+  \#692.
+* Fix regression introduced in 1.0.4. Explicity allow adapters to
+  support on duplicate key update. Thanks to @dsobiera, @jkowens via \#698.
+
 ## Changes in 1.0.5
 
 ### Fixes
