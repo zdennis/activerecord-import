@@ -24,6 +24,7 @@ pkg
 log/*.log
 test.db
 test/database.yml
+benchmarks/log/
 
 .ruby-*
 .bundle/
