@@ -547,7 +547,7 @@ class ActiveRecord::Base
     alias import! bulk_import! unless ActiveRecord::Base.respond_to? :import!
 
     def import_helper( *args )
-      options = { validate: true, timestamps: true }
+      options = { validate: true, timestamps: true, track_validation_failures: false }
       options.merge!( args.pop ) if args.last.is_a? Hash
       # making sure that current model's primary key is used
       options[:primary_key] = primary_key
@@ -709,7 +709,7 @@ class ActiveRecord::Base
               array_of_attributes[i] = nil
               failure = model.dup
               failure.errors.send(:initialize_dup, model.errors)
-              failed_instances << failure
+              failed_instances << (options[:track_validation_failures] ? [i, failure] : failure )
             end
             array_of_attributes.compact!
           end

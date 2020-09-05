@@ -252,6 +252,16 @@ describe "#import" do
         end
       end
 
+      it "should index the failed instances by their poistion in the set if `track_failures` is true" do
+        index_offset = valid_values.length
+        results = Topic.import columns, valid_values + invalid_values, validate: true, track_validation_failures: true
+        assert_equal invalid_values.size, results.failed_instances.size
+        invalid_values.each_with_index do |value_set, index|
+          assert_equal index + index_offset, results.failed_instances[index].first
+          assert_equal value_set.first, results.failed_instances[index].last.title
+        end
+      end
+
       it "should set ids in valid models if adapter supports setting primary key of imported objects" do
         if ActiveRecord::Base.supports_setting_primary_key_of_imported_objects?
           Topic.import (invalid_models + valid_models), validate: true
