@@ -58,7 +58,7 @@ module ActiveRecord::Import::MysqlAdapter
     @max_allowed_packet ||= begin
       result = execute( "SELECT @@max_allowed_packet" )
       # original Mysql gem responds to #fetch_row while Mysql2 responds to #first
-      val = result.respond_to?(:fetch_row) ? result.fetch_row[1] : result.first[1]
+      val = result.respond_to?(:fetch_row) ? result.fetch_row[0] : result.first[0]
       val.to_i
     end
   end
