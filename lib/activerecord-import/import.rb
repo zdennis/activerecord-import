@@ -703,6 +703,7 @@ class ActiveRecord::Base
             # keep track of the instance and the position it is currently at. if this fails
             # validation we'll use the index to remove it from the array_of_attributes
             arr.each_with_index do |hsh, i|
+              # utilize block initializer syntax to prevent failure when 'mass_assignment_sanitizer = :strict'
               model = new do |m|
                 hsh.each_pair { |k, v| m[k] = v }
               end
