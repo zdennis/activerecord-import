@@ -1,3 +1,12 @@
+## Changes in 1.0.7
+
+* Use @@max_allowed_packet session variable instead of querying SHOW VARIABLES. Thanks to @diclophis via \#706.
+* Add option :track_validation_failures. When this is set to true, failed_instances will be an array of arrays, with each inner array having the form [:index_in_dataset, :object_with_errors]. Thanks to @rorymckinley  via \#684.
+
+### Fixes
+
+* Prevent mass-assignment errors in Rails strict mode. Thanks to @diclophis via \##709.
+
 ## Changes in 1.0.6
 
 ### Fixes
@@ -283,7 +292,7 @@
   Thanks to @jkowens via \#301.
 * Allow for custom timestamp columns. Thanks to @mojidabckuu, @jkowens
   via \#401.
- 
+
 ### Fixes
 
 * Fix ActiveRecord 5 issue coercing boolean values when serializing
@@ -295,7 +304,7 @@
 
 * Fix issue where PostgreSQL cannot recognize columns if names
   include mixed case characters. Thanks to @hugobgranja via \#379.
-* Fix an issue for ActiveRecord 5 where serialized fields with 
+* Fix an issue for ActiveRecord 5 where serialized fields with
   default values were not being typecast. Thanks to @whistlerbrk,
   @jkowens via \#386.
 * Add option :force_single_insert for MySQL to make sure a single
