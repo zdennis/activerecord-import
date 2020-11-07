@@ -40,10 +40,15 @@ addons:
       - postgresql-11-postgis-2.5
 
 before_install:
+  - sudo apt-get update
   - gem update --system
   - sudo mysql -e "use mysql; update user set authentication_string=PASSWORD('') where User='root'; update user set plugin='mysql_native_password';FLUSH PRIVILEGES;"
   - sudo mysql_upgrade
   - sudo service mysql restart
+  - sudo apt-get --yes remove postgresql\*
+  - sudo apt-get install -y postgresql-11 postgresql-client-11
+  - sudo cp /etc/postgresql/{9.6,11}/main/pg_hba.conf
+  - sudo service postgresql restart 11    
 
 before_script:
   - mysql -e 'create database activerecord_import_test;'
