@@ -28,7 +28,7 @@ matrix:
   fast_finish: true
 
 addons:
-  postgresql: "9.5"
+  postgresql: "11"
   apt:
     sources:
       - travis-ci/sqlite3
@@ -37,7 +37,7 @@ addons:
       - sqlite3
       - mysql-server
       - mysql-client
-      - postgresql-9.5-postgis-2.4
+      - postgresql-11-postgis-2.5
 
 before_install:
   - gem update --system
