@@ -28,7 +28,7 @@ matrix:
   fast_finish: true
 
 addons:
-  postgresql: "9.5"
+  postgresql: "10"
   apt:
     sources:
       - travis-ci/sqlite3
@@ -37,13 +37,14 @@ addons:
       - sqlite3
       - mysql-server
       - mysql-client
-      - postgresql-9.5-postgis-2.4
+      - postgresql-10-postgis-2.4
 
 before_install:
+  - sudo apt-get update
   - gem update --system
   - sudo mysql -e "use mysql; update user set authentication_string=PASSWORD('') where User='root'; update user set plugin='mysql_native_password';FLUSH PRIVILEGES;"
   - sudo mysql_upgrade
-  - sudo service mysql restart
+  - sudo service mysql restart   
 
 before_script:
   - mysql -e 'create database activerecord_import_test;'
