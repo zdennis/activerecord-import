@@ -6,8 +6,11 @@ version = ENV['AR_VERSION'].to_f
 
 mysql2_version = '0.3.0'
 mysql2_version = '0.4.0' if version >= 4.2
+mysql2_version = '0.5.0' if version >= 6.1
 sqlite3_version = '1.3.0'
-sqlite3_version = '1.4.0' if version >= 6.0
+sqlite3_version = '1.4.0' if version >= 6.1
+pg_version = '0.9'
+pg_version = '1.9' if version >= 6.1
 
 group :development, :test do
   gem 'rubocop', '~> 0.40.0'
@@ -17,7 +20,7 @@ end
 # Database Adapters
 platforms :ruby do
   gem "mysql2",                 "~> #{mysql2_version}"
-  gem "pg",                     "~> 0.9"
+  gem "pg",                     "~> #{pg_version}"
   gem "sqlite3",                "~> #{sqlite3_version}"
   gem "seamless_database_pool", "~> 1.0.20"
 end
