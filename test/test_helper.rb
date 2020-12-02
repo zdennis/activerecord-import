@@ -48,7 +48,15 @@ adapter = ENV["ARE_DB"] || "sqlite3"
 FileUtils.mkdir_p 'log'
 ActiveRecord::Base.logger = Logger.new("log/test.log")
 ActiveRecord::Base.logger.level = Logger::DEBUG
-ActiveRecord::Base.configurations["test"] = YAML.load_file(test_dir.join("database.yml"))[adapter]
+
+if ENV['AR_VERSION'].to_f >= 6.1
+  yaml_config = YAML.load_file(test_dir.join("database.yml"))[adapter]
+  config = ActiveRecord::DatabaseConfigurations::HashConfig.new("test", adapter, yaml_config)
+  ActiveRecord::Base.configurations.configurations << config
+else
+  ActiveRecord::Base.configurations["test"] = YAML.load_file(test_dir.join("database.yml"))[adapter]
+end
+
 ActiveRecord::Base.default_timezone = :utc
 
 require "activerecord-import"
