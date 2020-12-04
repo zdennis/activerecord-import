@@ -1,7 +1,7 @@
 language: ruby
 cache: bundler
 rvm:
-  - 2.5.5
+  - 2.5.8
 
 env:
   global:
@@ -11,6 +11,7 @@ env:
     - AR_VERSION=5.1
     - AR_VERSION=5.2
     - AR_VERSION=6.0
+    - AR_VERSION=6.1
 
 matrix:
   include:
