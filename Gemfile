@@ -8,7 +8,7 @@ mysql2_version = '0.3.0'
 mysql2_version = '0.4.0' if version >= 4.2
 mysql2_version = '0.5.0' if version >= 6.1
 sqlite3_version = '1.3.0'
-sqlite3_version = '1.4.0' if version >= 6.1
+sqlite3_version = '1.4.0' if version >= 6.0
 pg_version = '0.9'
 pg_version = '1.1' if version >= 6.1
 
