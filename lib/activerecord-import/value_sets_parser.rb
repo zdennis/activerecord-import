@@ -1,3 +1,5 @@
+require 'active_support/core_ext/array'
+
 module ActiveRecord::Import
   class ValueSetTooLargeError < StandardError
     attr_reader :size
