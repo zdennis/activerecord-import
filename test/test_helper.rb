@@ -49,7 +49,7 @@ FileUtils.mkdir_p 'log'
 ActiveRecord::Base.logger = Logger.new("log/test.log")
 ActiveRecord::Base.logger.level = Logger::DEBUG
 
-if ENV['AR_VERSION'].to_f >= 6.1
+if ENV['AR_VERSION'].to_f >= 6.0
   yaml_config = YAML.load_file(test_dir.join("database.yml"))[adapter]
   config = ActiveRecord::DatabaseConfigurations::HashConfig.new("test", adapter, yaml_config)
   ActiveRecord::Base.configurations.configurations << config
