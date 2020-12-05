@@ -1,1 +1,1 @@
-gem 'activerecord', '~> 6.1.0.rc2', github: "rails/rails"
+gem 'activerecord', '~> 6.1.0.rc2'
