@@ -1,3 +1,9 @@
+## Changes in 1.0.8
+
+### Fixes
+
+* Use correct method for clearing query cache. Thanks to @EtienneDepaulis via \##719.
+
 ## Changes in 1.0.7
 
 * Use @@max_allowed_packet session variable instead of querying SHOW VARIABLES. Thanks to @diclophis via \#706.
