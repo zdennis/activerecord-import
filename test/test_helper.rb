@@ -57,6 +57,7 @@ else
   ActiveRecord::Base.configurations["test"] = YAML.load_file(test_dir.join("database.yml"))[adapter]
 end
 
+
 ActiveRecord::Base.default_timezone = :utc
 
 require "activerecord-import"
