@@ -255,7 +255,7 @@ end
 
 class ActiveRecord::Base
   class << self
-    prepend ActiveRecord::Import::Connection
+    prepend ActiveRecord::Import::Connection if defined?(SeamlessDatabasePool)
 
     # Returns true if the current database connection adapter
     # supports import functionality, otherwise returns false.
@@ -522,6 +522,8 @@ class ActiveRecord::Base
     # * ids - the primary keys of the imported ids if the adapter supports it, otherwise an empty array.
     # * results - import results if the adapter supports it, otherwise an empty array.
     def bulk_import(*args)
+      ActiveRecord::Import.load_from_connection_pool connection_pool
+
       if args.first.is_a?( Array ) && args.first.first.is_a?(ActiveRecord::Base)
         options = {}
         options.merge!( args.pop ) if args.last.is_a?(Hash)

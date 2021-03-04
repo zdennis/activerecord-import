@@ -60,6 +60,7 @@ end
 ActiveRecord::Base.default_timezone = :utc
 
 require "activerecord-import"
+ActiveRecord::Import.require_adapter(adapter)
 ActiveRecord::Base.establish_connection :test
 
 ActiveSupport::Notifications.subscribe(/active_record.sql/) do |_, _, _, _, hsh|
