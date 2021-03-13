@@ -17,10 +17,10 @@ def should_support_postgresql_import_functionality
       # see ActiveRecord::ConnectionAdapters::AbstractAdapter test for more specifics
       assert_difference "Topic.count", +10 do
         result = Topic.import Build(3, :topics)
-        assert_equal 1, result.num_inserts
+        assert_equal 1, result.num_inserts(with_warn: false)
 
         result = Topic.import Build(7, :topics)
-        assert_equal 1, result.num_inserts
+        assert_equal 1, result.num_inserts(with_warn: false)
       end
     end
 

@@ -9,7 +9,7 @@ def should_support_on_duplicate_key_ignore
         topics << Topic.new(title: "Book 2", author_name: "Jane Doe")
         assert_difference "Topic.count", +1 do
           result = Topic.import topics, on_duplicate_key_ignore: true, validate: false
-          assert_not_equal topics.first.id, result.ids.first
+          assert_not_equal topics.first.id, result.ids(with_warn: false).first
           assert_nil topics.last.id
         end
       end
@@ -34,7 +34,7 @@ def should_support_on_duplicate_key_ignore
         topics << Topic.new(title: "Book 2", author_name: "Jane Doe")
         assert_difference "Topic.count", +1 do
           result = Topic.import topics, ignore: true, validate: false
-          assert_not_equal topics.first.id, result.ids.first
+          assert_not_equal topics.first.id, result.ids(with_warn: false).first
           assert_nil topics.last.id
         end
       end

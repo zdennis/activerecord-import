@@ -382,6 +382,8 @@ Book.import books, validate_uniqueness: true
 
 The `import` method returns a `Result` object that responds to `failed_instances` and `num_inserts`. Additionally, for users of Postgres, there will be two arrays `ids` and `results` that can be accessed`.
 
+`ids` and `results` outputs warning when other than Postgres. If you don't want to output. Add with_warn option `result.ids(with_warn: false)`
+
 ```ruby
 articles = [
   Article.new(author_id: 1, title: 'First Article', content: 'This is the first article'),

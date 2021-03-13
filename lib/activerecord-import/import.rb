@@ -1,10 +1,7 @@
-require "ostruct"
-
+require "activerecord-import/import/result"
 module ActiveRecord::Import::ConnectionAdapters; end
 
 module ActiveRecord::Import #:nodoc:
-  Result = Struct.new(:failed_instances, :num_inserts, :ids, :results)
-
   module ImportSupport #:nodoc:
     def supports_import? #:nodoc:
       true
@@ -727,7 +724,7 @@ class ActiveRecord::Base
         sync_keys = options[:synchronize_keys] || Array(primary_key)
         synchronize( options[:synchronize], sync_keys)
       end
-      return_obj.num_inserts = 0 if return_obj.num_inserts.nil?
+      return_obj.num_inserts = 0 if return_obj.num_inserts(with_warn: false).nil?
 
       # if we have ids, then set the id on the models and mark the models as clean.
       if models && supports_setting_primary_key_of_imported_objects?
@@ -757,7 +754,12 @@ class ActiveRecord::Base
       else
         import_without_validations_or_callbacks( column_names, array_of_attributes, options )
       end
-      ActiveRecord::Import::Result.new(failed_instances, result.num_inserts, result.ids, result.results)
+      ActiveRecord::Import::Result.new(
+        failed_instances,
+        result.num_inserts(with_warn: false),
+        result.ids(with_warn: false),
+        result.results(with_warn: false)
+      )
     end
 
     # Imports the passed in +column_names+ and +array_of_attributes+
@@ -813,9 +815,9 @@ class ActiveRecord::Base
             batch_values,
             options,
             "#{model_name} Create Many" )
-          number_inserted += result.num_inserts
-          ids += result.ids
-          results += result.results
+          number_inserted += result.num_inserts(with_warn: false)
+          ids += result.ids(with_warn: false)
+          results += result.results(with_warn: false)
         end
       else
         transaction(requires_new: true) do
@@ -835,8 +837,8 @@ class ActiveRecord::Base
       models -= import_result.failed_instances
 
       # if ids were returned for all models we know all were updated
-      if models.size == import_result.ids.size
-        import_result.ids.each_with_index do |id, index|
+      if models.size == import_result.ids(with_warn: false).size
+        import_result.ids(with_warn: false).each_with_index do |id, index|
           model = models[index]
           model.id = id
 
@@ -859,10 +861,10 @@ class ActiveRecord::Base
         end
       end
 
-      if models.size == import_result.results.size
+      if models.size == import_result.results(with_warn: false).size
         columns = Array(options[:returning])
         single_column = "#{columns.first}=" if columns.size == 1
-        import_result.results.each_with_index do |result, index|
+        import_result.results(with_warn: false).each_with_index do |result, index|
           model = models[index]
 
           if single_column

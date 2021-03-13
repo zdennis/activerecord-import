@@ -5,10 +5,10 @@ describe "#import" do
     # see ActiveRecord::ConnectionAdapters::AbstractAdapter test for more specifics
     assert_difference "Topic.count", +10 do
       result = Topic.import Build(3, :topics)
-      assert result.num_inserts > 0
+      assert result.num_inserts(with_warn: false) > 0
 
       result = Topic.import Build(7, :topics)
-      assert result.num_inserts > 0
+      assert result.num_inserts(with_warn: false) > 0
     end
   end
 
@@ -386,7 +386,7 @@ describe "#import" do
 
       it "should report the zero inserts" do
         results = Topic.import columns, mixed_values, all_or_none: true
-        assert_equal 0, results.num_inserts
+        assert_equal 0, results.num_inserts(with_warn: false)
       end
     end
   end
@@ -395,14 +395,14 @@ describe "#import" do
     it "should import with a single insert" do
       assert_difference "Topic.count", +10 do
         result = Topic.import Build(10, :topics), batch_size: 10
-        assert_equal 1, result.num_inserts if Topic.supports_import?
+        assert_equal 1, result.num_inserts(with_warn: false) if Topic.supports_import?
       end
     end
 
     it "should import with multiple inserts" do
       assert_difference "Topic.count", +10 do
         result = Topic.import Build(10, :topics), batch_size: 4
-        assert_equal 3, result.num_inserts if Topic.supports_import?
+        assert_equal 3, result.num_inserts(with_warn: false) if Topic.supports_import?
       end
     end
   end
