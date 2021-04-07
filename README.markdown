@@ -231,6 +231,18 @@ columns = [ :title ]
 Book.import columns, books, batch_size: 2
 ```
 
+If you are working with particularly large datasets being imported via batches, you might want a way to report back on progress. This is supported by passing a callable as the `batch_progress` option. e.g:
+
+```ruby
+my_proc = ->(rows_size, num_batches, current_batch_number, batch_duration_in_secs) {
+  # Using the arguments provided to the callable, you can
+  # send an email, post to a websocket,
+  # update slack, alert if import is taking too long, etc.
+}
+
+Book.import columns, books, batch_size: 2, batch_progress: my_proc
+```
+
 #### Recursive
 
 NOTE: This only works with PostgreSQL and ActiveRecord objects. This won't work with
