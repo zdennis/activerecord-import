@@ -405,6 +405,15 @@ describe "#import" do
         assert_equal 3, result.num_inserts if Topic.supports_import?
       end
     end
+
+    it "should accept and call an optional callable to run after each batch" do
+      lambda_called = 0
+
+      my_proc = ->(_row_count, _batches, _batch, _duration) { lambda_called += 1 }
+      Topic.import Build(10, :topics), batch_size: 4, batch_progress: my_proc
+
+      assert_equal 3, lambda_called
+    end
   end
 
   context "with :synchronize option" do
