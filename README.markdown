@@ -231,7 +231,7 @@ columns = [ :title ]
 Book.import columns, books, batch_size: 2
 ```
 
-If you are working with particularly large datasets being imported via batches, you might want a way to report back on progress. This is supported by passing a callable as the `batch_progress` option. e.g:
+If your import is particularly large or slow (possibly due to [callbacks](#callbacks)) whilst batch importing, you might want a way to report back on progress. This is supported by passing a callable as the `batch_progress` option. e.g:
 
 ```ruby
 my_proc = ->(rows_size, num_batches, current_batch_number, batch_duration_in_secs) {
