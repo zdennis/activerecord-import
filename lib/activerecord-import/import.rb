@@ -805,17 +805,29 @@ class ActiveRecord::Base
       if supports_import?
         # generate the sql
         post_sql_statements = connection.post_sql_statements( quoted_table_name, options )
+        import_size = values_sql.size
 
-        batch_size = options[:batch_size] || values_sql.size
+        batch_size = options[:batch_size] || import_size
+        run_proc = options[:batch_size].to_i.positive? && options[:batch_progress].respond_to?( :call )
+        progress_proc = options[:batch_progress]
+        current_batch = 0
+        batches = (import_size / batch_size.to_f).ceil
+
         values_sql.each_slice(batch_size) do |batch_values|
+          batch_started_at = Time.now.to_i
+
           # perform the inserts
           result = connection.insert_many( [insert_sql, post_sql_statements].flatten,
             batch_values,
             options,
             "#{model_name} Create Many" )
+
           number_inserted += result.num_inserts
           ids += result.ids
           results += result.results
+          current_batch += 1
+
+          progress_proc.call(import_size, batches, current_batch, Time.now.to_i - batch_started_at) if run_proc
         end
       else
         transaction(requires_new: true) do
