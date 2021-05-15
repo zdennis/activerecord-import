@@ -1,3 +1,9 @@
+## Changes in 1.1.0
+
+### New Features
+
+*  Add batch progress reporting. Thanks to @gee-forr via \##729.
+
 ## Changes in 1.0.8
 
 ### Fixes
@@ -5,6 +11,8 @@
 * Use correct method for clearing query cache. Thanks to @EtienneDepaulis via \##719.
 
 ## Changes in 1.0.7
+
+### New Features
 
 * Use @@max_allowed_packet session variable instead of querying SHOW VARIABLES. Thanks to @diclophis via \#706.
 * Add option :track_validation_failures. When this is set to true, failed_instances will be an array of arrays, with each inner array having the form [:index_in_dataset, :object_with_errors]. Thanks to @rorymckinley  via \#684.
