@@ -27,7 +27,7 @@
 
 * Handle after_initialize callbacks. Thanks to @AhMohsen46 via \#691 and
   \#692.
-* Fix regression introduced in 1.0.4. Explicity allow adapters to
+* Fix regression introduced in 1.0.4. Explicitly allow adapters to
   support on duplicate key update. Thanks to @dsobiera, @jkowens via \#696.
 
 ## Changes in 1.0.5
@@ -36,7 +36,7 @@
 
 * Allow serialized attributes to be returned from import. Thanks to @timanovsky, @jkowens via \#660.
 * Return ActiveRecord::Connection from
-  ActiveREcord::Base#establish_connection. Thanks to @reverentF via
+  ActiveRecord::Base#establish_connection. Thanks to @reverentF via
 \#663.
 * Support PostgreSQL array. Thanks to @ujihisa via \#669.
 * Skip loading association ids when column changed. Thanks to @Aristat
@@ -91,7 +91,7 @@
 * Fix import issue for models with Postgresql json/jsonb fields. Thanks
   to @stokarenko via \#594.
 * Fix issue importing models with timestamps that contain timezone
-  information. Thaks to @dekaikiwi, @jkowens via \#598.
+  information. Thanks to @dekaikiwi, @jkowens via \#598.
 * Ignore :no_returning when using :recursive option. Thanks to @dgollahon, @jkowens
   via \#599.
 
