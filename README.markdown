@@ -392,7 +392,7 @@ Book.import books, validate_uniqueness: true
 
 ### Return Info
 
-The `import` method returns a `Result` object that responds to `failed_instances` and `num_inserts`. Additionally, for users of Postgres, there will be two arrays `ids` and `results` that can be accessed`.
+The `import` method returns a `Result` object that responds to `failed_instances` and `num_inserts`. Additionally, for users of Postgres, there will be two arrays `ids` and `results` that can be accessed.
 
 ```ruby
 articles = [
