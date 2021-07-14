@@ -1,0 +1,73 @@
+name: Test
+on: [push, pull_request]
+jobs:
+  test:
+    services:
+      postgres:
+        image: postgis/postgis:10-2.5
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - 2.6
+        env:
+          - AR_VERSION: 6.1
+          - AR_VERSION: 6.0
+          - AR_VERSION: 5.2
+          - AR_VERSION: 5.1
+        include:
+          - ruby: 2.4
+            env:
+              AR_VERSION: 5.0
+          - ruby: 2.4
+            env:
+              AR_VERSION: 4.2
+    runs-on: ubuntu-latest
+    env:
+      AR_VERSION: ${{ matrix.env.AR_VERSION }}
+      DB_DATABASE: activerecord_import_test
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - name: Setup Bundler 1.x for Ruby 2.3
+        if: ${{ matrix.ruby == '2.3' }}
+        run: echo "BUNDLER_VERSION=1.17.3" >> $GITHUB_ENV
+      - name: Set up databases
+        run: |
+          sudo /etc/init.d/mysql start
+          mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }} CHARACTER SET utf8 COLLATE utf8_general_ci;' -u root -proot
+          psql -h localhost -U postgres -c 'create database ${{ env.DB_DATABASE }};'
+          psql -h localhost -U postgres -d ${{ env.DB_DATABASE }} -c 'create extension if not exists hstore;'
+          psql -h localhost -U postgres -c 'create extension if not exists postgis;'
+          psql -h localhost -U postgres -c 'create extension if not exists "uuid-ossp";'
+          cp test/github/database.yml test/database.yml
+        env:
+          PGPASSWORD: postgres
+      - name: Install dependencies
+        run : AR_VERSION=${{ env.AR_VERSION }} bundle install
+      - name: Run tests
+        run: |
+          bundle exec rake test:mysql2
+          bundle exec rake test:mysql2_makara
+          bundle exec rake test:mysql2spatial
+          bundle exec rake test:postgis
+          bundle exec rake test:postgresql
+          bundle exec rake test:postgresql_makara
+          bundle exec rake test:seamless_database_pool
+          bundle exec rake test:spatialite
+          bundle exec rake test:sqlite3
+      - name: Run Rubocop
+        run: bundle exec rubocop
