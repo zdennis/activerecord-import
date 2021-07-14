@@ -661,6 +661,16 @@ describe "#import" do
           assert_equal [val1, val2], scope.map(&column).sort
         end
 
+        context "for books" do
+
+        it "works when the polymorphic name is different than base class name" do
+          deck = Deck.create(id: 1, name: 'test')
+          deck.cards.import [:id, :deck_type], [[1, 'PlayingCard']]
+          assert_equal deck.cards.first.deck_type, "PlayingCard"
+        end
+        
+        end
+
         it "works importing array of hashes" do
           scope.import [{ column => val1 }, { column => val2 }]
 

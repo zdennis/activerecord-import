@@ -52,6 +52,20 @@ ActiveRecord::Schema.define do
     t.string :name
   end
 
+  create_table :cards, force: :cascade do |t|
+    t.string :name
+    t.string :deck_type
+    t.integer :deck_id
+  end
+
+  create_table :decks, force: :cascade do |t|
+    t.string :name
+  end
+
+  create_table :playing_cards, force: :cascade do |t|
+    t.string :name
+  end
+
   create_table :books, force: :cascade do |t|
     t.string :title, null: false
     t.string :publisher, null: false, default: 'Default Publisher'
