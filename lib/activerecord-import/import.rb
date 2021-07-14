@@ -49,7 +49,7 @@ module ActiveRecord::Import #:nodoc:
           associations = klass.reflect_on_all_associations(:belongs_to)
           associations.each do |assoc|
             if (index = attrs.index(assoc.name))
-              key = assoc.foreign_key.to_sym
+              key = assoc.foreign_key.is_a?(Array) ? assoc.foreign_key.map(&:to_sym) : assoc.foreign_key.to_sym
               attrs[index] = key unless attrs.include?(key)
             end
           end
