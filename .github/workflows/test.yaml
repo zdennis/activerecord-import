@@ -1,0 +1,56 @@
+name: Test
+on: [push, pull_request]
+jobs:
+  test:
+    services:
+      postgres:
+        image: postgres:11
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: activerecord_import_test
+          POSTGRES_PASSWORD: ""
+        ports:
+          - 5432:5432
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - 2.5
+        env:
+          - AR_VERSION=5.1
+          - AR_VERSION=5.2
+          - AR_VERSION=6.0
+          - AR_VERSION=6.1
+        include:
+          - ruby: 2.3
+            env: AR_VERSION=5.0
+          - ruby: 2.3
+            env: AR_VERSION=4.2
+          - ruby: 2.3
+            env: AR_VERSION=4.1
+          - ruby: 2.3
+            env: AR_VERSION=4.0
+          - ruby: 2.3
+            env: AR_VERSION=3.2
+    runs-on: ubuntu-latest
+    env:
+      DB_DATABASE: activerecord_import_test
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - name: Set up MySQL
+        run: |
+          sudo /etc/init.d/mysql start
+          mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -uroot -proot
+        run: cp test/github/database.yml config/database.yml
+      - name: Run tests
+        - run: bundle exec rake test:mysql2
+        - run: bundle exec rake test:mysql2_makara
+        - run: bundle exec rake test:mysql2spatial
+        - run: bundle exec rake test:seamless_database_pool
+        - run: bundle exec rake test:sqlite3
+      - name: Run Rubocop
+        - run: bundle exec rubocop

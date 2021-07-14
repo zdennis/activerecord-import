@@ -13,6 +13,7 @@ jdbcpostgresql: &postgresql
 
 jdbcmysql: &mysql2
   <<: *common
+  password: root
   adapter: jdbcmysql
 
 jdbcsqlite3: &sqlite3
