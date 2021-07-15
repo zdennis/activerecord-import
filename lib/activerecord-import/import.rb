@@ -775,21 +775,22 @@ class ActiveRecord::Base
       unless scope_columns.blank?
         scope_columns.zip(scope_values).each do |name, value|
           name_as_sym = name.to_sym
-          next if column_names.include?(name_as_sym)
-
-          is_sti = (name_as_sym == inheritance_column.to_sym && self < base_class)
-          value = Array(value).first if is_sti
-
+          next if column_names.include?(name_as_sym) || name_as_sym == inheritance_column.to_sym
           column_names << name_as_sym
           array_of_attributes.each { |attrs| attrs << value }
         end
       end
 
+      if finder_needs_type_condition?
+        unless column_names.include?(inheritance_column.to_sym)
+          column_names << inheritance_column.to_sym
+          array_of_attributes.each { |attrs| attrs << sti_name }
+        end
+      end
+
       columns = column_names.each_with_index.map do |name, i|
         column = columns_hash[name.to_s]
-
         raise ActiveRecord::Import::MissingColumnError.new(name.to_s, i) if column.nil?
-
         column
       end
 

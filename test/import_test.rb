@@ -169,7 +169,17 @@ describe "#import" do
       assert_difference "Dictionary.count", +1 do
         Dictionary.import dictionaries
       end
-      assert_equal "Dictionary", Dictionary.first.type
+      assert_equal "Dictionary", Dictionary.last.type
+    end
+
+    it "should import arrays successfully" do
+      columns = [:author_name, :title]
+      values =  [["Noah Webster", "Webster's Dictionary"]]
+
+      assert_difference "Dictionary.count", +1 do
+        Dictionary.import columns, values
+      end
+      assert_equal "Dictionary", Dictionary.last.type
     end
   end
 
