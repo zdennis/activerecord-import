@@ -961,8 +961,13 @@ class ActiveRecord::Base
         changed_objects.each do |child|
           child.public_send("#{association_reflection.foreign_key}=", model.id)
           # For polymorphic associations
+          association_name = if model.class.respond_to?(:polymorphic_name)
+            model.class.polymorphic_name
+          else
+            model.class.base_class
+          end
           association_reflection.type.try do |type|
-            child.public_send("#{type}=", model.class.base_class.name)
+            child.public_send("#{type}=", association_name)
           end
         end
         associated_objects_by_class[model.class.name][association_reflection.name].concat changed_objects
