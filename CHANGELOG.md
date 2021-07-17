@@ -1,3 +1,13 @@
+## Changes in 1.2.0
+
+### Fixes
+
+* Update JDBC MySQL adapter to use mysql2 connection adapter. Thanks to @terencechow via \##744.
+* Fix importing STI models with ActiveRecord 6. Thanks to @clemens1483 via \##743.
+* Use polymorphic_name instead of base_class.name for imports. Thanks to @kmhajjar via \##741.
+* Fix compatibility issue with composite primary keys. Thanks to @dlanileonardo via \##737.
+* Prevent double validation of associations on recursive import.
+
 ## Changes in 1.1.0
 
 ### New Features
