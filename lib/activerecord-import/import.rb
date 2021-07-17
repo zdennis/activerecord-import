@@ -734,7 +734,7 @@ class ActiveRecord::Base
         set_attributes_and_mark_clean(models, return_obj, timestamps, options)
 
         # if there are auto-save associations on the models we imported that are new, import them as well
-        import_associations(models, options.dup) if options[:recursive]
+        import_associations(models, options.dup.merge(validate: false)) if options[:recursive]
       end
 
       return_obj
