@@ -195,7 +195,7 @@ def should_support_recursive_import
           setup do
             Topic.import new_topics, recursive: true
           end
-          
+
           it "updates associated objects" do
             new_author_name = 'Richard Bachman'
             topic = new_topics.first
