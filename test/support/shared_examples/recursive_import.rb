@@ -176,7 +176,7 @@ def should_support_recursive_import
       end
     end
 
-    # If adapter supports on_duplicate_key_update, it is only applied to top level models so that SQL with invalid
+    # If adapter supports on_duplicate_key_update and specific columns are specified, it is only applied to top level models so that SQL with invalid
     # columns, keys, etc isn't generated for child associations when doing recursive import
     if ActiveRecord::Base.connection.supports_on_duplicate_key_update?
       describe "on_duplicate_key_update" do
@@ -187,6 +187,26 @@ def should_support_recursive_import
             Topic.import new_topics, recursive: true, on_duplicate_key_update: [:updated_at], validate: false
             new_topics.each do |topic|
               assert_not_nil topic.id
+            end
+          end
+        end
+
+        context "when :all fields are updated" do
+          setup do
+            Topic.import new_topics, recursive: true
+          end
+
+          it "updates associated objects" do
+            new_author_name = 'Richard Bachman'
+            topic = new_topics.first
+            topic.books.each do |book|
+              book.author_name = new_author_name
+            end
+            assert_nothing_raised do
+              Topic.import new_topics, recursive: true, on_duplicate_key_update: :all
+            end
+            Topic.find(topic.id).books.each do |book|
+              assert_equal new_author_name, book.author_name
             end
           end
         end

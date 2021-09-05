@@ -734,7 +734,10 @@ class ActiveRecord::Base
         set_attributes_and_mark_clean(models, return_obj, timestamps, options)
 
         # if there are auto-save associations on the models we imported that are new, import them as well
-        import_associations(models, options.dup.merge(validate: false)) if options[:recursive]
+        if options[:recursive]
+          options[:on_duplicate_key_update] = on_duplicate_key_update unless on_duplicate_key_update.nil?
+          import_associations(models, options.dup.merge(validate: false))
+        end
       end
 
       return_obj
@@ -929,8 +932,9 @@ class ActiveRecord::Base
       associated_objects_by_class = {}
       models.each { |model| find_associated_objects_for_import(associated_objects_by_class, model) }
 
-      # :on_duplicate_key_update and :returning not supported for associations
-      options.delete(:on_duplicate_key_update)
+      # :on_duplicate_key_update only supported for all fields
+      options.delete(:on_duplicate_key_update) unless options[:on_duplicate_key_update] == :all
+      # :returning not supported for associations
       options.delete(:returning)
 
       associated_objects_by_class.each_value do |associations|
