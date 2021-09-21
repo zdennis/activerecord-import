@@ -205,4 +205,15 @@ ActiveRecord::Schema.define do
       );
     ).split.join(' ').strip
   end
+
+  create_table :customers, force: :cascade do |t|
+    t.integer :account_id
+    t.string :name
+  end
+
+  create_table :orders, force: :cascade do |t|
+    t.integer :account_id
+    t.integer :customer_id
+    t.integer :amount
+  end
 end
