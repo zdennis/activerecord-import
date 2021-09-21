@@ -1,0 +1,1 @@
+gem 'activerecord', '~> 7.0.0.alpha2'
