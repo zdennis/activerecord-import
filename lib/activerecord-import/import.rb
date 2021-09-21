@@ -34,7 +34,7 @@ module ActiveRecord::Import #:nodoc:
       @validate_callbacks = klass._validate_callbacks.dup
 
       @validate_callbacks.each_with_index do |callback, i|
-        filter = callback.raw_filter
+        filter = callback.respond_to?(:raw_filter) ? callback.raw_filter : callback.filter
         next unless filter.class.name =~ /Validations::PresenceValidator/ ||
                     (!@options[:validate_uniqueness] &&
                      filter.is_a?(ActiveRecord::Validations::UniquenessValidator))
