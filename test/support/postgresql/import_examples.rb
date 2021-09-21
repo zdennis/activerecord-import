@@ -78,21 +78,25 @@ def should_support_postgresql_import_functionality
       end
     end
 
-    describe "with compound foreign keys" do
-      let(:account_id) { 555 }
-      let(:customer) { Customer.new(account_id: account_id, name: "foo") }
-      let(:order) { Order.new(account_id: account_id, amount: 100, customer: customer) }
+    unless ENV["SKIP_COMPOSITE_PK"]
+      describe "with compound foreign keys" do
+        let(:account_id) { 555 }
+        let(:customer) { Customer.new(account_id: account_id, name: "foo") }
+        let(:order) { Order.new(account_id: account_id, amount: 100, customer: customer) }
 
-      it "imports and correctly maps foreign keys" do
-        assert_difference "Customer.count", +1 do
-          Customer.import [customer]
+        it "imports and correctly maps foreign keys" do
+          assert_difference "Customer.count", +1 do
+            Customer.import [customer]
+          end
+
+          assert_difference "Order.count", +1 do
+            Order.import [order]
+          end
+
+          db_customer = Customer.last
+          db_order = Order.last
+          assert_equal db_customer.orders.last, db_order
         end
-
-        assert_difference "Order.count", +1 do
-          Order.import [order]
-        end
-
-        assert_equal Customer.last.orders.last, Order.last
       end
     end
 
