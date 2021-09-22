@@ -177,7 +177,13 @@ describe "#import" do
 
         db_customer = Customer.last
         db_order = Order.last
-        assert_equal db_customer.orders.last, db_order
+
+        if %w(mysql2 mysql2_makara mysql2spatial seamless_database_pool spatialite sqlite3).include?(ENV["ARE_DB"])
+          assert_equal db_order.customer_id, nil
+        else
+          assert_equal db_customer.orders.last, db_order
+          assert_not_equal db_order.customer_id, nil
+        end
       end
     end
   end
