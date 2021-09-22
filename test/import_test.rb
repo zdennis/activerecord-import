@@ -160,32 +160,6 @@ describe "#import" do
         end
       end
     end
-
-    describe "with composite foreign keys" do
-      let(:account_id) { 555 }
-      let(:customer) { Customer.new(account_id: account_id, name: "foo") }
-      let(:order) { Order.new(account_id: account_id, amount: 100, customer: customer) }
-
-      it "imports and correctly maps foreign keys" do
-        assert_difference "Customer.count", +1 do
-          Customer.import [customer]
-        end
-
-        assert_difference "Order.count", +1 do
-          Order.import [order]
-        end
-
-        db_customer = Customer.last
-        db_order = Order.last
-
-        if %w(mysql2 mysql2_makara mysql2spatial seamless_database_pool spatialite sqlite3).include?(ENV["ARE_DB"])
-          assert_equal db_order.customer_id, nil
-        else
-          assert_equal db_customer.orders.last, db_order
-          assert_not_equal db_order.customer_id, nil
-        end
-      end
-    end
   end
 
   describe "with STI models" do
