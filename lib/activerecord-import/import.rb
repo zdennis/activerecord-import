@@ -1037,7 +1037,12 @@ class ActiveRecord::Base
       end
 
       # use tz as set in ActiveRecord::Base
-      timestamp = ActiveRecord::Base.default_timezone == :utc ? Time.now.utc : Time.now
+      default_timezone = if ActiveRecord.respond_to?(:default_timezone)
+        ActiveRecord.default_timezone
+      else
+        ActiveRecord::Base.default_timezone
+      end
+      timestamp = default_timezone == :utc ? Time.now.utc : Time.now
 
       [:create, :update].each do |action|
         timestamp_columns[action].each do |column|
