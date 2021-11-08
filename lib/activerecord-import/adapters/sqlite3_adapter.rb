@@ -166,8 +166,6 @@ module ActiveRecord::Import::SQLite3Adapter
     exception.is_a?(ActiveRecord::StatementInvalid) && exception.to_s.include?('duplicate key')
   end
 
-  private
-
   def database_version
     defined?(sqlite_version) ? sqlite_version : super
   end

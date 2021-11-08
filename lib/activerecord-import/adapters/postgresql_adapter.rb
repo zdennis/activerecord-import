@@ -203,8 +203,6 @@ module ActiveRecord::Import::PostgreSQLAdapter
     true
   end
 
-  private
-
   def database_version
     defined?(postgresql_version) ? postgresql_version : super
   end
