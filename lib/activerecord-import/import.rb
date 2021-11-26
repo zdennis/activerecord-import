@@ -857,7 +857,7 @@ class ActiveRecord::Base
           model.id = id
 
           timestamps.each do |attr, value|
-            model.send(attr + "=", value)
+            model.send(attr + "=", value) if model.send(attr).nil?
           end
         end
       end
