@@ -1,3 +1,16 @@
+## Changes in 1.3.0
+
+### Fixes
+
+* Ensure correct timestamp values are returned for models after insert. Thanks to @kos1kov via \##756.
+* Restore database_version method to public scope. Thanks to @beauraF via \##753.
+
+### New Features
+
+* Add support for ActiveRecord 7.0. Thanks to @nickhammond, @ryanwood, @jkowens via \##749 and \##752.
+* Add support for compound foreign keys. Thanks to @Uladzimiro via \##750.
+* Add support for :recursive combined with on_duplicate_key_update: :all. Thanks to @deathwish via \##746.
+
 ## Changes in 1.2.0
 
 ### Fixes
