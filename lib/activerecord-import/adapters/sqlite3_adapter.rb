@@ -97,7 +97,7 @@ module ActiveRecord::Import::SQLite3Adapter
     arg = { columns: arg } if arg.is_a?( Array ) || arg.is_a?( String )
     return unless arg.is_a?( Hash )
 
-    sql = ' ON CONFLICT '
+    sql = ' ON CONFLICT '.dup
     conflict_target = sql_for_conflict_target( arg )
 
     columns = arg.fetch( :columns, [] )
@@ -150,9 +150,9 @@ module ActiveRecord::Import::SQLite3Adapter
     conflict_target = args[:conflict_target]
     index_predicate = args[:index_predicate]
     if conflict_target.present?
-      '(' << Array( conflict_target ).reject( &:blank? ).join( ', ' ) << ') '.tap do |sql|
-        sql << "WHERE #{index_predicate} " if index_predicate
-      end
+      sql = '(' + Array( conflict_target ).reject( &:blank? ).join( ', ' ) + ') '
+      sql += "WHERE #{index_predicate} " if index_predicate
+      sql
     end
   end
 
