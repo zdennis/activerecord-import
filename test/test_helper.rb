@@ -58,7 +58,11 @@ else
   ActiveRecord::Base.configurations["test"] = YAML.load_file(test_dir.join("database.yml"))[adapter]
 end
 
-ActiveRecord::Base.default_timezone = :utc
+if ActiveRecord.respond_to?(:default_timezone)
+  ActiveRecord.default_timezone = :utc
+else
+  ActiveRecord::Base.default_timezone = :utc
+end
 
 require "activerecord-import"
 ActiveRecord::Base.establish_connection :test

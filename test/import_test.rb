@@ -555,7 +555,11 @@ describe "#import" do
     context "when the timestamps columns are present" do
       setup do
         @existing_book = Book.create(title: "Fell", author_name: "Curry", publisher: "Bayer", created_at: 2.years.ago.utc, created_on: 2.years.ago.utc, updated_at: 2.years.ago.utc, updated_on: 2.years.ago.utc)
-        ActiveRecord::Base.default_timezone = :utc
+        if ActiveRecord.respond_to?(:default_timezone)
+          ActiveRecord.default_timezone = :utc
+        else
+          ActiveRecord::Base.default_timezone = :utc
+        end
         Timecop.freeze(time) do
           assert_difference "Book.count", +2 do
             Book.import %w(title author_name publisher created_at created_on updated_at updated_on), [["LDAP", "Big Bird", "Del Rey", nil, nil, nil, nil], [@existing_book.title, @existing_book.author_name, @existing_book.publisher, @existing_book.created_at, @existing_book.created_on, @existing_book.updated_at, @existing_book.updated_on]]
