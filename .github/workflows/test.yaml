@@ -62,15 +62,21 @@ jobs:
           cp test/github/database.yml test/database.yml
         env:
           PGPASSWORD: postgres
-      - name: Run tests
+      - name: Run tests with mysql2
         run: |
           bundle exec rake test:mysql2
           bundle exec rake test:mysql2_makara
           bundle exec rake test:mysql2spatial
+      - name: Run tests with postgresql
+        run: |
           bundle exec rake test:postgis
           bundle exec rake test:postgresql
           bundle exec rake test:postgresql_makara
+      - name: Run tests with seamless_database_pool
+        run: |
           bundle exec rake test:seamless_database_pool
+      - name: Run tests with sqlite
+        run: |
           bundle exec rake test:spatialite
           bundle exec rake test:sqlite3
   lint:
