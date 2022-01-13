@@ -621,7 +621,7 @@ AR_VERSION=7.0 bundle install
 AR_VERSION=7.0 bundle exec rake test:postgresql test:sqlite3 test:mysql2
 ```
 
-Once you have pushed up your changes, you can find your CI results [here](https://travis-ci.org/zdennis/activerecord-import/).
+Once you have pushed up your changes, you can find your CI results [here](https://github.com/zdennis/activerecord-import/actions).
 
 ## Issue Triage [![Open Source Helpers](https://www.codetriage.com/zdennis/activerecord-import/badges/users.svg)](https://www.codetriage.com/zdennis/activerecord-import)
 
