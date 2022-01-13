@@ -572,7 +572,7 @@ When rubygems pushes the `lib` folder onto the load path a `require` will now fi
 
 Activerecord-Import adds the `.import` method onto `ActiveRecord::Base`. There are other gems, such as `elasticsearch-rails`, that do the same thing. In conflicts such as this, there is an aliased method named `.bulk_import` that can be used interchangeably.
 
-If you are using the `apartment` gem, there is a weird triple interaction between that gem, `activerecord-import`, and `activerecord` involving caching of the `sequence_name` of a model. This can be worked around by explcitly setting this value within the model. For example:
+If you are using the `apartment` gem, there is a weird triple interaction between that gem, `activerecord-import`, and `activerecord` involving caching of the `sequence_name` of a model. This can be worked around by explicitly setting this value within the model. For example:
 
 ```ruby
 class Post < ActiveRecord::Base
@@ -615,13 +615,13 @@ After that, you can run the tests. They run against multiple tests and ActiveRec
 
 This is one example of how to run the tests:
 
-```ruby
+```bash
 rm Gemfile.lock
-AR_VERSION=4.2 bundle install
-AR_VERSION=4.2 bundle exec rake test:postgresql test:sqlite3 test:mysql2
+AR_VERSION=7.0 bundle install
+AR_VERSION=7.0 bundle exec rake test:postgresql test:sqlite3 test:mysql2
 ```
 
-Once you have pushed up your changes, you can find your CI results [here](https://travis-ci.org/zdennis/activerecord-import/).
+Once you have pushed up your changes, you can find your CI results [here](https://github.com/zdennis/activerecord-import/actions).
 
 ## Issue Triage [![Open Source Helpers](https://www.codetriage.com/zdennis/activerecord-import/badges/users.svg)](https://www.codetriage.com/zdennis/activerecord-import)
 
