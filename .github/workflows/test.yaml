@@ -50,9 +50,6 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-      - name: Setup Bundler 1.x for Ruby 2.3
-        if: ${{ matrix.ruby == '2.3' }}
-        run: echo "BUNDLER_VERSION=1.17.3" >> $GITHUB_ENV
       - name: Set up databases
         run: |
           sudo /etc/init.d/mysql start
