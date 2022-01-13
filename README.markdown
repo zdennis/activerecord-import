@@ -433,7 +433,8 @@ Should you wish to specify those columns, you may use the option `timestamps: fa
 
 However, it is also possible to set just `:created_at` in specific records. In this case despite using `timestamps: true`,  `:created_at` will be updated only in records where that field is `nil`. Same rule applies for record associations when enabling the option `recursive: true`.
 
-If you are using custom time zones, these will be respected when performing imports as well as long as `ActiveRecord::Base.default_timezone` is set, which for practically all Rails apps it is
+If you are using custom time zones, these will be respected when performing imports as well as long as `ActiveRecord::Base.default_timezone` is set, which for practically all Rails apps it is.
+NOTE: If you are using ActiveRecord 7.0 or later, please use `ActiveRecord.default_timezone` instead.
 
 ### Callbacks
 

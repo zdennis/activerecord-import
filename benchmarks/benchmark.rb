@@ -20,7 +20,11 @@ FileUtils.mkdir_p 'log'
 ActiveRecord::Base.configurations["test"] = YAML.load_file(File.join(benchmark_dir, "../test/database.yml"))[options.adapter]
 ActiveRecord::Base.logger = Logger.new("log/test.log")
 ActiveRecord::Base.logger.level = Logger::DEBUG
-ActiveRecord::Base.default_timezone = :utc
+if ActiveRecord.respond_to?(:default_timezone)
+  ActiveRecord.default_timezone = :utc
+else
+  ActiveRecord::Base.default_timezone = :utc
+end
 
 require "activerecord-import"
 ActiveRecord::Base.establish_connection(:test)
