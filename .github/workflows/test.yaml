@@ -50,6 +50,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
       - name: Set up databases
         run: |
           sudo /etc/init.d/mysql start
@@ -61,8 +62,6 @@ jobs:
           cp test/github/database.yml test/database.yml
         env:
           PGPASSWORD: postgres
-      - name: Install dependencies
-        run : AR_VERSION=${{ env.AR_VERSION }} bundle install
       - name: Run tests
         run: |
           bundle exec rake test:mysql2
