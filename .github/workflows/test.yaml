@@ -50,9 +50,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-      - name: Setup Bundler 1.x for Ruby 2.3
-        if: ${{ matrix.ruby == '2.3' }}
-        run: echo "BUNDLER_VERSION=1.17.3" >> $GITHUB_ENV
+          bundler-cache: true
       - name: Set up databases
         run: |
           sudo /etc/init.d/mysql start
@@ -64,8 +62,6 @@ jobs:
           cp test/github/database.yml test/database.yml
         env:
           PGPASSWORD: postgres
-      - name: Install dependencies
-        run : AR_VERSION=${{ env.AR_VERSION }} bundle install
       - name: Run tests
         run: |
           bundle exec rake test:mysql2
@@ -77,5 +73,15 @@ jobs:
           bundle exec rake test:seamless_database_pool
           bundle exec rake test:spatialite
           bundle exec rake test:sqlite3
+  lint:
+    runs-on: ubuntu-latest
+    env:
+      AR_VERSION: '7.0'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7
+          bundler-cache: true
       - name: Run Rubocop
         run: bundle exec rubocop
