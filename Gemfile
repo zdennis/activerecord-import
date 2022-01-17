@@ -48,7 +48,6 @@ end
 platforms :ruby do
   gem "pry-byebug"
   gem "pry", "~> 0.12.0"
-  gem "rb-readline"
 end
 
 if version >= 4.0
