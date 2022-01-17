@@ -20,15 +20,28 @@ jobs:
       fail-fast: false
       matrix:
         ruby:
-          - 2.7
+          - 3.1
         env:
-          - AR_VERSION: 7.0
+          - AR_VERSION: '7.0'
             RUBYOPT: --enable-frozen-string-literal
           - AR_VERSION: 6.1
             RUBYOPT: --enable-frozen-string-literal
-          - AR_VERSION: 6.0
-            RUBYOPT: --enable-frozen-string-literal
         include:
+          - ruby: '3.0'
+            env:
+              AR_VERSION: '7.0'
+          - ruby: '3.0'
+            env:
+              AR_VERSION: 6.1
+          - ruby: 2.7
+            env:
+              AR_VERSION: '7.0'
+          - ruby: 2.7
+            env:
+              AR_VERSION: 6.1
+          - ruby: 2.7
+            env:
+              AR_VERSION: '6.0'
           - ruby: 2.6
             env:
               AR_VERSION: 5.2
@@ -37,7 +50,7 @@ jobs:
               AR_VERSION: 5.1
           - ruby: 2.4
             env:
-              AR_VERSION: 5.0
+              AR_VERSION: '5.0'
           - ruby: 2.4
             env:
               AR_VERSION: 4.2
@@ -62,15 +75,22 @@ jobs:
           cp test/github/database.yml test/database.yml
         env:
           PGPASSWORD: postgres
-      - name: Run tests
+      - name: Run tests with mysql2
         run: |
           bundle exec rake test:mysql2
           bundle exec rake test:mysql2_makara
           bundle exec rake test:mysql2spatial
+      - name: Run tests with postgresql
+        run: |
           bundle exec rake test:postgis
           bundle exec rake test:postgresql
           bundle exec rake test:postgresql_makara
+      - name: Run tests with seamless_database_pool
+        run: |
           bundle exec rake test:seamless_database_pool
+        if: ${{ matrix.ruby < '3.0' }}
+      - name: Run tests with sqlite
+        run: |
           bundle exec rake test:spatialite
           bundle exec rake test:sqlite3
   lint:
