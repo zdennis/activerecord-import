@@ -88,6 +88,7 @@ jobs:
       - name: Run tests with seamless_database_pool
         run: |
           bundle exec rake test:seamless_database_pool
+        if: ${{ matrix.ruby < '3.0' }}
       - name: Run tests with sqlite
         run: |
           bundle exec rake test:spatialite
