@@ -1,3 +1,9 @@
+## Changes in 1.4.0
+
+### New Features
+
+  * Enable compatibility with frozen string literals. Thanks to @desheikh via \##760.
+
 ## Changes in 1.3.0
 
 ### Fixes
