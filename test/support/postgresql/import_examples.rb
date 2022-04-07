@@ -1,4 +1,3 @@
-# encoding: UTF-8
 def should_support_postgresql_import_functionality
   should_support_recursive_import
 

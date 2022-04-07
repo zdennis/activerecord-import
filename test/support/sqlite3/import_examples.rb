@@ -1,4 +1,3 @@
-# encoding: UTF-8
 def should_support_sqlite3_import_functionality
   if ActiveRecord::Base.connection.supports_on_duplicate_key_update?
     should_support_sqlite_upsert_functionality
