@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ActiveRecord::Schema.define do
   create_table :schema_info, force: :cascade do |t|
     t.integer :version, unique: true

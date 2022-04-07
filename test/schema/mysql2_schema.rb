@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ActiveRecord::Schema.define do
   create_table :books, force: :cascade do |t|
     t.string :title, null: false

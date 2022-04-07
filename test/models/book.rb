@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Book < ActiveRecord::Base
   belongs_to :topic, inverse_of: :books
   belongs_to :tag, foreign_key: [:tag_id, :parent_id]

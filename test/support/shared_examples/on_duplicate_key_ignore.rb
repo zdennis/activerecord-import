@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 def should_support_on_duplicate_key_ignore
   describe "#import" do
     extend ActiveSupport::TestCase::ImportAssertions

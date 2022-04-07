@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ActiveRecord::Schema.define do
   create_table :test_myisam, options: 'ENGINE=MyISAM', force: true do |t|
     t.column :my_name, :string, null: false

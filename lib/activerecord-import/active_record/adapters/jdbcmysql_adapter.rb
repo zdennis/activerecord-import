@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "active_record/connection_adapters/mysql2_adapter"
 require "activerecord-import/adapters/mysql2_adapter"
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ActiveRecord::Schema.define do
   execute('CREATE extension IF NOT EXISTS "hstore";')
   execute('CREATE extension IF NOT EXISTS "pgcrypto";')

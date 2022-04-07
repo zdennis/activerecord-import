@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Vendor < ActiveRecord::Base
   store :preferences, accessors: [:color], coder: JSON
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Mysql2Benchmark < BenchmarkBase
   def benchmark_all( array_of_cols_and_vals )
     methods = self.methods.find_all { |m| m =~ /benchmark_/ }
