@@ -1,9 +1,9 @@
 inherit_from: .rubocop_todo.yml
 
-Lint/EndAlignment:
-  AlignWith: variable
-
 Metrics/AbcSize:
+  Enabled: false
+
+Metrics/BlockLength:
   Enabled: false
 
 Metrics/ClassLength:
@@ -24,8 +24,8 @@ Metrics/ModuleLength:
 Metrics/PerceivedComplexity:
   Enabled: false
 
-Style/AlignParameters:
-  EnforcedStyle: with_fixed_indentation
+Style/CommentedKeyword:
+  Enabled: false
 
 Style/ClassAndModuleChildren:
   Enabled: false
@@ -33,10 +33,25 @@ Style/ClassAndModuleChildren:
 Style/Documentation:
   Enabled: false
 
-Style/ElseAlignment:
+Style/EvalWithLocation:
   Enabled: false
 
-Style/SpaceInsideParens:
+Style/ExpandPathArguments:
+  Enabled: false
+
+Style/GuardClause:
+  Enabled: false
+
+Style/IfUnlessModifier:
+  Enabled: false
+
+Style/NumericPredicate:
+  Enabled: false
+
+Style/PercentLiteralDelimiters:
+  Enabled: false
+
+Style/RedundantBegin:
   Enabled: false
 
 Style/SpecialGlobalVars:
@@ -45,5 +60,56 @@ Style/SpecialGlobalVars:
 Style/StringLiterals:
   Enabled: false
 
-Style/TrailingCommaInLiteral:
+Style/SymbolArray:
+  Enabled: false
+
+Style/TrailingCommaInArrayLiteral:
+  Enabled: false
+
+Layout/AlignArguments:
+  Enabled: false
+
+Layout/AlignParameters:
+  EnforcedStyle: with_fixed_indentation
+
+Layout/EndAlignment:
+  EnforcedStyleAlignWith: variable
+
+Layout/ElseAlignment:
+  Enabled: false
+
+Layout/EmptyLineAfterGuardClause:
+  Enabled: false
+
+Layout/IndentHeredoc:
+  Enabled: false
+
+Layout/SpaceInsideParens:
+  Enabled: false
+
+Layout/SpaceInsidePercentLiteralDelimiters:
+  Enabled: false
+
+Lint/ErbNewArguments:
+  Enabled: false
+
+Lint/MissingCopEnableDirective:
+  Enabled: false
+
+Lint/PercentStringArray:
+  Enabled: false
+
+Naming/HeredocDelimiterNaming:
+  Enabled: false
+
+Naming/UncommunicativeMethodParamName:
+  Enabled: false
+
+Security/YAMLLoad:
+  Enabled: false
+
+Gemspec/RequiredRubyVersion:
+  Enabled: false
+
+Bundler/OrderedGems:
   Enabled: false
