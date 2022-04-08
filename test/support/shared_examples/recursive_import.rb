@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 def should_support_recursive_import
   describe "importing objects with associations" do
     let(:new_topics) { Build(num_topics, :topic_with_book) }

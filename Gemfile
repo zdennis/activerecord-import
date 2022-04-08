@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 
 gemspec
@@ -13,7 +15,7 @@ pg_version = '0.9'
 pg_version = '1.1' if version >= 6.1
 
 group :development, :test do
-  gem 'rubocop', '~> 0.40.0'
+  gem 'rubocop', '~> 0.71.0'
   gem 'rake'
 end
 

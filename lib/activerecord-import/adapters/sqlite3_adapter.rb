@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 module ActiveRecord::Import::SQLite3Adapter
   include ActiveRecord::Import::ImportSupport
   include ActiveRecord::Import::OnDuplicateKeyUpdateSupport
 
-  MIN_VERSION_FOR_IMPORT = "3.7.11".freeze
-  MIN_VERSION_FOR_UPSERT = "3.24.0".freeze
+  MIN_VERSION_FOR_IMPORT = "3.7.11"
+  MIN_VERSION_FOR_UPSERT = "3.24.0"
   SQLITE_LIMIT_COMPOUND_SELECT = 500
 
   # Override our conformance to ActiveRecord::Import::ImportSupport interface

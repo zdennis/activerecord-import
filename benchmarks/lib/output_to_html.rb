@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 require 'erb'
 
 module OutputToHTML
-  TEMPLATE_HEADER = <<"EOT".freeze
+  TEMPLATE_HEADER = <<"EOT"
   <div>
     All times are rounded to the nearest thousandth for display purposes. Speedups next to each time are computed
     before any rounding occurs. Also, all speedup calculations are computed by comparing a given time against
@@ -9,7 +11,7 @@ module OutputToHTML
    </div>
 EOT
 
-  TEMPLATE = <<"EOT".freeze
+  TEMPLATE = <<"EOT"
  <style>
  td#benchmarkTitle {
    border: 1px solid black;

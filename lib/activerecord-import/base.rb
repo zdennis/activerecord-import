@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 require "pathname"
 require "active_record"
 require "active_record/version"
 
 module ActiveRecord::Import
-  ADAPTER_PATH = "activerecord-import/active_record/adapters".freeze
+  ADAPTER_PATH = "activerecord-import/active_record/adapters"
 
   def self.base_adapter(adapter)
     case adapter

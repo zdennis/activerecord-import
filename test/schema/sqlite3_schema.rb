@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ActiveRecord::Schema.define do
   create_table :alarms, force: true do |t|
     t.column :device_id, :integer, null: false

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Taken from http://www.programmingishard.com/posts/show/128
 # Posted by rbates
 class Float

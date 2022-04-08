@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 warn <<-MSG
 [DEPRECATION] loading activerecord-import via 'require "activerecord-import/<adapter-name>"'
   is deprecated. Update to autorequire using 'require "activerecord-import"'. See

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class BenchmarkBase
   attr_reader :results
 

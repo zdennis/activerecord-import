@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   sequence(:book_title) { |n| "Book #{n}" }
   sequence(:chapter_title) { |n| "Chapter #{n}" }

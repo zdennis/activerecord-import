@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ActiveRecord::Import::AbstractAdapter
   module InstanceMethods
     def next_value_for_sequence(sequence_name)

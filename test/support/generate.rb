@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class ActiveSupport::TestCase
-  def Build(*args) # rubocop:disable Style/MethodName
+  def Build(*args) # rubocop:disable Naming/MethodName
     n = args.shift if args.first.is_a?(Numeric)
     factory = args.shift
     factory_bot_args = args.shift || {}
@@ -13,7 +15,7 @@ class ActiveSupport::TestCase
     end
   end
 
-  def Generate(*args) # rubocop:disable Style/MethodName
+  def Generate(*args) # rubocop:disable Naming/MethodName
     n = args.shift if args.first.is_a?(Numeric)
     factory = args.shift
     factory_bot_args = args.shift || {}

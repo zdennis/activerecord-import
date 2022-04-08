@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ActiveRecord::Import::MysqlAdapter
   include ActiveRecord::Import::ImportSupport
   include ActiveRecord::Import::OnDuplicateKeyUpdateSupport

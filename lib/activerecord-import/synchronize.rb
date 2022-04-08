@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ActiveRecord # :nodoc:
   class Base # :nodoc:
     # Synchronizes the passed in ActiveRecord instances with data

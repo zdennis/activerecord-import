@@ -1,4 +1,5 @@
-# encoding: UTF-8
+# frozen_string_literal: true
+
 def should_support_mysql_import_functionality
   # Forcefully disable strict mode for this session.
   ActiveRecord::Base.connection.execute "set sql_mode='STRICT_ALL_TABLES'"

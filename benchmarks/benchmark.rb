@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'pathname'
 require "fileutils"
 require "active_record"

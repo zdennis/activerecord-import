@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class SchemaInfo < ActiveRecord::Base
   if respond_to?(:table_name=)
     self.table_name = 'schema_info'
