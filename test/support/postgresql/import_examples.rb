@@ -151,6 +151,34 @@ def should_support_postgresql_import_functionality
         end
       end
 
+      context "when returning is raw sql" do
+        let(:result) { Book.import(books, returning: "title, (xmax = '0') AS inserted") }
+
+        setup { result }
+
+        it "returns ids" do
+          assert_equal [book_id], result.ids
+        end
+
+        it "returns specified columns" do
+          assert_equal [['It', true]], result.results
+        end
+      end
+
+      context "when returning contains raw sql" do
+        let(:result) { Book.import(books, returning: [:title, "id, (xmax = '0') AS inserted"]) }
+
+        setup { result }
+
+        it "returns ids" do
+          assert_equal [book_id], result.ids
+        end
+
+        it "returns specified columns" do
+          assert_equal [['It', book_id, true]], result.results
+        end
+      end
+
       context "setting model attributes" do
         let(:code) { 'abc' }
         let(:discount) { 0.10 }
@@ -178,6 +206,14 @@ def should_support_postgresql_import_functionality
 
           it "sets model attributes" do
             assert_equal updated_promotion.discount, discount
+          end
+        end
+
+        context 'returning raw sql' do
+          let(:returning_columns) { [:discount, "(xmax = '0') AS inserted"] }
+
+          it "sets custom model attributes" do
+            assert_not updated_promotion.inserted
           end
         end
       end
