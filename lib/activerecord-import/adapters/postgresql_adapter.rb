@@ -8,7 +8,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
   def insert_many( sql, values, options = {}, *args ) # :nodoc:
     number_of_inserts = 1
-    returned_values = []
+    returned_values = {}
     ids = []
     results = []
 
@@ -20,47 +20,53 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
     sql2insert = base_sql + values.join( ',' ) + post_sql
 
-    columns = returning_columns(options)
-    if columns.blank? || (options[:no_returning] && !options[:recursive])
+    selections = returning_selections(options)
+    if selections.blank? || (options[:no_returning] && !options[:recursive])
       insert( sql2insert, *args )
     else
-      returned_values = if columns.size > 1
+      returned_values = if selections.size > 1
         # Select composite columns
-        select_rows( sql2insert, *args )
+        db_result = select_all( sql2insert, *args )
+        { values: db_result.rows, columns: db_result.columns }
       else
-        select_values( sql2insert, *args )
+        { values: select_values( sql2insert, *args ) }
       end
       clear_query_cache if query_cache_enabled
     end
 
     if options[:returning].blank?
-      ids = returned_values
+      ids = Array(returned_values[:values])
     elsif options[:primary_key].blank?
-      results = returned_values
+      options[:returning_columns] ||= returned_values[:columns]
+      results = Array(returned_values[:values])
     else
       # split primary key and returning columns
-      ids, results = split_ids_and_results(returned_values, columns, options)
+      ids, results, options[:returning_columns] = split_ids_and_results(returned_values, options)
     end
 
     ActiveRecord::Import::Result.new([], number_of_inserts, ids, results)
   end
 
-  def split_ids_and_results(values, columns, options)
+  def split_ids_and_results( selections, options )
     ids = []
-    results = []
+    returning_values = []
+
+    columns = Array(selections[:columns])
+    values = Array(selections[:values])
     id_indexes = Array(options[:primary_key]).map { |key| columns.index(key) }
-    returning_indexes = Array(options[:returning]).map { |key| columns.index(key) }
+    returning_columns = columns.reject.with_index { |_, index| id_indexes.include?(index) }
+    returning_indexes = returning_columns.map { |column| columns.index(column) }
 
     values.each do |value|
       value_array = Array(value)
-      ids << id_indexes.map { |i| value_array[i] }
-      results << returning_indexes.map { |i| value_array[i] }
+      ids << id_indexes.map { |index| value_array[index] }
+      returning_values << returning_indexes.map { |index| value_array[index] }
     end
 
     ids.map!(&:first) if id_indexes.size == 1
-    results.map!(&:first) if returning_indexes.size == 1
+    returning_values.map!(&:first) if returning_columns.size == 1
 
-    [ids, results]
+    [ids, returning_values, returning_columns]
   end
 
   def next_value_for_sequence(sequence_name)
@@ -81,19 +87,24 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
     sql += super(table_name, options)
 
-    columns = returning_columns(options)
-    unless columns.blank? || (options[:no_returning] && !options[:recursive])
-      sql << " RETURNING \"#{columns.join('", "')}\""
+    selections = returning_selections(options)
+    unless selections.blank? || (options[:no_returning] && !options[:recursive])
+      sql << " RETURNING #{selections.join(', ')}"
     end
 
     sql
   end
 
-  def returning_columns(options)
-    columns = []
-    columns += Array(options[:primary_key]) if options[:primary_key].present?
-    columns |= Array(options[:returning]) if options[:returning].present?
-    columns
+  def returning_selections(options)
+    selections = []
+    column_names = Array(options[:model].column_names)
+
+    selections += Array(options[:primary_key]) if options[:primary_key].present?
+    selections += Array(options[:returning]) if options[:returning].present?
+
+    selections.map do |selection|
+      column_names.include?(selection.to_s) ? "\"#{selection}\"" : selection
+    end
   end
 
   # Add a column to be updated on duplicate key update

@@ -549,7 +549,7 @@ class ActiveRecord::Base
     alias import! bulk_import! unless ActiveRecord::Base.respond_to? :import!
 
     def import_helper( *args )
-      options = { validate: true, timestamps: true, track_validation_failures: false }
+      options = { model: self, validate: true, timestamps: true, track_validation_failures: false }
       options.merge!( args.pop ) if args.last.is_a? Hash
       # making sure that current model's primary key is used
       options[:primary_key] = primary_key
@@ -877,19 +877,28 @@ class ActiveRecord::Base
         end
       end
 
-      if models.size == import_result.results.size
-        columns = Array(options[:returning])
-        single_column = "#{columns.first}=" if columns.size == 1
-        import_result.results.each_with_index do |result, index|
+      set_value = lambda do |model, column, value|
+        val = deserialize_value.call(column, value)
+        if model.attribute_names.include?(column)
+          model.send("#{column}=", val)
+        else
+          attributes = attributes_builder.build_from_database(model.attributes.merge(column => val))
+          model.instance_variable_set(:@attributes, attributes)
+        end
+      end
+
+      columns = Array(options[:returning_columns])
+      results = Array(import_result.results)
+      if models.size == results.size
+        single_column = columns.first if columns.size == 1
+        results.each_with_index do |result, index|
           model = models[index]
 
           if single_column
-            val = deserialize_value.call(columns.first, result)
-            model.send(single_column, val)
+            set_value.call(model, single_column, result)
           else
             columns.each_with_index do |column, col_index|
-              val = deserialize_value.call(column, result[col_index])
-              model.send("#{column}=", val)
+              set_value.call(model, column, result[col_index])
             end
           end
         end

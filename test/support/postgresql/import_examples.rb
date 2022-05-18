@@ -103,6 +103,8 @@ def should_support_postgresql_import_functionality
           books.first.id.to_s
         end
       end
+      let(:true_returning_value) { ENV['AR_VERSION'].to_f >= 5.0 ? true : 't' }
+      let(:false_returning_value) { ENV['AR_VERSION'].to_f >= 5.0 ? false : 'f' }
 
       it "creates records" do
         assert_difference("Book.count", +1) { result }
@@ -151,6 +153,34 @@ def should_support_postgresql_import_functionality
         end
       end
 
+      context "when returning is raw sql" do
+        let(:result) { Book.import(books, returning: "title, (xmax = '0') AS inserted") }
+
+        setup { result }
+
+        it "returns ids" do
+          assert_equal [book_id], result.ids
+        end
+
+        it "returns specified columns" do
+          assert_equal [['It', true_returning_value]], result.results
+        end
+      end
+
+      context "when returning contains raw sql" do
+        let(:result) { Book.import(books, returning: [:title, "id, (xmax = '0') AS inserted"]) }
+
+        setup { result }
+
+        it "returns ids" do
+          assert_equal [book_id], result.ids
+        end
+
+        it "returns specified columns" do
+          assert_equal [['It', book_id, true_returning_value]], result.results
+        end
+      end
+
       context "setting model attributes" do
         let(:code) { 'abc' }
         let(:discount) { 0.10 }
@@ -178,6 +208,14 @@ def should_support_postgresql_import_functionality
 
           it "sets model attributes" do
             assert_equal updated_promotion.discount, discount
+          end
+        end
+
+        context 'returning raw sql' do
+          let(:returning_columns) { [:discount, "(xmax = '0') AS inserted"] }
+
+          it "sets custom model attributes" do
+            assert_equal updated_promotion.inserted, false_returning_value
           end
         end
       end
