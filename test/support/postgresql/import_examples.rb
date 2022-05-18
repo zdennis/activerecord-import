@@ -103,6 +103,8 @@ def should_support_postgresql_import_functionality
           books.first.id.to_s
         end
       end
+      let(:true_returning_value) { ENV['AR_VERSION'].to_f >= 5.0 ? true : 't' }
+      let(:false_returning_value) { ENV['AR_VERSION'].to_f >= 5.0 ? false : 'f' }
 
       it "creates records" do
         assert_difference("Book.count", +1) { result }
@@ -161,7 +163,7 @@ def should_support_postgresql_import_functionality
         end
 
         it "returns specified columns" do
-          assert_equal [['It', true]], result.results
+          assert_equal [['It', true_returning_value]], result.results
         end
       end
 
@@ -175,7 +177,7 @@ def should_support_postgresql_import_functionality
         end
 
         it "returns specified columns" do
-          assert_equal [['It', book_id, true]], result.results
+          assert_equal [['It', book_id, true_returning_value]], result.results
         end
       end
 
@@ -213,7 +215,7 @@ def should_support_postgresql_import_functionality
           let(:returning_columns) { [:discount, "(xmax = '0') AS inserted"] }
 
           it "sets custom model attributes" do
-            assert_not updated_promotion.inserted
+            assert_equal updated_promotion.inserted, false_returning_value
           end
         end
       end
