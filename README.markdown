@@ -268,9 +268,9 @@ Key                       | Options               | Default            | Descrip
 :validate_uniqueness      | `true`/`false`        | `false`            | Whether or not to run uniqueness validations, has potential pitfalls, use with caution (requires `>= v0.27.0`).
 :validate_with_context    | `Symbol`              |`:create`/`:update` | Allows passing an ActiveModel validation context for each model. Default is `:create` for new records and `:update` for existing ones.
 :track_validation_failures| `true`/`false`        | `false`            | When this is set to true, `failed_instances` will be an array of arrays, with each inner array having the form `[:index_in_dataset, :object_with_errors]`
-:on_duplicate_key_ignore  | `true`/`false`        | `false`            | Allows skipping records with duplicate keys. See [here](https://github.com/zdennis/activerecord-import/#duplicate-key-ignore) for more details.
+:on_duplicate_key_ignore  | `true`/`false`        | `false`            | Allows skipping records with duplicate keys. See [here](#duplicate-key-ignore) for more details.
 :ignore                   | `true`/`false`        | `false`            | Alias for :on_duplicate_key_ignore.
-:on_duplicate_key_update  | :all, `Array`, `Hash` | N/A                | Allows upsert logic to be used. See [here](https://github.com/zdennis/activerecord-import/#duplicate-key-update) for more details.
+:on_duplicate_key_update  | :all, `Array`, `Hash` | N/A                | Allows upsert logic to be used. See [here](#duplicate-key-update) for more details.
 :synchronize              | `Array`               | N/A                | An array of ActiveRecord instances. This synchronizes existing instances in memory with updates from the import.
 :timestamps               | `true`/`false`        | `true`             | Enables/disables timestamps on imported records.
 :recursive                | `true`/`false`        | `false`            | Imports has_many/has_one associations (PostgreSQL only).
