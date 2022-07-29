@@ -53,9 +53,9 @@ ActiveRecord::Base.logger = Logger.new("log/test.log")
 ActiveRecord::Base.logger.level = Logger::DEBUG
 
 if ActiveRecord.respond_to?(:use_yaml_unsafe_load)
-  ActiveRecord.use_yaml_unsafe_load = true 
+  ActiveRecord.use_yaml_unsafe_load = true
 elsif ActiveRecord::Base.respond_to?(:use_yaml_unsafe_load)
-  ActiveRecord::Base.use_yaml_unsafe_load = true 
+  ActiveRecord::Base.use_yaml_unsafe_load = true
 end
 
 if ENV['AR_VERSION'].to_f >= 6.0
