@@ -852,7 +852,7 @@ class ActiveRecord::Base
       return options unless options.key?(:recursive_on_duplicate_key_update)
 
       table_name = associated_class.arel_table.name.to_sym
-      associated_options = options.merge(
+      options.merge(
         on_duplicate_key_update: options[:recursive_on_duplicate_key_update][table_name]
       )
     end
