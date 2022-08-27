@@ -231,6 +231,34 @@ def should_support_recursive_import
           end
         end
       end
+
+      describe "recursive_on_duplicate_key_update" do
+        let(:new_topics) { Build(1, :topic_with_book) }
+
+        setup do
+          Topic.import new_topics, recursive: true
+        end
+
+        it "updates associated objects" do
+          new_author_name = 'Richard Bachman'
+          topic = new_topics.first
+          topic.books.each do |book|
+            book.author_name = new_author_name
+          end
+
+          assert_nothing_raised do
+            Topic.import new_topics,
+              recursive: true,
+              on_duplicate_key_update: [:id],
+              recursive_on_duplicate_key_update: {
+                books: { conflict_target: [:id], columns: [:author_name] }
+              }
+          end
+          Topic.find(topic.id).books.each do |book|
+            assert_equal new_author_name, book.author_name
+          end
+        end
+      end
     end
 
     # If returning option is provided, it is only applied to top level models so that SQL with invalid

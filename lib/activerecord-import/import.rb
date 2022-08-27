@@ -857,6 +857,15 @@ class ActiveRecord::Base
 
     private
 
+    def associated_options(options, associated_class)
+      return options unless options.key?(:recursive_on_duplicate_key_update)
+
+      table_name = associated_class.arel_table.name.to_sym
+      associated_options = options.merge(
+        on_duplicate_key_update: options[:recursive_on_duplicate_key_update][table_name]
+      )
+    end
+
     def set_attributes_and_mark_clean(models, import_result, timestamps, options)
       return if models.nil?
       models -= import_result.failed_instances
@@ -963,7 +972,11 @@ class ActiveRecord::Base
 
       associated_objects_by_class.each_value do |associations|
         associations.each_value do |associated_records|
-          associated_records.first.class.bulk_import(associated_records, options) unless associated_records.empty?
+          next if associated_records.empty?
+
+          associated_class = associated_records.first.class
+          associated_class.bulk_import(associated_records,
+                                       associated_options(options, associated_class))
         end
       end
     end
