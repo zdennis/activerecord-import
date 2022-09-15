@@ -44,3 +44,4 @@ require 'activerecord-import/import'
 require 'activerecord-import/active_record/adapters/abstract_adapter'
 require 'activerecord-import/synchronize'
 require 'activerecord-import/value_sets_parser'
+

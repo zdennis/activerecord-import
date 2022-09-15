@@ -7,6 +7,7 @@ Gem::Specification.new do |gem|
   gem.email         = ["zach.dennis@gmail.com"]
   gem.summary       = "Bulk insert extension for ActiveRecord"
   gem.description   = "A library for bulk inserting data using ActiveRecord."
+
   gem.homepage      = "https://github.com/zdennis/activerecord-import"
   gem.license       = "MIT"
 

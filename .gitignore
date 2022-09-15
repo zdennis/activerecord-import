@@ -30,6 +30,8 @@ benchmarks/log/
 
 .idea/
 
+.idea/
+
 .ruby-*
 .bundle/
 .redcar/
