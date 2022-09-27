@@ -206,6 +206,12 @@ ActiveRecord::Schema.define do
           PRIMARY KEY (tag_id, publisher_id)
       );
     ).split.join(' ').strip
+
+    create_table :tag_aliases, force: :cascade do |t|
+      t.integer :tag_id, null: false
+      t.integer :parent_id, null: false
+      t.string :alias, null: false
+    end
   end
 
   create_table :customers, force: :cascade do |t|

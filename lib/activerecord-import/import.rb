@@ -57,7 +57,7 @@ module ActiveRecord::Import #:nodoc:
           end
         end
 
-        filter.instance_variable_set(:@attributes, attrs)
+        filter.instance_variable_set(:@attributes, attrs.flatten)
 
         if @validate_callbacks.respond_to?(:chain, true)
           @validate_callbacks.send(:chain).tap do |chain|
