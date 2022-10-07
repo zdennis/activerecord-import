@@ -1,3 +1,9 @@
+## Changes in 1.4.1
+
+### Fixes
+
+* Fix importing models that have required belongs_to associations and use composite primary keys. Thanks to @thoughtbot-summer vi \##783.
+
 ## Changes in 1.4.0
 
 ### New Features
