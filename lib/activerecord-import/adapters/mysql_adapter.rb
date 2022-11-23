@@ -32,11 +32,14 @@ module ActiveRecord::Import::MysqlAdapter
 
     max = max_allowed_packet
 
+    ids = []
     # if we can insert it all as one statement
     if NO_MAX_PACKET == max || total_bytes <= max || options[:force_single_insert]
       number_of_inserts += 1
       sql2insert = base_sql + values.join( ',' ) + post_sql
       insert( sql2insert, *args )
+      result = select_all('SELECT LAST_INSERT_ID()')
+      ids = result.flatten
     else
       value_sets = ::ActiveRecord::Import::ValueSetsBytesParser.parse(values,
         reserved_bytes: sql_size,
@@ -47,11 +50,13 @@ module ActiveRecord::Import::MysqlAdapter
           number_of_inserts += 1
           sql2insert = base_sql + value_set.join( ',' ) + post_sql
           insert( sql2insert, *args )
+          result = select_all('SELECT LAST_INSERT_ID()')
+          ids = result.flatten
         end
       end
     end
 
-    ActiveRecord::Import::Result.new([], number_of_inserts, [], [])
+    ActiveRecord::Import::Result.new([], number_of_inserts, ids, [])
   end
 
   # Returns the maximum number of bytes that the server will allow
