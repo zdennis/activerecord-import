@@ -245,8 +245,8 @@ Book.import columns, books, batch_size: 2, batch_progress: my_proc
 
 #### Recursive
 
-NOTE: This only works with PostgreSQL and ActiveRecord objects. This won't work with
-hashes or arrays as recursive inputs.
+> **Note**
+> This only works with PostgreSQL and ActiveRecord objects. This won't work with hashes or arrays as recursive inputs.
 
 Assume that Books <code>has_many</code> Reviews.
 
@@ -434,7 +434,8 @@ Should you wish to specify those columns, you may use the option `timestamps: fa
 However, it is also possible to set just `:created_at` in specific records. In this case despite using `timestamps: true`,  `:created_at` will be updated only in records where that field is `nil`. Same rule applies for record associations when enabling the option `recursive: true`.
 
 If you are using custom time zones, these will be respected when performing imports as well as long as `ActiveRecord::Base.default_timezone` is set, which for practically all Rails apps it is.
-NOTE: If you are using ActiveRecord 7.0 or later, please use `ActiveRecord.default_timezone` instead.
+> **Note**
+> If you are using ActiveRecord 7.0 or later, please use `ActiveRecord.default_timezone` instead.
 
 ### Callbacks
 
@@ -506,7 +507,8 @@ This allows an external gem to dynamically add an adapter without the need to ad
 
 ### Requiring
 
-Note: These instructions will only work if you are using version 0.2.0 or higher.
+> **Note**
+> These instructions will only work if you are using version 0.2.0 or higher.
 
 #### Autoloading via Bundler
 
