@@ -4,17 +4,17 @@ require "ostruct"
 
 module ActiveRecord::Import::ConnectionAdapters; end
 
-module ActiveRecord::Import #:nodoc:
+module ActiveRecord::Import # :nodoc:
   Result = Struct.new(:failed_instances, :num_inserts, :ids, :results)
 
-  module ImportSupport #:nodoc:
-    def supports_import? #:nodoc:
+  module ImportSupport # :nodoc:
+    def supports_import? # :nodoc:
       true
     end
   end
 
-  module OnDuplicateKeyUpdateSupport #:nodoc:
-    def supports_on_duplicate_key_update? #:nodoc:
+  module OnDuplicateKeyUpdateSupport # :nodoc:
+    def supports_on_duplicate_key_update? # :nodoc:
       true
     end
   end
@@ -73,7 +73,7 @@ module ActiveRecord::Import #:nodoc:
     end
 
     def valid_model?(model)
-      init_validations(model.class) unless model.class == @validator_class
+      init_validations(model.class) unless model.instance_of?(@validator_class)
 
       validation_context = @options[:validate_with_context]
       validation_context ||= (model.new_record? ? :create : :update)
@@ -165,7 +165,7 @@ class ActiveRecord::Associations::CollectionAssociation
         m.public_send "#{reflection.type}=", owner.class.name if reflection.type
       end
 
-      return model_klass.bulk_import column_names, models, options
+      model_klass.bulk_import column_names, models, options
 
     # supports array of hash objects
     elsif args.last.is_a?( Array ) && args.last.first.is_a?(Hash)
@@ -204,11 +204,11 @@ class ActiveRecord::Associations::CollectionAssociation
         end
       end
 
-      return model_klass.bulk_import column_names, array_of_attributes, options
+      model_klass.bulk_import column_names, array_of_attributes, options
 
     # supports empty array
     elsif args.last.is_a?( Array ) && args.last.empty?
-      return ActiveRecord::Import::Result.new([], 0, [])
+      ActiveRecord::Import::Result.new([], 0, [])
 
     # supports 2-element array and array
     elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
@@ -239,7 +239,7 @@ class ActiveRecord::Associations::CollectionAssociation
         end
       end
 
-      return model_klass.bulk_import column_names, array_of_attributes, options
+      model_klass.bulk_import column_names, array_of_attributes, options
     else
       raise ArgumentError, "Invalid arguments!"
     end
@@ -786,11 +786,9 @@ class ActiveRecord::Base
         end
       end
 
-      if finder_needs_type_condition?
-        unless column_names.include?(inheritance_column.to_sym)
-          column_names << inheritance_column.to_sym
-          array_of_attributes.each { |attrs| attrs << sti_name }
-        end
+      if finder_needs_type_condition? && !column_names.include?(inheritance_column.to_sym)
+        column_names << inheritance_column.to_sym
+        array_of_attributes.each { |attrs| attrs << sti_name }
       end
 
       columns = column_names.each_with_index.map do |name, i|
@@ -859,7 +857,7 @@ class ActiveRecord::Base
           model.id = id
 
           timestamps.each do |attr, value|
-            model.send(attr + "=", value) if model.send(attr).nil?
+            model.send("#{attr}=", value) if model.send(attr).nil?
           end
         end
       end

@@ -13,10 +13,11 @@ module ActiveRecord::Import::MysqlAdapter
     # the number of inserts default
     number_of_inserts = 0
 
-    base_sql, post_sql = if sql.is_a?( String )
-      [sql, '']
-    elsif sql.is_a?( Array )
-      [sql.shift, sql.join( ' ' )]
+    base_sql, post_sql = case sql
+                         when String
+                           [sql, '']
+                         when Array
+                           [sql.shift, sql.join( ' ' )]
     end
 
     sql_size = QUERY_OVERHEAD + base_sql.size + post_sql.size
@@ -33,7 +34,7 @@ module ActiveRecord::Import::MysqlAdapter
     max = max_allowed_packet
 
     # if we can insert it all as one statement
-    if NO_MAX_PACKET == max || total_bytes <= max || options[:force_single_insert]
+    if max == NO_MAX_PACKET || total_bytes <= max || options[:force_single_insert]
       number_of_inserts += 1
       sql2insert = base_sql + values.join( ',' ) + post_sql
       insert( sql2insert, *args )
@@ -87,11 +88,12 @@ module ActiveRecord::Import::MysqlAdapter
     sql = ' ON DUPLICATE KEY UPDATE '.dup
     arg = args.first
     locking_column = args.last
-    if arg.is_a?( Array )
+    case arg
+    when Array
       sql << sql_for_on_duplicate_key_update_as_array( table_name, locking_column, arg )
-    elsif arg.is_a?( Hash )
+    when Hash
       sql << sql_for_on_duplicate_key_update_as_hash( table_name, locking_column, arg )
-    elsif arg.is_a?( String )
+    when String
       sql << arg
     else
       raise ArgumentError, "Expected Array or Hash"

@@ -5,6 +5,7 @@ require 'active_support/core_ext/array'
 module ActiveRecord::Import
   class ValueSetTooLargeError < StandardError
     attr_reader :size
+
     def initialize(msg = "Value set exceeds max size", size = 0)
       @size = size
       super(msg)
