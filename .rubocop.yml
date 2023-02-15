@@ -66,10 +66,10 @@ Style/SymbolArray:
 Style/TrailingCommaInArrayLiteral:
   Enabled: false
 
-Layout/AlignArguments:
+Layout/ArgumentAlignment:
   Enabled: false
 
-Layout/AlignParameters:
+Layout/ParameterAlignment:
   EnforcedStyle: with_fixed_indentation
 
 Layout/EndAlignment:
@@ -81,7 +81,7 @@ Layout/ElseAlignment:
 Layout/EmptyLineAfterGuardClause:
   Enabled: false
 
-Layout/IndentHeredoc:
+Layout/HeredocIndentation:
   Enabled: false
 
 Layout/SpaceInsideParens:
@@ -102,7 +102,7 @@ Lint/PercentStringArray:
 Naming/HeredocDelimiterNaming:
   Enabled: false
 
-Naming/UncommunicativeMethodParamName:
+Naming/MethodParameterName:
   Enabled: false
 
 Security/YAMLLoad:

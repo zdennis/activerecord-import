@@ -41,7 +41,7 @@ require File.join(benchmark_dir, "../test/schema/generic_schema")
 adapter_schema = File.join(benchmark_dir, "schema/#{options.adapter}_schema.rb")
 require adapter_schema if File.exist?(adapter_schema)
 
-Dir[File.dirname(__FILE__) + "/models/*.rb"].each { |file| require file }
+Dir["#{File.dirname(__FILE__)}/models/*.rb"].sort.each { |file| require file }
 
 require File.join( benchmark_dir, 'lib', "#{options.adapter}_benchmark" )
 
@@ -53,8 +53,8 @@ else
 end
 
 letter = options.adapter[0].chr
-clazz_str = letter.upcase + options.adapter[1..-1].downcase
-clazz = Object.const_get( clazz_str + "Benchmark" )
+clazz_str = letter.upcase + options.adapter[1..].downcase
+clazz = Object.const_get( "#{clazz_str}Benchmark" )
 
 benchmarks = []
 options.number_of_objects.each do |num|

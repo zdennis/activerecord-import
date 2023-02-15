@@ -26,7 +26,7 @@ def should_support_basic_on_duplicate_key_update
           User.import(updated_users, on_duplicate_key_update: [:name])
           assert User.count == updated_users.length
           User.all.each_with_index do |user, i|
-            assert_equal user.name, users[i].name + ' Rothschild'
+            assert_equal user.name, "#{users[i].name} Rothschild"
             assert_equal 1, user.lock_version
           end
         end
@@ -50,7 +50,7 @@ def should_support_basic_on_duplicate_key_update
           User.import(columns, updated_values, on_duplicate_key_update: [:name])
           assert User.count == updated_values.length
           User.all.each_with_index do |user, i|
-            assert_equal user.name, users[i].name + ' Rothschild'
+            assert_equal user.name, "#{users[i].name} Rothschild"
             assert_equal 1, user.lock_version
           end
         end
@@ -72,7 +72,7 @@ def should_support_basic_on_duplicate_key_update
           User.import(updated_values, on_duplicate_key_update: [:name])
           assert User.count == updated_values.length
           User.all.each_with_index do |user, i|
-            assert_equal user.name, users[i].name + ' Rothschild'
+            assert_equal user.name, "#{users[i].name} Rothschild"
             assert_equal 1, user.lock_version
           end
           updated_values2 = User.all.map do |user|
@@ -82,7 +82,7 @@ def should_support_basic_on_duplicate_key_update
           User.import(updated_values2, on_duplicate_key_update: [:name])
           assert User.count == updated_values2.length
           User.all.each_with_index do |user, i|
-            assert_equal user.name, users[i].name + ' Rothschild jr.'
+            assert_equal user.name, "#{users[i].name} Rothschild jr."
             assert_equal 2, user.lock_version
           end
         end
@@ -104,7 +104,7 @@ def should_support_basic_on_duplicate_key_update
           Account.import(updated_accounts, on_duplicate_key_update: [:id, :name])
           assert Account.count == updated_accounts.length
           Account.all.each_with_index do |user, i|
-            assert_equal user.name, accounts[i].name + ' Rothschild'
+            assert_equal user.name, "#{accounts[i].name} Rothschild"
             assert_equal 1, user.lock
           end
         end
@@ -128,7 +128,7 @@ def should_support_basic_on_duplicate_key_update
           Account.import(columns, updated_values, on_duplicate_key_update: [:name])
           assert Account.count == updated_values.length
           Account.all.each_with_index do |user, i|
-            assert_equal user.name, accounts[i].name + ' Rothschild'
+            assert_equal user.name, "#{accounts[i].name} Rothschild"
             assert_equal 1, user.lock
           end
         end
@@ -150,7 +150,7 @@ def should_support_basic_on_duplicate_key_update
           Account.import(updated_values, on_duplicate_key_update: [:name])
           assert Account.count == updated_values.length
           Account.all.each_with_index do |user, i|
-            assert_equal user.name, accounts[i].name + ' Rothschild'
+            assert_equal user.name, "#{accounts[i].name} Rothschild"
             assert_equal 1, user.lock
           end
         end
@@ -172,7 +172,7 @@ def should_support_basic_on_duplicate_key_update
           Bike::Maker.import(updated_makers, on_duplicate_key_update: [:name])
           assert Bike::Maker.count == updated_makers.length
           Bike::Maker.all.each_with_index do |maker, i|
-            assert_equal maker.name, makers[i].name + ' bikes'
+            assert_equal maker.name, "#{makers[i].name} bikes"
             assert_equal 1, maker.lock_version
           end
         end
@@ -195,7 +195,7 @@ def should_support_basic_on_duplicate_key_update
           Bike::Maker.import(columns, updated_values, on_duplicate_key_update: [:name])
           assert Bike::Maker.count == updated_values.length
           Bike::Maker.all.each_with_index do |maker, i|
-            assert_equal maker.name, makers[i].name + ' bikes'
+            assert_equal maker.name, "#{makers[i].name} bikes"
             assert_equal 1, maker.lock_version
           end
         end
@@ -217,7 +217,7 @@ def should_support_basic_on_duplicate_key_update
           Bike::Maker.import(updated_values, on_duplicate_key_update: [:name])
           assert Bike::Maker.count == updated_values.length
           Bike::Maker.all.each_with_index do |maker, i|
-            assert_equal maker.name, makers[i].name + ' bikes'
+            assert_equal maker.name, "#{makers[i].name} bikes"
             assert_equal 1, maker.lock_version
           end
         end

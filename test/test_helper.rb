@@ -84,7 +84,7 @@ ActiveSupport::Notifications.subscribe(/active_record.sql/) do |_, _, _, _, hsh|
 end
 
 require "factory_bot"
-Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each { |file| require file }
+Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].sort.each { |file| require file }
 
 # Load base/generic schema
 require test_dir.join("schema/version")
@@ -92,7 +92,7 @@ require test_dir.join("schema/generic_schema")
 adapter_schema = test_dir.join("schema/#{adapter}_schema.rb")
 require adapter_schema if File.exist?(adapter_schema)
 
-Dir[File.dirname(__FILE__) + "/models/*.rb"].each { |file| require file }
+Dir["#{File.dirname(__FILE__)}/models/*.rb"].sort.each { |file| require file }
 
 # Prevent this deprecation warning from breaking the tests.
 Rake::FileList.send(:remove_method, :import)
