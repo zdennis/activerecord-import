@@ -698,7 +698,9 @@ class ActiveRecord::Base
         import_with_validations( column_names, array_of_attributes, options ) do |failed_instances|
           if models
             models.each_with_index do |m, i|
-              failed_instances << (options[:track_validation_failures] ? [i, m] : m) if m.errors.any?
+              next unless m.errors.any?
+
+              failed_instances << (options[:track_validation_failures] ? [i, m] : m)
             end
           else
             # create instances for each of our column/value sets
