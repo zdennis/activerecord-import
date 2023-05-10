@@ -22,6 +22,7 @@ ActiveRecord::Schema.define do
     t.boolean :approved, default: '1'
     t.integer :replies_count
     t.integer :parent_id
+    t.integer :priority, default: 0
     t.string :type
     t.datetime :created_at
     t.datetime :created_on
