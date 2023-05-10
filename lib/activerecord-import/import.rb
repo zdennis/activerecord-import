@@ -574,7 +574,7 @@ class ActiveRecord::Base
 
         if models.first.id.nil?
           Array(primary_key).each do |c|
-            if column_names.include?(c) && columns_hash[c].type == :uuid
+            if column_names.include?(c) && schema_columns_hash[c].type == :uuid
               column_names.delete(c)
             end
           end
@@ -778,7 +778,10 @@ class ActiveRecord::Base
     def import_without_validations_or_callbacks( column_names, array_of_attributes, options = {} )
       return ActiveRecord::Import::Result.new([], 0, [], []) if array_of_attributes.empty?
 
-      column_names = column_names.map(&:to_sym)
+      column_names = column_names.map do |name|
+        original_name = attribute_alias?(name) ? attribute_alias(name) : name
+        original_name.to_sym
+      end
       scope_columns, scope_values = scope_attributes.to_a.transpose
 
       unless scope_columns.blank?
@@ -796,7 +799,7 @@ class ActiveRecord::Base
       end
 
       columns = column_names.each_with_index.map do |name, i|
-        column = columns_hash[name.to_s]
+        column = schema_columns_hash[name.to_s]
         raise ActiveRecord::Import::MissingColumnError.new(name.to_s, i) if column.nil?
         column
       end
@@ -867,7 +870,7 @@ class ActiveRecord::Base
       end
 
       deserialize_value = lambda do |column, value|
-        column = columns_hash[column]
+        column = schema_columns_hash[column]
         return value unless column
         if respond_to?(:type_caster)
           type = type_for_attribute(column.name)
@@ -959,6 +962,11 @@ class ActiveRecord::Base
           associated_records.first.class.bulk_import(associated_records, options) unless associated_records.empty?
         end
       end
+    end
+
+    def schema_columns_hash
+      load_schema unless schema_loaded?
+      @schema_columns_hash ||= connection.schema_cache.columns_hash(table_name)
     end
 
     # We are eventually going to call Class.import <objects> so we build up a hash

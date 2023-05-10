@@ -176,6 +176,7 @@ def should_support_basic_on_duplicate_key_update
             assert_equal 1, maker.lock_version
           end
         end
+
         it 'update the lock_version of models separated by namespaces by array' do
           makers = [
             Bike::Maker.new(name: 'Yamaha'),
@@ -315,6 +316,34 @@ def should_support_basic_on_duplicate_key_update
           let(:update_columns) { [:title, :author_email_address, :parent_id] }
           should_support_on_duplicate_key_update
           should_update_fields_mentioned
+        end
+
+        context "using column aliases" do
+          let(:columns) { %w( id title author_name author_email_address parent_id ) }
+          let(:update_columns) { %w(title author_email_address parent_id) }
+
+          context "with column aliases in column list" do
+            let(:columns) { %w( id name author_name author_email_address parent_id ) }
+            should_support_on_duplicate_key_update
+            should_update_fields_mentioned
+          end
+
+          context "with column aliases in update columns list" do
+            let(:update_columns) { %w(name author_email_address parent_id) }
+            should_support_on_duplicate_key_update
+            should_update_fields_mentioned
+          end
+        end
+
+        if ENV['AR_VERSION'].to_i >= 6.0
+          context "using ignored columns" do
+            let(:columns) { %w( id title author_name author_email_address parent_id priority ) }
+            let(:values) { [[99, "Book", "John Doe", "john@doe.com", 17, 1]] }
+            let(:update_columns) { %w(name author_email_address parent_id priority) }
+            let(:updated_values) { [[99, "Book - 2nd Edition", "Author Should Not Change", "johndoe@example.com", 57, 2]] }
+            should_support_on_duplicate_key_update
+            should_update_fields_mentioned
+          end
         end
       end
 

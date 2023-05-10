@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
 class Topic < ActiveRecord::Base
+  if ENV['AR_VERSION'].to_i >= 6.0
+    self.ignored_columns = [:priority]
+  end
+  alias_attribute :name, :title
+
   validates_presence_of :author_name
   validates :title, numericality: { only_integer: true }, on: :context_test
   validates :title, uniqueness: true
