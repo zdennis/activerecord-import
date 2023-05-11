@@ -965,8 +965,11 @@ class ActiveRecord::Base
     end
 
     def schema_columns_hash
-      load_schema unless schema_loaded?
-      @schema_columns_hash ||= connection.schema_cache.columns_hash(table_name)
+      @schema_columns_hash ||= if respond_to?(:ignored_columns) && ignored_columns.any?
+        connection.schema_cache.columns_hash(table_name)
+      else
+        columns_hash
+      end
     end
 
     # We are eventually going to call Class.import <objects> so we build up a hash
