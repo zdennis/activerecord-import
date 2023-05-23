@@ -369,6 +369,13 @@ class ActiveRecord::Base
     #   newly imported objects. PostgreSQL only.
     # * +batch_size+ - an integer value to specify the max number of records to
     #   include per insert. Defaults to the total number of records to import.
+    # * +omit_columns+ an array of column names to exclude from the import,
+    #   or a proc that receives the class, and array of column names, and returns
+    #   a new array of column names (for recursive imports). This is to avoid
+    #   having to populate Model.ignored_columns, which can leak to other threads.
+    # * +omit_columns_with_default_functions+ - true|false, tells import to filter
+    #   out all columns with a default function defined in the schema, such as uuid
+    #   columns that have a default value of uuid_generate_v4(). Defaults to false.
     #
     # == Examples
     #  class BlogPost < ActiveRecord::Base ; end
@@ -570,6 +577,56 @@ class ActiveRecord::Base
     end
     alias import! bulk_import! unless ActiveRecord::Base.respond_to? :import!
 
+     # Filters column names for a model according to the options given,
+    # specifically the :omit_columns and :omit_columns_with_default_functions options
+    def omitted_column_names(column_names, options)
+      model = options[:model]
+      # binding.pry if model == Redirection
+      ignored_column_names = []
+
+      # Do nothing if none of these options are truthy
+      return ignored_column_names unless options.slice(:omit_columns, :omit_columns_with_default_functions).values.any?
+
+      # Remove columns that have default functions defined if the option is given
+      ignored_column_names += columns_with_default_function.map(&:name).map(&:to_sym) if options[:omit_columns_with_default_functions]
+
+      if (omit_columns = options[:omit_columns])
+        # If the option is a Proc, which is useful for recursive imports
+        # where the model class is not known yet, call it with the model
+        # and the current set of column names and expect it to return
+        # columns to ignore
+        # Cast to array in case it returns a falsy value
+        case omit_columns
+        when Proc
+          ignored_column_names += Array(omit_columns.call(model, column_names)).map(&:to_sym)
+        when Array
+          ignored_column_names += omit_columns.map(&:to_sym)
+        when Hash
+          # ignore_columns could also be a hash of { Model => [:guid, :uuid], OtherModel => [:some_column] }
+          ignored_column_names += Array(omit_columns[model]).map(&:to_sym) if omit_columns[model]
+        end
+      end
+      ignored_column_names
+    end
+
+    # Finds all columns that have a default function defined
+    # in the schema. These columns should not be forcibly set
+    # to NULL even if it's allowed.
+    # If options[:omit_columns_with_default_functions] is given,
+    # we use this list to remove these columns from the list and
+    # subsequently from the schema column hash.
+    def columns_with_default_function
+      columns.select do |column|
+        # We should probably not ignore the primary key?
+        # If we should, it's not the job of this method to do so,
+        # so don't return the primary key in this list.
+        next if column.name == primary_key
+        # Any columns that have a default function
+        next unless column.default_function
+        true
+      end
+    end
+
     def import_helper( *args )
       connection_pool.with_connection do |conn|
         options = { model: self, validate: true, timestamps: true, track_validation_failures: false }
@@ -595,6 +652,9 @@ class ActiveRecord::Base
             end
           end
 
+          # Filter column names according to the options given
+          # before proceeding to construct the array of attributes
+          column_names -= omitted_column_names(column_names, options).map(&:to_s)
           if models.first.id.nil?
             Array(primary_key).each do |c|
               if column_names.include?(c) && schema_columns_hash(conn)[c].type == :uuid
@@ -645,12 +705,14 @@ class ActiveRecord::Base
             allow_extra_hash_keys = false
           end
 
+          omitted_columns = omitted_column_names(column_names, options)
+
           array_of_attributes = array_of_hashes.map do |h|
             error_message = validate_hash_import(h, column_names, allow_extra_hash_keys)
 
             raise ArgumentError, error_message if error_message
 
-            column_names.map do |key|
+            (column_names - omitted_columns).map do |key|
               h[key]
             end
           end
@@ -673,6 +735,8 @@ class ActiveRecord::Base
           raise ArgumentError, "Invalid arguments!"
         end
 
+        # Remove omitted columns
+        column_names -= omitted_column_names(column_names, options)
         # Force the primary key col into the insert if it's not
         # on the list and we are using a sequence and stuff a nil
         # value for it into each row so the sequencer will fire later
