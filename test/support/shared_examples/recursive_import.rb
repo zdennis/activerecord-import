@@ -258,6 +258,26 @@ def should_support_recursive_import
             assert_equal new_author_name, book.author_name
           end
         end
+
+        it "updates nested associated objects" do
+          new_chapter_title = 'The Final Chapter'
+          book = new_topics.first.books.first
+          book.author_name = 'Richard Bachman'
+
+          example_chapter = book.chapters.first
+          example_chapter.title = new_chapter_title
+
+          assert_nothing_raised do
+            Topic.import new_topics,
+              recursive: true,
+              on_duplicate_key_update: [:id],
+              recursive_on_duplicate_key_update: {
+                books: { conflict_target: [:id], columns: [:author_name] },
+                chapters: { conflict_target: [:id], columns: [:title] }
+              }
+          end
+          assert_equal new_chapter_title, Chapter.find(example_chapter.id).title
+        end
       end
     end
 
