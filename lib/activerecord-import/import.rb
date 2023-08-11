@@ -85,7 +85,11 @@ module ActiveRecord::Import # :nodoc:
 
         model.run_callbacks(:validation) do
           if defined?(ActiveSupport::Callbacks::Filters::Environment) # ActiveRecord >= 4.1
-            runner = @validate_callbacks.compile
+            runner = if @validate_callbacks.method(:compile).arity == 0
+              @validate_callbacks.compile
+            else # ActiveRecord >= 7.1
+              @validate_callbacks.compile(nil)
+            end
             env = ActiveSupport::Callbacks::Filters::Environment.new(model, false, nil)
             if runner.respond_to?(:call) # ActiveRecord < 5.1
               runner.call(env)
