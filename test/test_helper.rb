@@ -24,7 +24,7 @@ if ActiveSupport::VERSION::STRING < "4.0"
   require 'mocha/test_unit'
 else
   require 'active_support/testing/autorun'
-  require "mocha/mini_test"
+  require "mocha/minitest"
 end
 
 require 'timecop'

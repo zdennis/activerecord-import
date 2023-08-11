@@ -40,7 +40,7 @@ end
 gem "factory_bot"
 gem "timecop"
 gem "chronic"
-gem "mocha", "~> 1.3.0"
+gem "mocha", "~> 2.1.0"
 
 # Debugging
 platforms :jruby do
