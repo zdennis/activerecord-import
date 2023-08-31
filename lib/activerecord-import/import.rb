@@ -969,7 +969,7 @@ class ActiveRecord::Base
     end
 
     def schema_columns_hash
-      @schema_columns_hash ||= if respond_to?(:ignored_columns) && ignored_columns.any?
+      if respond_to?(:ignored_columns) && ignored_columns.any?
         connection.schema_cache.columns_hash(table_name)
       else
         columns_hash
