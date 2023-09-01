@@ -16,6 +16,7 @@ module ActiveRecord::Import
     when 'makara_postgis' then 'postgresql'
     when 'postgis' then 'postgresql'
     when 'cockroachdb' then 'postgresql'
+    when 'trilogy' then 'trilogy'
     else adapter
     end
   end
