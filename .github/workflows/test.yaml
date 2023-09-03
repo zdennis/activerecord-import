@@ -39,6 +39,9 @@ jobs:
           - ruby: '3.0'
             env:
               AR_VERSION: 6.1
+          - ruby: jruby
+            env:
+              AR_VERSION: '7.0'
           - ruby: 2.7
             env:
               AR_VERSION: '7.0'
@@ -48,6 +51,9 @@ jobs:
           - ruby: 2.7
             env:
               AR_VERSION: '6.0'
+          - ruby: jruby-9.3.10.0
+            env:
+              AR_VERSION: '6.1'
           - ruby: 2.6
             env:
               AR_VERSION: 5.2

@@ -31,9 +31,9 @@ end
 platforms :jruby do
   gem "jdbc-mysql"
   gem "jdbc-postgres"
-  gem "activerecord-jdbcsqlite3-adapter",    "~> 1.3"
-  gem "activerecord-jdbcmysql-adapter",      "~> 1.3"
-  gem "activerecord-jdbcpostgresql-adapter", "~> 1.3"
+  gem "activerecord-jdbcsqlite3-adapter"
+  gem "activerecord-jdbcmysql-adapter"
+  gem "activerecord-jdbcpostgresql-adapter"
 end
 
 # Support libs
