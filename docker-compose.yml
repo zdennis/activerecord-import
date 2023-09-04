@@ -1,0 +1,25 @@
+version: "3.5"
+
+services:
+  mysql:
+    platform: linux/x86_64
+    image: mysql:5.7
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  app:
+    build:
+      context: .
+    environment:
+      DB_HOST: mysql
+      AR_VERSION: 7.0
+    volumes:
+      - .:/usr/src/app
+    depends_on:
+      - mysql
+    command: tail -f /dev/null
+
+volumes:
+  mysql-data:

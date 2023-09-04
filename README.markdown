@@ -626,6 +626,19 @@ AR_VERSION=7.0 bundle exec rake test:postgresql test:sqlite3 test:mysql2
 
 Once you have pushed up your changes, you can find your CI results [here](https://github.com/zdennis/activerecord-import/actions).
 
+#### Docker Setup
+
+Before you begin, make sure you have [Docker](https://www.docker.com/products/docker-desktop/) and [Docker Compose](https://docs.docker.com/compose/) installed on your machine. If you don't, you can install both via Homebrew using the following command:
+
+```bash
+brew install docker && brew install docker-compose
+```
+##### Steps
+
+1. In your terminal run `docker-compose up --build`
+1. In another tab/window run `docker-compose exec app bash`
+1. In that same terminal run the mysql2 test by running `bundle exec rake test:mysql2`
+
 ## Issue Triage [![Open Source Helpers](https://www.codetriage.com/zdennis/activerecord-import/badges/users.svg)](https://www.codetriage.com/zdennis/activerecord-import)
 
 You can triage issues which may include reproducing bug reports or asking for vital information, such as version numbers or reproduction instructions. If you would like to start triaging issues, one easy way to get started is to [subscribe to activerecord-import on CodeTriage](https://www.codetriage.com/zdennis/activerecord-import).
