@@ -9,6 +9,13 @@ services:
     ports:
       - "3306:3306"
 
+  postgresql:
+    image: postgres:latest
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
   app:
     build:
       context: .
@@ -19,7 +26,9 @@ services:
       - .:/usr/src/app
     depends_on:
       - mysql
+      - postgresql
     command: tail -f /dev/null
 
 volumes:
   mysql-data:
+  postgresql-data:

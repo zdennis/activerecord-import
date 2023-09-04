@@ -20,6 +20,7 @@ postgresql: &postgresql
   <<: *common
   username: postgres
   adapter: postgresql
+  host: postgresql
   min_messages: warning
 
 postresql_makara:
