@@ -56,3 +56,4 @@ spatialite:
 trilogy:
   <<: *common
   adapter: trilogy
+  host: mysql
