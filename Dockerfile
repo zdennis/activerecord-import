@@ -7,7 +7,7 @@ WORKDIR /usr/src/app
 
 # Install system packages
 RUN apt-get update -qq && \
-    apt-get install -y default-mysql-client vim && \
+    apt-get install -y default-mysql-client postgresql postgresql-contrib vim && \
     apt-get clean
 
 # Set environment variables

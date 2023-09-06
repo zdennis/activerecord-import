@@ -147,7 +147,7 @@ def should_support_recursive_import
       end
 
       books.each do |book|
-        assert_equal book.topic_id, nil
+        assert_nil book.topic_id, nil
       end
     end
 
