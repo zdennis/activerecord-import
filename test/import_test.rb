@@ -991,4 +991,16 @@ describe "#import" do
       end
     end
   end
+
+  describe "aliased attributes" do
+    it "two column based attributes can be imported" do
+      topic = FactoryBot.create :topic
+      new_topic = Topic.new(topic.attributes.except("id"))
+      new_topic.author_name = "John Doe"
+
+      Topic.import([new_topic])
+      assert_equal 2, Topic.count
+    end
+  end
+
 end

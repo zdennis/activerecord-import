@@ -28,6 +28,7 @@ ActiveRecord::Schema.define do
     t.datetime :created_on
     t.datetime :updated_at
     t.datetime :updated_on
+    t.string :author_full_name
   end
 
   create_table :projects, force: :cascade do |t|
