@@ -1002,5 +1002,4 @@ describe "#import" do
       assert_equal 2, Topic.count
     end
   end
-
 end
