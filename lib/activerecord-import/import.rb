@@ -109,7 +109,7 @@ module ActiveRecord::Import # :nodoc:
               runner.invoke_after(env) || []
             end
           elsif @validate_callbacks.method(:compile).arity == 0 # ActiveRecord = 4.0
-            model.instance_eval @validate_callbacks.compile
+            model.instance_eval @validate_callbacks.compile(nil)
           else # ActiveRecord 3.x
             model.instance_eval @validate_callbacks.compile(nil, model)
           end
