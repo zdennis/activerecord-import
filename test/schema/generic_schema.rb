@@ -2,8 +2,10 @@
 
 ActiveRecord::Schema.define do
   create_table :schema_info, force: :cascade do |t|
-    t.integer :version, unique: true
+    t.integer :version
   end
+  add_index :schema_info, :version, unique: true
+
   SchemaInfo.create version: SchemaInfo::VERSION
 
   create_table :group, force: :cascade do |t|
