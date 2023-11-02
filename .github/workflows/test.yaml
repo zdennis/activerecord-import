@@ -22,11 +22,16 @@ jobs:
         ruby:
           - 3.2
         env:
+          - AR_VERSION: '7.1'
+            RUBYOPT: --enable-frozen-string-literal
           - AR_VERSION: '7.0'
             RUBYOPT: --enable-frozen-string-literal
           - AR_VERSION: 6.1
             RUBYOPT: --enable-frozen-string-literal
         include:
+          - ruby: 3.1
+            env:
+              AR_VERSION: '7.1'
           - ruby: 3.1
             env:
               AR_VERSION: '7.0'
