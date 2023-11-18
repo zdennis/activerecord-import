@@ -1,3 +1,9 @@
+## Changes in 1.5.1
+
+### Fixes
+
+* Stop memoizing schema_columns_hash so dynamic schema changes are picked up. Thanks to @koshigoe via \##812.
+
 ## Changes in 1.5.0
 
 ### New Features
