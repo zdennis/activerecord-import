@@ -557,7 +557,7 @@ class ActiveRecord::Base
       options.merge!( args.pop ) if args.last.is_a? Hash
       # making sure that current model's primary key is used
       options[:primary_key] = primary_key
-      options[:locking_column] = locking_column if attribute_names.include?(locking_column)
+      options[:locking_column] = locking_column if locking_enabled?
 
       is_validating = options[:validate_with_context].present? ? true : options[:validate]
       validator = ActiveRecord::Import::Validator.new(self, options)
