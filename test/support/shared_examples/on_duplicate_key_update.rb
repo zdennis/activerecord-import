@@ -223,6 +223,34 @@ def should_support_basic_on_duplicate_key_update
           end
         end
       end
+
+      context 'with locking disabled' do
+        it 'does not update the lock_version' do
+          users = [
+            User.new(name: 'Salomon'),
+            User.new(name: 'Nathan')
+          ]
+          User.import(users)
+          assert User.count == users.length
+          User.all.each do |user|
+            assert_equal 0, user.lock_version
+          end
+          updated_users = User.all.map do |user|
+            user.name += ' Rothschild'
+            user
+          end
+
+          ActiveRecord::Base.lock_optimistically = false # Disable locking
+          User.import(updated_users, on_duplicate_key_update: [:name])
+          ActiveRecord::Base.lock_optimistically = true # Enable locking
+
+          assert User.count == updated_users.length
+          User.all.each_with_index do |user, i|
+            assert_equal user.name, "#{users[i].name} Rothschild"
+            assert_equal 0, user.lock_version
+          end
+        end
+      end
     end
 
     context "with :on_duplicate_key_update" do
