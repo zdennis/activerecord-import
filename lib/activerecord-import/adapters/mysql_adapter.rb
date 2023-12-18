@@ -13,13 +13,14 @@ module ActiveRecord::Import::MysqlAdapter
     # the number of inserts default
     number_of_inserts = 0
 
-    base_sql, post_sql = if sql.is_a?( String )
-      [sql, '']
-    elsif sql.is_a?( Array )
-      [sql.shift, sql.join( ' ' )]
+    base_sql, post_sql = case sql
+                         when String
+                           [sql, '']
+                         when Array
+                           [sql.shift, sql.join( ' ' )]
     end
 
-    sql_size = QUERY_OVERHEAD + base_sql.size + post_sql.size
+    sql_size = QUERY_OVERHEAD + base_sql.bytesize + post_sql.bytesize
 
     # the number of bytes the requested insert statement values will take up
     values_in_bytes = values.sum(&:bytesize)
@@ -33,7 +34,7 @@ module ActiveRecord::Import::MysqlAdapter
     max = max_allowed_packet
 
     # if we can insert it all as one statement
-    if NO_MAX_PACKET == max || total_bytes <= max || options[:force_single_insert]
+    if max == NO_MAX_PACKET || total_bytes <= max || options[:force_single_insert]
       number_of_inserts += 1
       sql2insert = base_sql + values.join( ',' ) + post_sql
       insert( sql2insert, *args )
@@ -85,13 +86,13 @@ module ActiveRecord::Import::MysqlAdapter
   # in +args+.
   def sql_for_on_duplicate_key_update( table_name, *args ) # :nodoc:
     sql = ' ON DUPLICATE KEY UPDATE '.dup
-    arg = args.first
-    locking_column = args.last
-    if arg.is_a?( Array )
-      sql << sql_for_on_duplicate_key_update_as_array( table_name, locking_column, arg )
-    elsif arg.is_a?( Hash )
-      sql << sql_for_on_duplicate_key_update_as_hash( table_name, locking_column, arg )
-    elsif arg.is_a?( String )
+    arg, model, _primary_key, locking_column = args
+    case arg
+    when Array
+      sql << sql_for_on_duplicate_key_update_as_array( table_name, model, locking_column, arg )
+    when Hash
+      sql << sql_for_on_duplicate_key_update_as_hash( table_name, model, locking_column, arg )
+    when String
       sql << arg
     else
       raise ArgumentError, "Expected Array or Hash"
@@ -99,19 +100,24 @@ module ActiveRecord::Import::MysqlAdapter
     sql
   end
 
-  def sql_for_on_duplicate_key_update_as_array( table_name, locking_column, arr ) # :nodoc:
+  def sql_for_on_duplicate_key_update_as_array( table_name, model, locking_column, arr ) # :nodoc:
     results = arr.map do |column|
-      qc = quote_column_name( column )
+      original_column_name = model.attribute_alias?( column ) ? model.attribute_alias( column ) : column
+      qc = quote_column_name( original_column_name )
       "#{table_name}.#{qc}=VALUES(#{qc})"
     end
     increment_locking_column!(table_name, results, locking_column)
     results.join( ',' )
   end
 
-  def sql_for_on_duplicate_key_update_as_hash( table_name, locking_column, hsh ) # :nodoc:
+  def sql_for_on_duplicate_key_update_as_hash( table_name, model, locking_column, hsh ) # :nodoc:
     results = hsh.map do |column1, column2|
-      qc1 = quote_column_name( column1 )
-      qc2 = quote_column_name( column2 )
+      original_column1_name = model.attribute_alias?( column1 ) ? model.attribute_alias( column1 ) : column1
+      qc1 = quote_column_name( original_column1_name )
+
+      original_column2_name = model.attribute_alias?( column2 ) ? model.attribute_alias( column2 ) : column2
+      qc2 = quote_column_name( original_column2_name )
+
       "#{table_name}.#{qc1}=VALUES( #{qc2} )"
     end
     increment_locking_column!(table_name, results, locking_column)

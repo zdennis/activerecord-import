@@ -29,7 +29,7 @@ module BenchmarkOptionParser
     print_valid_table_types( options, prefix: "    " )
   end
 
-  # TODO IMPLEMENT THIS
+  # TODO: IMPLEMENT THIS
   def self.print_valid_table_types( options, hsh = { prefix: '' } )
     if !options.table_types.keys.empty?
       options.table_types.keys.sort.each { |type| puts hsh[:prefix].to_s + type.to_s }

@@ -1,3 +1,27 @@
+## Changes in 1.5.1
+
+### Fixes
+
+* Stop memoizing schema_columns_hash so dynamic schema changes are picked up. Thanks to @koshigoe via \##812.
+
+## Changes in 1.5.0
+
+### New Features
+
+* Add Rails 7.1 support. Thanks to @gucki via \##807.
+* Add support for alias attributes. Thanks to @leonidkroka via \##799.
+
+### Fixes
+
+* Support for multi-byte column names when splitting queries. Thanks to @TakuyaKurimoto via \##801.
+* Fix issue with track_validation_failures when import models. Thanks to @OtaYohihiro via \##798.
+
+## Changes in 1.4.1
+
+### Fixes
+
+* Fix importing models that have required belongs_to associations and use composite primary keys. Thanks to @thoughtbot-summer via \##783.
+
 ## Changes in 1.4.0
 
 ### New Features

@@ -27,11 +27,11 @@ class BenchmarkBase
   # An OpenStruct object with the following attributes:
   #   * description - the description of the benchmark ran
   #   * tms - a Benchmark::Tms containing the results of the benchmark
-  def bm( description )
+  def bm( description, &block )
     tms = nil
     puts "Benchmarking #{description}"
 
-    Benchmark.bm { |x| tms = x.report { yield } }
+    Benchmark.bm { |x| tms = x.report(&block) }
     delete_all
     failed = false
 

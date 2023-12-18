@@ -15,7 +15,7 @@ pg_version = '0.9'
 pg_version = '1.1' if version >= 6.1
 
 group :development, :test do
-  gem 'rubocop', '~> 0.71.0'
+  gem 'rubocop'
   gem 'rake'
 end
 
@@ -31,16 +31,16 @@ end
 platforms :jruby do
   gem "jdbc-mysql"
   gem "jdbc-postgres"
-  gem "activerecord-jdbcsqlite3-adapter",    "~> 1.3"
-  gem "activerecord-jdbcmysql-adapter",      "~> 1.3"
-  gem "activerecord-jdbcpostgresql-adapter", "~> 1.3"
+  gem "activerecord-jdbcsqlite3-adapter"
+  gem "activerecord-jdbcmysql-adapter"
+  gem "activerecord-jdbcpostgresql-adapter"
 end
 
 # Support libs
 gem "factory_bot"
 gem "timecop"
 gem "chronic"
-gem "mocha", "~> 1.3.0"
+gem "mocha", "~> 2.1.0"
 
 # Debugging
 platforms :jruby do
@@ -49,7 +49,7 @@ end
 
 platforms :ruby do
   gem "pry-byebug"
-  gem "pry", "~> 0.12.0"
+  gem "pry", "~> 0.14.0"
 end
 
 if version >= 4.0

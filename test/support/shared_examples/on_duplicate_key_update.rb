@@ -26,7 +26,7 @@ def should_support_basic_on_duplicate_key_update
           User.import(updated_users, on_duplicate_key_update: [:name])
           assert User.count == updated_users.length
           User.all.each_with_index do |user, i|
-            assert_equal user.name, users[i].name + ' Rothschild'
+            assert_equal user.name, "#{users[i].name} Rothschild"
             assert_equal 1, user.lock_version
           end
         end
@@ -50,7 +50,7 @@ def should_support_basic_on_duplicate_key_update
           User.import(columns, updated_values, on_duplicate_key_update: [:name])
           assert User.count == updated_values.length
           User.all.each_with_index do |user, i|
-            assert_equal user.name, users[i].name + ' Rothschild'
+            assert_equal user.name, "#{users[i].name} Rothschild"
             assert_equal 1, user.lock_version
           end
         end
@@ -72,7 +72,7 @@ def should_support_basic_on_duplicate_key_update
           User.import(updated_values, on_duplicate_key_update: [:name])
           assert User.count == updated_values.length
           User.all.each_with_index do |user, i|
-            assert_equal user.name, users[i].name + ' Rothschild'
+            assert_equal user.name, "#{users[i].name} Rothschild"
             assert_equal 1, user.lock_version
           end
           updated_values2 = User.all.map do |user|
@@ -82,7 +82,7 @@ def should_support_basic_on_duplicate_key_update
           User.import(updated_values2, on_duplicate_key_update: [:name])
           assert User.count == updated_values2.length
           User.all.each_with_index do |user, i|
-            assert_equal user.name, users[i].name + ' Rothschild jr.'
+            assert_equal user.name, "#{users[i].name} Rothschild jr."
             assert_equal 2, user.lock_version
           end
         end
@@ -104,7 +104,7 @@ def should_support_basic_on_duplicate_key_update
           Account.import(updated_accounts, on_duplicate_key_update: [:id, :name])
           assert Account.count == updated_accounts.length
           Account.all.each_with_index do |user, i|
-            assert_equal user.name, accounts[i].name + ' Rothschild'
+            assert_equal user.name, "#{accounts[i].name} Rothschild"
             assert_equal 1, user.lock
           end
         end
@@ -128,7 +128,7 @@ def should_support_basic_on_duplicate_key_update
           Account.import(columns, updated_values, on_duplicate_key_update: [:name])
           assert Account.count == updated_values.length
           Account.all.each_with_index do |user, i|
-            assert_equal user.name, accounts[i].name + ' Rothschild'
+            assert_equal user.name, "#{accounts[i].name} Rothschild"
             assert_equal 1, user.lock
           end
         end
@@ -150,7 +150,7 @@ def should_support_basic_on_duplicate_key_update
           Account.import(updated_values, on_duplicate_key_update: [:name])
           assert Account.count == updated_values.length
           Account.all.each_with_index do |user, i|
-            assert_equal user.name, accounts[i].name + ' Rothschild'
+            assert_equal user.name, "#{accounts[i].name} Rothschild"
             assert_equal 1, user.lock
           end
         end
@@ -172,10 +172,11 @@ def should_support_basic_on_duplicate_key_update
           Bike::Maker.import(updated_makers, on_duplicate_key_update: [:name])
           assert Bike::Maker.count == updated_makers.length
           Bike::Maker.all.each_with_index do |maker, i|
-            assert_equal maker.name, makers[i].name + ' bikes'
+            assert_equal maker.name, "#{makers[i].name} bikes"
             assert_equal 1, maker.lock_version
           end
         end
+
         it 'update the lock_version of models separated by namespaces by array' do
           makers = [
             Bike::Maker.new(name: 'Yamaha'),
@@ -195,7 +196,7 @@ def should_support_basic_on_duplicate_key_update
           Bike::Maker.import(columns, updated_values, on_duplicate_key_update: [:name])
           assert Bike::Maker.count == updated_values.length
           Bike::Maker.all.each_with_index do |maker, i|
-            assert_equal maker.name, makers[i].name + ' bikes'
+            assert_equal maker.name, "#{makers[i].name} bikes"
             assert_equal 1, maker.lock_version
           end
         end
@@ -217,8 +218,36 @@ def should_support_basic_on_duplicate_key_update
           Bike::Maker.import(updated_values, on_duplicate_key_update: [:name])
           assert Bike::Maker.count == updated_values.length
           Bike::Maker.all.each_with_index do |maker, i|
-            assert_equal maker.name, makers[i].name + ' bikes'
+            assert_equal maker.name, "#{makers[i].name} bikes"
             assert_equal 1, maker.lock_version
+          end
+        end
+      end
+
+      context 'with locking disabled' do
+        it 'does not update the lock_version' do
+          users = [
+            User.new(name: 'Salomon'),
+            User.new(name: 'Nathan')
+          ]
+          User.import(users)
+          assert User.count == users.length
+          User.all.each do |user|
+            assert_equal 0, user.lock_version
+          end
+          updated_users = User.all.map do |user|
+            user.name += ' Rothschild'
+            user
+          end
+
+          ActiveRecord::Base.lock_optimistically = false # Disable locking
+          User.import(updated_users, on_duplicate_key_update: [:name])
+          ActiveRecord::Base.lock_optimistically = true # Enable locking
+
+          assert User.count == updated_users.length
+          User.all.each_with_index do |user, i|
+            assert_equal user.name, "#{users[i].name} Rothschild"
+            assert_equal 0, user.lock_version
           end
         end
       end
@@ -315,6 +344,34 @@ def should_support_basic_on_duplicate_key_update
           let(:update_columns) { [:title, :author_email_address, :parent_id] }
           should_support_on_duplicate_key_update
           should_update_fields_mentioned
+        end
+
+        context "using column aliases" do
+          let(:columns) { %w( id title author_name author_email_address parent_id ) }
+          let(:update_columns) { %w(title author_email_address parent_id) }
+
+          context "with column aliases in column list" do
+            let(:columns) { %w( id name author_name author_email_address parent_id ) }
+            should_support_on_duplicate_key_update
+            should_update_fields_mentioned
+          end
+
+          context "with column aliases in update columns list" do
+            let(:update_columns) { %w(name author_email_address parent_id) }
+            should_support_on_duplicate_key_update
+            should_update_fields_mentioned
+          end
+        end
+
+        if ENV['AR_VERSION'].to_i >= 6.0
+          context "using ignored columns" do
+            let(:columns) { %w( id title author_name author_email_address parent_id priority ) }
+            let(:values) { [[99, "Book", "John Doe", "john@doe.com", 17, 1]] }
+            let(:update_columns) { %w(name author_email_address parent_id priority) }
+            let(:updated_values) { [[99, "Book - 2nd Edition", "Author Should Not Change", "johndoe@example.com", 57, 2]] }
+            should_support_on_duplicate_key_update
+            should_update_fields_mentioned
+          end
         end
       end
 

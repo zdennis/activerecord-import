@@ -2,8 +2,10 @@
 
 ActiveRecord::Schema.define do
   create_table :schema_info, force: :cascade do |t|
-    t.integer :version, unique: true
+    t.integer :version
   end
+  add_index :schema_info, :version, unique: true
+
   SchemaInfo.create version: SchemaInfo::VERSION
 
   create_table :group, force: :cascade do |t|
@@ -22,6 +24,7 @@ ActiveRecord::Schema.define do
     t.boolean :approved, default: '1'
     t.integer :replies_count
     t.integer :parent_id
+    t.integer :priority, default: 0
     t.string :type
     t.datetime :created_at
     t.datetime :created_on
@@ -206,6 +209,12 @@ ActiveRecord::Schema.define do
           PRIMARY KEY (tag_id, publisher_id)
       );
     ).split.join(' ').strip
+
+    create_table :tag_aliases, force: :cascade do |t|
+      t.integer :tag_id, null: false
+      t.integer :parent_id, null: false
+      t.string :alias, null: false
+    end
   end
 
   create_table :customers, force: :cascade do |t|

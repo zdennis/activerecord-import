@@ -8,6 +8,7 @@ common: &common
 mysql2: &mysql2
   <<: *common
   adapter: mysql2
+  host: mysql
 
 mysql2spatial:
   <<: *mysql2
@@ -19,6 +20,7 @@ postgresql: &postgresql
   <<: *common
   username: postgres
   adapter: postgresql
+  host: postgresql
   min_messages: warning
 
 postresql_makara:

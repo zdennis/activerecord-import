@@ -4,17 +4,17 @@ require "ostruct"
 
 module ActiveRecord::Import::ConnectionAdapters; end
 
-module ActiveRecord::Import #:nodoc:
+module ActiveRecord::Import # :nodoc:
   Result = Struct.new(:failed_instances, :num_inserts, :ids, :results)
 
-  module ImportSupport #:nodoc:
-    def supports_import? #:nodoc:
+  module ImportSupport # :nodoc:
+    def supports_import? # :nodoc:
       true
     end
   end
 
-  module OnDuplicateKeyUpdateSupport #:nodoc:
-    def supports_on_duplicate_key_update? #:nodoc:
+  module OnDuplicateKeyUpdateSupport # :nodoc:
+    def supports_on_duplicate_key_update? # :nodoc:
       true
     end
   end
@@ -57,7 +57,7 @@ module ActiveRecord::Import #:nodoc:
           end
         end
 
-        filter.instance_variable_set(:@attributes, attrs)
+        filter.instance_variable_set(:@attributes, attrs.flatten)
 
         if @validate_callbacks.respond_to?(:chain, true)
           @validate_callbacks.send(:chain).tap do |chain|
@@ -73,7 +73,7 @@ module ActiveRecord::Import #:nodoc:
     end
 
     def valid_model?(model)
-      init_validations(model.class) unless model.class == @validator_class
+      init_validations(model.class) unless model.instance_of?(@validator_class)
 
       validation_context = @options[:validate_with_context]
       validation_context ||= (model.new_record? ? :create : :update)
@@ -85,7 +85,11 @@ module ActiveRecord::Import #:nodoc:
 
         model.run_callbacks(:validation) do
           if defined?(ActiveSupport::Callbacks::Filters::Environment) # ActiveRecord >= 4.1
-            runner = @validate_callbacks.compile
+            runner = if @validate_callbacks.method(:compile).arity == 0
+              @validate_callbacks.compile
+            else # ActiveRecord >= 7.1
+              @validate_callbacks.compile(nil)
+            end
             env = ActiveSupport::Callbacks::Filters::Environment.new(model, false, nil)
             if runner.respond_to?(:call) # ActiveRecord < 5.1
               runner.call(env)
@@ -165,7 +169,7 @@ class ActiveRecord::Associations::CollectionAssociation
         m.public_send "#{reflection.type}=", owner.class.name if reflection.type
       end
 
-      return model_klass.bulk_import column_names, models, options
+      model_klass.bulk_import column_names, models, options
 
     # supports array of hash objects
     elsif args.last.is_a?( Array ) && args.last.first.is_a?(Hash)
@@ -204,11 +208,11 @@ class ActiveRecord::Associations::CollectionAssociation
         end
       end
 
-      return model_klass.bulk_import column_names, array_of_attributes, options
+      model_klass.bulk_import column_names, array_of_attributes, options
 
     # supports empty array
     elsif args.last.is_a?( Array ) && args.last.empty?
-      return ActiveRecord::Import::Result.new([], 0, [])
+      ActiveRecord::Import::Result.new([], 0, [])
 
     # supports 2-element array and array
     elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
@@ -239,7 +243,7 @@ class ActiveRecord::Associations::CollectionAssociation
         end
       end
 
-      return model_klass.bulk_import column_names, array_of_attributes, options
+      model_klass.bulk_import column_names, array_of_attributes, options
     else
       raise ArgumentError, "Invalid arguments!"
     end
@@ -553,7 +557,7 @@ class ActiveRecord::Base
       options.merge!( args.pop ) if args.last.is_a? Hash
       # making sure that current model's primary key is used
       options[:primary_key] = primary_key
-      options[:locking_column] = locking_column if attribute_names.include?(locking_column)
+      options[:locking_column] = locking_column if locking_enabled?
 
       is_validating = options[:validate_with_context].present? ? true : options[:validate]
       validator = ActiveRecord::Import::Validator.new(self, options)
@@ -574,7 +578,7 @@ class ActiveRecord::Base
 
         if models.first.id.nil?
           Array(primary_key).each do |c|
-            if column_names.include?(c) && columns_hash[c].type == :uuid
+            if column_names.include?(c) && schema_columns_hash[c].type == :uuid
               column_names.delete(c)
             end
           end
@@ -697,7 +701,11 @@ class ActiveRecord::Base
       return_obj = if is_validating
         import_with_validations( column_names, array_of_attributes, options ) do |failed_instances|
           if models
-            models.each { |m| failed_instances << m if m.errors.any? }
+            models.each_with_index do |m, i|
+              next unless m.errors.any?
+
+              failed_instances << (options[:track_validation_failures] ? [i, m] : m)
+            end
           else
             # create instances for each of our column/value sets
             arr = validations_array_for_column_names_and_attributes( column_names, array_of_attributes )
@@ -774,7 +782,10 @@ class ActiveRecord::Base
     def import_without_validations_or_callbacks( column_names, array_of_attributes, options = {} )
       return ActiveRecord::Import::Result.new([], 0, [], []) if array_of_attributes.empty?
 
-      column_names = column_names.map(&:to_sym)
+      column_names = column_names.map do |name|
+        original_name = attribute_alias?(name) ? attribute_alias(name) : name
+        original_name.to_sym
+      end
       scope_columns, scope_values = scope_attributes.to_a.transpose
 
       unless scope_columns.blank?
@@ -786,15 +797,13 @@ class ActiveRecord::Base
         end
       end
 
-      if finder_needs_type_condition?
-        unless column_names.include?(inheritance_column.to_sym)
-          column_names << inheritance_column.to_sym
-          array_of_attributes.each { |attrs| attrs << sti_name }
-        end
+      if finder_needs_type_condition? && !column_names.include?(inheritance_column.to_sym)
+        column_names << inheritance_column.to_sym
+        array_of_attributes.each { |attrs| attrs << sti_name }
       end
 
       columns = column_names.each_with_index.map do |name, i|
-        column = columns_hash[name.to_s]
+        column = schema_columns_hash[name.to_s]
         raise ActiveRecord::Import::MissingColumnError.new(name.to_s, i) if column.nil?
         column
       end
@@ -868,13 +877,13 @@ class ActiveRecord::Base
           model.id = id
 
           timestamps.each do |attr, value|
-            model.send(attr + "=", value) if model.send(attr).nil?
+            model.send("#{attr}=", value) if model.send(attr).nil?
           end
         end
       end
 
       deserialize_value = lambda do |column, value|
-        column = columns_hash[column]
+        column = schema_columns_hash[column]
         return value unless column
         if respond_to?(:type_caster)
           type = type_for_attribute(column.name)
@@ -969,6 +978,14 @@ class ActiveRecord::Base
           associated_class.bulk_import(associated_records,
                                        associated_options(options, associated_class))
         end
+      end
+    end
+
+    def schema_columns_hash
+      if respond_to?(:ignored_columns) && ignored_columns.any?
+        connection.schema_cache.columns_hash(table_name)
+      else
+        columns_hash
       end
     end
 

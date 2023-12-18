@@ -161,6 +161,25 @@ describe "#import" do
           Tag.import columns, values, validate: false
         end
       end
+
+      it "should import models that are required to belong to models with composite primary keys" do
+        tag = Tag.create!(tag_id: 1, publisher_id: 1, tag: 'Mystery')
+        valid_tag_alias = TagAlias.new(tag_id: tag.tag_id, parent_id: tag.publisher_id, alias: 'Detective')
+        invalid_tag_aliases = [
+          TagAlias.new(tag_id: nil, parent_id: nil, alias: 'Detective'),
+          TagAlias.new(tag_id: tag.tag_id, parent_id: nil, alias: 'Detective'),
+          TagAlias.new(tag_id: nil, parent_id: tag.publisher_id, alias: 'Detective'),
+        ]
+
+        assert_difference "TagAlias.count", +1 do
+          TagAlias.import [valid_tag_alias]
+        end
+        invalid_tag_aliases.each do |invalid_tag_alias|
+          assert_no_difference "TagAlias.count" do
+            TagAlias.import [invalid_tag_alias]
+          end
+        end
+      end
     end
   end
 

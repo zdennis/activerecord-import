@@ -12,10 +12,11 @@ module ActiveRecord::Import::PostgreSQLAdapter
     ids = []
     results = []
 
-    base_sql, post_sql = if sql.is_a?( String )
-      [sql, '']
-    elsif sql.is_a?( Array )
-      [sql.shift, sql.join( ' ' )]
+    base_sql, post_sql = case sql
+                         when String
+                           [sql, '']
+                         when Array
+                           [sql.shift, sql.join( ' ' )]
     end
 
     sql2insert = base_sql + values.join( ',' ) + post_sql
@@ -110,13 +111,14 @@ module ActiveRecord::Import::PostgreSQLAdapter
   # Add a column to be updated on duplicate key update
   def add_column_for_on_duplicate_key_update( column, options = {} ) # :nodoc:
     arg = options[:on_duplicate_key_update]
-    if arg.is_a?( Hash )
+    case arg
+    when Hash
       columns = arg.fetch( :columns ) { arg[:columns] = [] }
       case columns
       when Array then columns << column.to_sym unless columns.include?( column.to_sym )
       when Hash then columns[column.to_sym] = column.to_sym
       end
-    elsif arg.is_a?( Array )
+    when Array
       arg << column.to_sym unless arg.include?( column.to_sym )
     end
   end
@@ -132,7 +134,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
   # Returns a generated ON CONFLICT DO UPDATE statement given the passed
   # in +args+.
   def sql_for_on_duplicate_key_update( table_name, *args ) # :nodoc:
-    arg, primary_key, locking_column = args
+    arg, model, primary_key, locking_column = args
     arg = { columns: arg } if arg.is_a?( Array ) || arg.is_a?( String )
     return unless arg.is_a?( Hash )
 
@@ -151,11 +153,12 @@ module ActiveRecord::Import::PostgreSQLAdapter
     end
 
     sql << "#{conflict_target}DO UPDATE SET "
-    if columns.is_a?( Array )
-      sql << sql_for_on_duplicate_key_update_as_array( table_name, locking_column, columns )
-    elsif columns.is_a?( Hash )
-      sql << sql_for_on_duplicate_key_update_as_hash( table_name, locking_column, columns )
-    elsif columns.is_a?( String )
+    case columns
+    when Array
+      sql << sql_for_on_duplicate_key_update_as_array( table_name, model, locking_column, columns )
+    when Hash
+      sql << sql_for_on_duplicate_key_update_as_hash( table_name, model, locking_column, columns )
+    when String
       sql << columns
     else
       raise ArgumentError, 'Expected :columns to be an Array or Hash'
@@ -166,19 +169,24 @@ module ActiveRecord::Import::PostgreSQLAdapter
     sql
   end
 
-  def sql_for_on_duplicate_key_update_as_array( table_name, locking_column, arr ) # :nodoc:
+  def sql_for_on_duplicate_key_update_as_array( table_name, model, locking_column, arr ) # :nodoc:
     results = arr.map do |column|
-      qc = quote_column_name( column )
+      original_column_name = model.attribute_alias?( column ) ? model.attribute_alias( column ) : column
+      qc = quote_column_name( original_column_name )
       "#{qc}=EXCLUDED.#{qc}"
     end
     increment_locking_column!(table_name, results, locking_column)
     results.join( ',' )
   end
 
-  def sql_for_on_duplicate_key_update_as_hash( table_name, locking_column, hsh ) # :nodoc:
+  def sql_for_on_duplicate_key_update_as_hash( table_name, model, locking_column, hsh ) # :nodoc:
     results = hsh.map do |column1, column2|
-      qc1 = quote_column_name( column1 )
-      qc2 = quote_column_name( column2 )
+      original_column1_name = model.attribute_alias?( column1 ) ? model.attribute_alias( column1 ) : column1
+      qc1 = quote_column_name( original_column1_name )
+
+      original_column2_name = model.attribute_alias?( column2 ) ? model.attribute_alias( column2 ) : column2
+      qc2 = quote_column_name( original_column2_name )
+
       "#{qc1}=EXCLUDED.#{qc2}"
     end
     increment_locking_column!(table_name, results, locking_column)
@@ -192,7 +200,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
     if constraint_name.present?
       "ON CONSTRAINT #{constraint_name} "
     elsif conflict_target.present?
-      sql = '(' + Array( conflict_target ).reject( &:blank? ).join( ', ' ) + ') '
+      sql = "(#{Array( conflict_target ).reject( &:blank? ).join( ', ' )}) "
       sql += "WHERE #{index_predicate} " if index_predicate
       sql
     end

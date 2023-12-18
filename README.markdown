@@ -245,8 +245,8 @@ Book.import columns, books, batch_size: 2, batch_progress: my_proc
 
 #### Recursive
 
-NOTE: This only works with PostgreSQL and ActiveRecord objects. This won't work with
-hashes or arrays as recursive inputs.
+> **Note**
+> This only works with PostgreSQL and ActiveRecord objects. This won't work with hashes or arrays as recursive inputs.
 
 Assume that Books <code>has_many</code> Reviews.
 
@@ -434,7 +434,8 @@ Should you wish to specify those columns, you may use the option `timestamps: fa
 However, it is also possible to set just `:created_at` in specific records. In this case despite using `timestamps: true`,  `:created_at` will be updated only in records where that field is `nil`. Same rule applies for record associations when enabling the option `recursive: true`.
 
 If you are using custom time zones, these will be respected when performing imports as well as long as `ActiveRecord::Base.default_timezone` is set, which for practically all Rails apps it is.
-NOTE: If you are using ActiveRecord 7.0 or later, please use `ActiveRecord.default_timezone` instead.
+> **Note**
+> If you are using ActiveRecord 7.0 or later, please use `ActiveRecord.default_timezone` instead.
 
 ### Callbacks
 
@@ -506,7 +507,8 @@ This allows an external gem to dynamically add an adapter without the need to ad
 
 ### Requiring
 
-Note: These instructions will only work if you are using version 0.2.0 or higher.
+> **Note**
+> These instructions will only work if you are using version 0.2.0 or higher.
 
 #### Autoloading via Bundler
 
@@ -623,6 +625,19 @@ AR_VERSION=7.0 bundle exec rake test:postgresql test:sqlite3 test:mysql2
 ```
 
 Once you have pushed up your changes, you can find your CI results [here](https://github.com/zdennis/activerecord-import/actions).
+
+#### Docker Setup
+
+Before you begin, make sure you have [Docker](https://www.docker.com/products/docker-desktop/) and [Docker Compose](https://docs.docker.com/compose/) installed on your machine. If you don't, you can install both via Homebrew using the following command:
+
+```bash
+brew install docker && brew install docker-compose
+```
+##### Steps
+
+1. In your terminal run `docker-compose up --build`
+1. In another tab/window run `docker-compose exec app bash`
+1. In that same terminal run the mysql2 test by running `bundle exec rake test:mysql2`
 
 ## Issue Triage [![Open Source Helpers](https://www.codetriage.com/zdennis/activerecord-import/badges/users.svg)](https://www.codetriage.com/zdennis/activerecord-import)
 

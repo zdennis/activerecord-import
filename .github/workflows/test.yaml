@@ -20,19 +20,33 @@ jobs:
       fail-fast: false
       matrix:
         ruby:
-          - 3.1
+          - 3.2
         env:
+          - AR_VERSION: '7.1'
+            RUBYOPT: --enable-frozen-string-literal
           - AR_VERSION: '7.0'
             RUBYOPT: --enable-frozen-string-literal
           - AR_VERSION: 6.1
             RUBYOPT: --enable-frozen-string-literal
         include:
+          - ruby: 3.1
+            env:
+              AR_VERSION: '7.1'
+          - ruby: 3.1
+            env:
+              AR_VERSION: '7.0'
+          - ruby: 3.1
+            env:
+              AR_VERSION: 6.1
           - ruby: '3.0'
             env:
               AR_VERSION: '7.0'
           - ruby: '3.0'
             env:
               AR_VERSION: 6.1
+          - ruby: jruby
+            env:
+              AR_VERSION: '7.0'
           - ruby: 2.7
             env:
               AR_VERSION: '7.0'
@@ -42,6 +56,9 @@ jobs:
           - ruby: 2.7
             env:
               AR_VERSION: '6.0'
+          - ruby: jruby-9.3.10.0
+            env:
+              AR_VERSION: '6.1'
           - ruby: 2.6
             env:
               AR_VERSION: 5.2
@@ -59,7 +76,7 @@ jobs:
       AR_VERSION: ${{ matrix.env.AR_VERSION }}
       DB_DATABASE: activerecord_import_test
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
@@ -98,7 +115,7 @@ jobs:
     env:
       AR_VERSION: '7.0'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.7
