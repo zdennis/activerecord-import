@@ -52,3 +52,8 @@ sqlite3: &sqlite3
 
 spatialite:
   <<: *sqlite3
+
+trilogy:
+  <<: *common
+  adapter: trilogy
+  host: mysql
