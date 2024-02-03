@@ -27,7 +27,9 @@ platforms :ruby do
   # seamless_database_pool requires Ruby ~> 2.0
   gem "seamless_database_pool", "~> 1.0.20" if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('3.0.0')
   gem "trilogy" if version >= 6.1
-  gem "activerecord-trilogy-adapter" if version <= 7.0
+  if version >= 6.0 && version <= 7.0
+    gem "activerecord-trilogy-adapter"
+  end
 end
 
 platforms :jruby do
