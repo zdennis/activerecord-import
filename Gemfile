@@ -44,7 +44,7 @@ end
 if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("3.0.0")
   gem "factory_bot"
 else
-  gem "factory_bot", "~> 6.2", "< 6.4.5"
+  gem "factory_bot", "~> 5", "< 6.4.5"
 end
 gem "timecop"
 gem "chronic"
