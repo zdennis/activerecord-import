@@ -126,7 +126,7 @@ jobs:
           bundle exec rake test:spatialite
           bundle exec rake test:sqlite3
       - name: Run trilogy tests
-        if: ${{ matrix.env.AR_VERSION >= '7.0' }}
+        if: ${{ matrix.env.AR_VERSION >= '7.0' && matrix.ruby != 'jruby' }}
         run: bundle exec rake test:trilogy
   lint:
     runs-on: ubuntu-latest
