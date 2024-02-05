@@ -29,6 +29,7 @@ ADAPTERS = %w(
   sqlite3
   spatialite
   seamless_database_pool
+  trilogy
 ).freeze
 ADAPTERS.each do |adapter|
   namespace :test do

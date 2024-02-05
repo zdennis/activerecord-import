@@ -16,6 +16,20 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      mysql:
+        image: mysql:5.7
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_USER: github
+          MYSQL_PASSWORD: github
+          MYSQL_DATABASE: activerecord_import_test
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     strategy:
       fail-fast: false
       matrix:
@@ -81,6 +95,7 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
+          rubygems: latest
       - name: Set up databases
         run: |
           sudo /etc/init.d/mysql start
@@ -110,6 +125,9 @@ jobs:
         run: |
           bundle exec rake test:spatialite
           bundle exec rake test:sqlite3
+      - name: Run trilogy tests
+        if: ${{ matrix.env.AR_VERSION >= '7.0' && matrix.ruby != 'jruby' }}
+        run: bundle exec rake test:trilogy
   lint:
     runs-on: ubuntu-latest
     env:
