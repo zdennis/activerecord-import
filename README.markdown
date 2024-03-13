@@ -364,6 +364,29 @@ book.reload.title  # => "Book1"      (stayed the same)
 book.reload.author # => "Bob Barker" (changed)
 ```
 
+PostgreSQL Using partial indexes
+
+```ruby
+book = Book.create! title: "Book1", author: "George Orwell", published_at: Time.now
+book.author = "Bob Barker"
+
+# in migration
+execute <<-SQL
+      CREATE INDEX books_published_at_index ON books (published_at) WHERE published_at IS NOT NULL;
+    SQL
+
+# PostgreSQL version
+Book.import [book], on_duplicate_key_update: {
+  conflict_target: [:id],
+  index_predicate: "published_at IS NOT NULL",
+  columns: [:author]
+}
+
+book.reload.title  # => "Book1"          (stayed the same)
+book.reload.author # => "Bob Barker"     (changed)
+book.reload.published_at # => 2017-10-09 (stayed the same)
+```
+
 PostgreSQL Using constraints
 
 ```ruby
