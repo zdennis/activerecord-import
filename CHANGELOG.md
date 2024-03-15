@@ -1,3 +1,13 @@
+## Changes in 1.6.0
+
+### New Features
+
+* Add trilogy adapter support. Thanks to @zmariscal via \##825.
+
+### Fixes
+
+* Use the locking_enabled? method provided by activerecord to decide whether the lock field should be updated. Thanks to @dombesz via \##822.
+
 ## Changes in 1.5.1
 
 ### Fixes
