@@ -265,7 +265,7 @@ Book.import books, recursive: true
 Key                       | Options               | Default            | Description
 ------------------------- | --------------------- | ------------------ | -----------
 :validate                 | `true`/`false`        | `true`             | Whether or not to run `ActiveRecord` validations (uniqueness skipped). This option will always be true when using `import!`.
-:validate_uniqueness      | `true`/`false`        | `false`            | Whether or not to run uniqueness validations, has potential pitfalls, use with caution (requires `>= v0.27.0`).
+:validate_uniqueness      | `true`/`false`        | `false`            | Whether or not to run ActiveRecord uniqueness validations. Beware this will incur an sql query per-record (N+1 queries). (requires `>= v0.27.0`).
 :validate_with_context    | `Symbol`              |`:create`/`:update` | Allows passing an ActiveModel validation context for each model. Default is `:create` for new records and `:update` for existing ones.
 :track_validation_failures| `true`/`false`        | `false`            | When this is set to true, `failed_instances` will be an array of arrays, with each inner array having the form `[:index_in_dataset, :object_with_errors]`
 :on_duplicate_key_ignore  | `true`/`false`        | `false`            | Allows skipping records with duplicate keys. See [here](#duplicate-key-ignore) for more details.
