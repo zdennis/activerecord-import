@@ -24,3 +24,7 @@ Lint/UnusedMethodArgument:
 Style/CombinableLoops:
   Exclude:
     - 'test/support/shared_examples/recursive_import.rb'
+
+Naming/FileName:
+  Exclude:
+    - 'lib/activerecord-import.rb'
