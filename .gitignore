@@ -13,12 +13,16 @@ tmtags
 ## VIM
 *.swp
 
+## Idea
+.idea
+
 ## PROJECT::GENERAL
 coverage
 rdoc
 pkg
 *.gem
 *.lock
+.byebug_history
 
 ## PROJECT::SPECIFIC
 log/*.log
