@@ -57,4 +57,38 @@ ActiveRecord::Schema.define do
   end
 
   add_index :alarms, [:device_id, :alarm_type], unique: true, where: 'status <> 0'
+
+  unless ENV["SKIP_COMPOSITE_PK"]
+    create_table :authors, force: :cascade do |t|
+      t.string :name
+    end
+
+    execute %(
+      DROP SEQUENCE IF EXISTS composite_book_id_seq CASCADE;
+      CREATE SEQUENCE composite_book_id_seq
+          AS integer
+          START WITH 1
+          INCREMENT BY 1
+          NO MINVALUE
+          NO MAXVALUE
+          CACHE 1;
+
+      DROP TABLE IF EXISTS composite_books;
+      CREATE TABLE composite_books (
+          id bigint DEFAULT nextval('composite_book_id_seq'::regclass) NOT NULL,
+          title character varying,
+          author_id bigint
+       );
+
+      ALTER TABLE ONLY composite_books ADD CONSTRAINT fk_rails_040a418131 FOREIGN KEY (author_id) REFERENCES authors(id);
+    ).split.join(' ').strip
+  end
+
+  create_table :composite_chapters, force: :cascade do |t|
+    t.string :title
+    t.integer :composite_book_id, null: false
+    t.integer :author_id, null: false
+    t.datetime :created_at
+    t.datetime :updated_at
+  end
 end

@@ -33,7 +33,9 @@ require 'chronic'
 begin
   require 'composite_primary_keys'
 rescue LoadError
-  ENV["SKIP_COMPOSITE_PK"] = "true"
+  if ENV['AR_VERSION'].to_f <= 7.1
+    ENV['SKIP_COMPOSITE_PK'] = 'true'
+  end
 end
 
 # Support MySQL 5.7

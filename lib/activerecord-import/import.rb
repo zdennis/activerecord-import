@@ -941,7 +941,7 @@ class ActiveRecord::Base
           association = association.target
           next if association.blank? || model.public_send(column_name).present?
 
-          association_primary_key = Array(association_reflection.association_primary_key)[column_index]
+          association_primary_key = Array(association_reflection.association_primary_key.tr("[]:", "").split(", "))[column_index]
           model.public_send("#{column_name}=", association.send(association_primary_key))
         end
       end
@@ -996,7 +996,10 @@ class ActiveRecord::Base
 
         changed_objects = association.select { |a| a.new_record? || a.changed? }
         changed_objects.each do |child|
-          child.public_send("#{association_reflection.foreign_key}=", model.id)
+          Array(association_reflection.inverse_of&.foreign_key || association_reflection.foreign_key).each_with_index do |column, index|
+            child.public_send("#{column}=", Array(model.id)[index])
+          end
+
           # For polymorphic associations
           association_name = if model.class.respond_to?(:polymorphic_name)
             model.class.polymorphic_name
