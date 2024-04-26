@@ -351,6 +351,18 @@ def should_support_postgresql_import_functionality
         assert_equal db_customer.orders.last, db_order
         assert_not_equal db_order.customer_id, nil
       end
+
+      it "should import models with auto-incrementing ID successfully" do
+        author = Author.create!(name: "Foo Barson")
+
+        books = []
+        2.times do |i|
+          books << CompositeBook.new(author_id: author.id, title: "book #{i}")
+        end
+        assert_difference "CompositeBook.count", +2 do
+          CompositeBook.import books
+        end
+      end
     end
   end
 end

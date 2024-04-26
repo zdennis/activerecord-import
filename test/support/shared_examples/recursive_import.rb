@@ -165,6 +165,24 @@ def should_support_recursive_import
           assert_equal 1, tags[0].tag_id
           assert_equal 2, tags[1].tag_id
         end
+
+        if ENV['AR_VERSION'].to_f >= 7.1
+          it "should import models with auto-incrementing ID successfully with recursive set to true" do
+            author = Author.create!(name: "Foo Barson")
+            books = []
+            2.times do |i|
+              books << CompositeBook.new(author_id: author.id, title: "Book #{i}", composite_chapters: [
+                                           CompositeChapter.new(title: "Book #{i} composite chapter 1"),
+                                           CompositeChapter.new(title: "Book #{i} composite chapter 2"),
+                                         ])
+            end
+            assert_difference "CompositeBook.count", +2 do
+              assert_difference "CompositeChapter.count", +4 do
+                CompositeBook.import books, recursive: true
+              end
+            end
+          end
+        end
       end
     end
 
