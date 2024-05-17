@@ -274,6 +274,7 @@ Key                       | Options               | Default            | Descrip
 :synchronize              | `Array`               | N/A                | An array of ActiveRecord instances. This synchronizes existing instances in memory with updates from the import.
 :timestamps               | `true`/`false`        | `true`             | Enables/disables timestamps on imported records.
 :recursive                | `true`/`false`        | `false`            | Imports has_many/has_one associations (PostgreSQL only).
+:recursive_on_duplicate_key_update | `Hash`       | N/A                | Allows upsert logic to be used for recursive associations. The hash key is the association name and the value has the same options as `:on_duplicate_key_update`. See [here](#duplicate-key-update) for more details.
 :batch_size               | `Integer`             | total # of records | Max number of records to insert per import
 :raise_error              | `true`/`false`        | `false`            | Raises an exception at the first invalid record. This means there will not be a result object returned. The `import!` method is a shortcut for this.
 :all_or_none              | `true`/`false`        | `false`            | Will not import any records if there is a record with validation errors.
