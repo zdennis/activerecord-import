@@ -1,3 +1,10 @@
+## Changes in 1.7.0
+
+### New Features
+
+* Add support for ActiveRecord 7.1 composite primary keys. Thanks to @fragkakis via \##837.
+* Add support for upserting associations when doing recursive imports. Thanks to @ramblex via \##778.
+
 ## Changes in 1.6.0
 
 ### New Features
