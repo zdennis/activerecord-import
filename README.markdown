@@ -30,31 +30,36 @@ The gem provides the following high-level features:
 
 ## Table of Contents
 
-* [Examples](#examples)
-  * [Introduction](#introduction)
-  * [Columns and Arrays](#columns-and-arrays)
-  * [Hashes](#hashes)
-  * [ActiveRecord Models](#activerecord-models)
-  * [Batching](#batching)
-  * [Recursive](#recursive)
-* [Options](#options)
-  * [Duplicate Key Ignore](#duplicate-key-ignore)
-  * [Duplicate Key Update](#duplicate-key-update)
-* [Return Info](#return-info)
-* [Counter Cache](#counter-cache)
-* [ActiveRecord Timestamps](#activerecord-timestamps)
-* [Callbacks](#callbacks)
-* [Supported Adapters](#supported-adapters)
-* [Additional Adapters](#additional-adapters)
-* [Requiring](#requiring)
-  * [Autoloading via Bundler](#autoloading-via-bundler)
-  * [Manually Loading](#manually-loading)
-* [Load Path Setup](#load-path-setup)
-* [Conflicts With Other Gems](#conflicts-with-other-gems)
-* [More Information](#more-information)
-* [Contributing](#contributing)
-  * [Running Tests](#running-tests)
-  * [Issue Triage](#issue-triage)
+- [Activerecord-Import ](#activerecord-import-)
+  - [Table of Contents](#table-of-contents)
+    - [Examples](#examples)
+      - [Introduction](#introduction)
+      - [Columns and Arrays](#columns-and-arrays)
+      - [Hashes](#hashes)
+      - [Import Using Hashes and Explicit Column Names](#import-using-hashes-and-explicit-column-names)
+      - [ActiveRecord Models](#activerecord-models)
+      - [Batching](#batching)
+      - [Recursive](#recursive)
+    - [Options](#options)
+      - [Duplicate Key Ignore](#duplicate-key-ignore)
+      - [Duplicate Key Update](#duplicate-key-update)
+    - [Return Info](#return-info)
+    - [Counter Cache](#counter-cache)
+    - [ActiveRecord Timestamps](#activerecord-timestamps)
+    - [Callbacks](#callbacks)
+    - [Supported Adapters](#supported-adapters)
+    - [Additional Adapters](#additional-adapters)
+    - [Requiring](#requiring)
+      - [Autoloading via Bundler](#autoloading-via-bundler)
+      - [Manually Loading](#manually-loading)
+    - [Load Path Setup](#load-path-setup)
+    - [Conflicts With Other Gems](#conflicts-with-other-gems)
+    - [More Information](#more-information)
+    - [Contributing](#contributing)
+      - [Running Tests](#running-tests)
+  - [Issue Triage ](#issue-triage-)
+- [License](#license)
+- [Author](#author)
 
 ### Examples
 
@@ -278,6 +283,8 @@ Key                       | Options               | Default            | Descrip
 :batch_size               | `Integer`             | total # of records | Max number of records to insert per import
 :raise_error              | `true`/`false`        | `false`            | Raises an exception at the first invalid record. This means there will not be a result object returned. The `import!` method is a shortcut for this.
 :all_or_none              | `true`/`false`        | `false`            | Will not import any records if there is a record with validation errors.
+:omit_columns             | `Array`/`Hash`/`Proc` | `nil`              | Array of columns to leave out of SQL statement, e.g `[:guid]`, or Hash of `{ Model => [:column_name] }` or a Proc `-> (model, column_names) { [:guid] }` returning columns to omit
+:omit_columns_with_default_functions | `true` / `false` | `false`      | Automatically omit columns that have a default function defined in the schema, such as non-PK uuid columns
 
 #### Duplicate Key Ignore
 
