@@ -36,6 +36,8 @@ jobs:
         ruby:
           - 3.3
         env:
+          - AR_VERSION: '7.2'
+            RUBYOPT: --enable-frozen-string-literal
           - AR_VERSION: '7.1'
             RUBYOPT: --enable-frozen-string-literal
           - AR_VERSION: '7.0'
@@ -43,6 +45,9 @@ jobs:
           - AR_VERSION: 6.1
             RUBYOPT: --enable-frozen-string-literal
         include:
+          - ruby: 3.2
+            env:
+              AR_VERSION: '7.2'
           - ruby: 3.2
             env:
               AR_VERSION: '7.1'
@@ -85,15 +90,6 @@ jobs:
           - ruby: 2.6
             env:
               AR_VERSION: 5.2
-          - ruby: 2.6
-            env:
-              AR_VERSION: 5.1
-          - ruby: 2.4
-            env:
-              AR_VERSION: '5.0'
-          - ruby: 2.4
-            env:
-              AR_VERSION: 4.2
     runs-on: ubuntu-latest
     env:
       AR_VERSION: ${{ matrix.env.AR_VERSION }}

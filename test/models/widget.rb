@@ -19,8 +19,15 @@ class Widget < ActiveRecord::Base
 
   default_scope -> { where(active: true) }
 
-  serialize :data, Hash
-  serialize :json_data, JSON
+  if ENV['AR_VERSION'].to_f >= 7.1
+    serialize :data, coder: YAML
+    serialize :json_data, coder: JSON
+    serialize :custom_data, coder: CustomCoder.new
+  else
+    serialize :data, Hash
+    serialize :json_data, JSON
+    serialize :custom_data, CustomCoder.new
+  end
+
   serialize :unspecified_data
-  serialize :custom_data, CustomCoder.new
 end
