@@ -1,3 +1,9 @@
+## Changes in 1.8.0
+
+### New Features
+
+* Add support for ActiveRecord 7.2 via \##845.
+
 ## Changes in 1.7.0
 
 ### New Features
