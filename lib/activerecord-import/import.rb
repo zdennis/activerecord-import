@@ -62,6 +62,7 @@ module ActiveRecord::Import # :nodoc:
         if @validate_callbacks.respond_to?(:chain, true)
           @validate_callbacks.send(:chain).tap do |chain|
             callback.instance_variable_set(:@filter, filter)
+            callback.instance_variable_set(:@compiled, nil)
             chain[i] = callback
           end
         else

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Topic < ActiveRecord::Base
-  if ENV['AR_VERSION'].to_i >= 6.0
+  if ENV['AR_VERSION'].to_f >= 6.0
     self.ignored_columns = [:priority]
   end
   alias_attribute :name, :title
