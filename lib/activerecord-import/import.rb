@@ -94,7 +94,7 @@ module ActiveRecord::Import # :nodoc:
             env = ActiveSupport::Callbacks::Filters::Environment.new(model, false, nil)
             if runner.respond_to?(:call) # ActiveRecord < 5.1
               runner.call(env)
-            else # ActiveRecord 5.1
+            else # ActiveRecord >= 5.1
               # Note that this is a gross simplification of ActiveSupport::Callbacks#run_callbacks.
               # It's technically possible for there to exist an "around" callback in the
               # :validate chain, but this would be an aberration, since Rails doesn't define
@@ -107,7 +107,8 @@ module ActiveRecord::Import # :nodoc:
               # no real-world use case for it.
               raise "The :validate callback chain contains an 'around' callback, which is unsupported" unless runner.final?
               runner.invoke_before(env)
-              runner.invoke_after(env)
+              # Ensure a truthy value is returned. ActiveRecord < 7.2 always returned an array.
+              runner.invoke_after(env) || []
             end
           elsif @validate_callbacks.method(:compile).arity == 0 # ActiveRecord = 4.0
             model.instance_eval @validate_callbacks.compile
