@@ -38,15 +38,18 @@ module ActiveRecord::Import # :nodoc:
       @validate_callbacks.each_with_index do |callback, i|
         filter = callback.respond_to?(:raw_filter) ? callback.raw_filter : callback.filter
         next unless filter.class.name =~ /Validations::PresenceValidator/ ||
+                    (filter.is_a?(Symbol) && filter.to_s =~ /validate_associated_records_for/) ||
                     (!@options[:validate_uniqueness] &&
                      filter.is_a?(ActiveRecord::Validations::UniquenessValidator))
 
         callback = callback.dup
         filter = filter.dup
-        attrs = filter.instance_variable_get(:@attributes).dup
+        attrs = filter.instance_variable_get(:@attributes).dup || []
+        if_condition = callback.instance_variable_get(:@if).dup
+        skip_proc = -> { false }
 
-        if filter.is_a?(ActiveRecord::Validations::UniquenessValidator)
-          attrs = []
+        if filter.is_a?(Symbol) || filter.is_a?(ActiveRecord::Validations::UniquenessValidator)
+          if_condition = [skip_proc] unless filter.is_a?(Symbol) && @options[:all_or_none]
         else
           associations = klass.reflect_on_all_associations(:belongs_to)
           associations.each do |assoc|
@@ -57,16 +60,18 @@ module ActiveRecord::Import # :nodoc:
           end
         end
 
-        filter.instance_variable_set(:@attributes, attrs.flatten)
+        filter.instance_variable_set(:@attributes, attrs.flatten) unless filter.is_a?(Symbol)
 
         if @validate_callbacks.respond_to?(:chain, true)
           @validate_callbacks.send(:chain).tap do |chain|
             callback.instance_variable_set(:@filter, filter)
+            callback.instance_variable_set(:@if, if_condition)
             callback.instance_variable_set(:@compiled, nil)
             chain[i] = callback
           end
         else
           callback.raw_filter = filter
+          callback.options = callback.options.merge(if: if_condition)
           callback.filter = callback.send(:_compile_filter, filter)
           @validate_callbacks[i] = callback
         end
