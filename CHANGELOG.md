@@ -1,3 +1,9 @@
+## Changes in 1.8.1
+
+### Fixes
+
+* Further update for ActiveRecord 7.2 compatibility when running validations. Thanks to @denisahearn  via \##847.
+
 ## Changes in 1.8.0
 
 ### New Features
