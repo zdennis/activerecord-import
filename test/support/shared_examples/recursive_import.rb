@@ -278,6 +278,45 @@ def should_support_recursive_import
           end
           assert_equal new_chapter_title, Chapter.find(example_chapter.id).title
         end
+
+        context "when a non-standard association name is used" do
+          let(:new_topics) do
+            topic = Build(:topic)
+
+            2.times do
+              novel = topic.novels.build(title: FactoryBot.generate(:book_title), author_name: 'Stephen King')
+              3.times do
+                novel.chapters.build(title: FactoryBot.generate(:chapter_title))
+              end
+
+              4.times do
+                novel.end_notes.build(note: FactoryBot.generate(:end_note))
+              end
+            end
+
+            [topic]
+          end
+
+          it "updates nested associated objects" do
+            new_chapter_title = 'The Final Chapter'
+            novel = new_topics.first.novels.first
+            novel.author_name = 'Richard Bachman'
+
+            example_chapter = novel.chapters.first
+            example_chapter.title = new_chapter_title
+
+            assert_nothing_raised do
+              Topic.import new_topics,
+                recursive: true,
+                on_duplicate_key_update: [:id],
+                recursive_on_duplicate_key_update: {
+                  novels: { conflict_target: [:id], columns: [:author_name] },
+                  chapters: { conflict_target: [:id], columns: [:title] }
+                }
+            end
+            assert_equal new_chapter_title, Chapter.find(example_chapter.id).title
+          end
+        end
       end
     end
 
