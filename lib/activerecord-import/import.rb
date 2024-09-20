@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "ostruct"
-
 module ActiveRecord::Import::ConnectionAdapters; end
 
 module ActiveRecord::Import # :nodoc:

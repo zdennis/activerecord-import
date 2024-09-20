@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'optparse'
-require 'ostruct'
 
 #
 # == PARAMETERS
@@ -38,8 +37,11 @@ module BenchmarkOptionParser
     end
   end
 
+  OptionsStruct = Struct.new( :adapter, :table_types, :delete_on_finish, :number_of_objects, :outputs,
+                              :benchmark_all_types, keyword_init: true )
+  OutputStruct = Struct.new( :format, :filename, keyword_init: true )
   def self.parse( args )
-    options = OpenStruct.new(
+    options = OptionsStruct.new(
       adapter: 'mysql2',
       table_types: {},
       delete_on_finish: true,
@@ -81,12 +83,12 @@ module BenchmarkOptionParser
 
       # print results in CSV format
       opts.on( "--to-csv [String]", "Print results in a CSV file format" ) do |filename|
-        options.outputs << OpenStruct.new( format: 'csv', filename: filename)
+        options.outputs << OutputStruct.new( format: 'csv', filename: filename)
       end
 
       # print results in HTML format
       opts.on( "--to-html [String]", "Print results in HTML format" ) do |filename|
-        options.outputs << OpenStruct.new( format: 'html', filename: filename )
+        options.outputs << OutputStruct.new( format: 'html', filename: filename )
       end
     end # end opt.parse!
 
@@ -100,7 +102,7 @@ module BenchmarkOptionParser
     end
 
     options.number_of_objects = [1000] if options.number_of_objects.empty?
-    options.outputs = [OpenStruct.new( format: 'html', filename: 'benchmark.html')] if options.outputs.empty?
+    options.outputs = [OutputStruct.new( format: 'html', filename: 'benchmark.html')] if options.outputs.empty?
 
     print_options( options )
 
