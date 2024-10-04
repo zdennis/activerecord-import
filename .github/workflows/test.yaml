@@ -21,6 +21,7 @@ jobs:
         ports:
           - 3306:3306
         env:
+          MYSQL_HOST: 127.0.0.1
           MYSQL_ROOT_PASSWORD: root
           MYSQL_USER: github
           MYSQL_PASSWORD: github
@@ -103,8 +104,6 @@ jobs:
           rubygems: latest
       - name: Set up databases
         run: |
-          sudo /etc/init.d/mysql start
-          mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }} CHARACTER SET utf8 COLLATE utf8_general_ci;' -u root -proot
           psql -h localhost -U postgres -c 'create database ${{ env.DB_DATABASE }};'
           psql -h localhost -U postgres -d ${{ env.DB_DATABASE }} -c 'create extension if not exists hstore;'
           psql -h localhost -U postgres -c 'create extension if not exists postgis;'
