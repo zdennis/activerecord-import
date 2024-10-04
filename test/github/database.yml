@@ -3,7 +3,7 @@ common: &common
   password: root
   encoding: utf8
   collation: utf8_general_ci
-  host:     localhost
+  host: 127.0.0.1
   database: activerecord_import_test
 
 jdbcpostgresql: &postgresql
@@ -54,7 +54,7 @@ seamless_database_pool:
   pool_adapter: mysql2
   prepared_statements: false
   master:
-    host: localhost
+    host: 127.0.0.1
 
 sqlite:
   adapter: sqlite
