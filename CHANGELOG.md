@@ -1,3 +1,17 @@
+## Unreleased
+
+### Breaking Changes
+
+* Fix `recursive_on_duplicate_key_update` doesn't work with non-standard
+  association name. The documentation for the
+  `:recursive_on_duplicate_key_update` option specifies that the hash key is
+  the association name. But previously the name of associated table was used to
+  look up the options. Now the behavior matches the documentation and the name
+  of the association is used instead. This only affects associations that uses
+  a name that doesn't follow the ActiveRecord naming conventions of
+  associations and class names, i.e. when the `class_name:` option is used on
+  an association.
+
 ## Changes in 1.8.1
 
 ### Fixes

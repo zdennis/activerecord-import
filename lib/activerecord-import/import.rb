@@ -857,12 +857,11 @@ class ActiveRecord::Base
 
     private
 
-    def associated_options(options, associated_class)
+    def associated_options(options, association)
       return options unless options.key?(:recursive_on_duplicate_key_update)
 
-      table_name = associated_class.arel_table.name.to_sym
       options.merge(
-        on_duplicate_key_update: options[:recursive_on_duplicate_key_update][table_name]
+        on_duplicate_key_update: options[:recursive_on_duplicate_key_update][association]
       )
     end
 
@@ -971,12 +970,12 @@ class ActiveRecord::Base
       options.delete(:returning)
 
       associated_objects_by_class.each_value do |associations|
-        associations.each_value do |associated_records|
+        associations.each do |association, associated_records|
           next if associated_records.empty?
 
           associated_class = associated_records.first.class
           associated_class.bulk_import(associated_records,
-                                       associated_options(options, associated_class))
+                                       associated_options(options, association))
         end
       end
     end
