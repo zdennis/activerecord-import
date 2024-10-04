@@ -16,7 +16,7 @@ class BenchmarkBase
     end
   end
 
-  # Returns an OpenStruct which contains two attritues, +description+ and +tms+ after performing an
+  # Returns a struct which contains two attritues, +description+ and +tms+ after performing an
   # actual benchmark.
   #
   # == PARAMETERS
@@ -24,9 +24,12 @@ class BenchmarkBase
   #  * blk - the block of code to benchmark
   #
   # == RETURNS
-  # An OpenStruct object with the following attributes:
+  # A struct object with the following attributes:
   #   * description - the description of the benchmark ran
   #   * tms - a Benchmark::Tms containing the results of the benchmark
+
+  BmStruct = Struct.new( :description, :tms, :failed, keyword_init: true )
+
   def bm( description, &block )
     tms = nil
     puts "Benchmarking #{description}"
@@ -35,7 +38,7 @@ class BenchmarkBase
     delete_all
     failed = false
 
-    OpenStruct.new description: description, tms: tms, failed: failed
+    BmStruct.new( description: description, tms: tms, failed: failed )
   end
 
   # Given a model class (ie: Topic), and an array of columns and value sets
