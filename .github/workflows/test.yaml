@@ -97,6 +97,10 @@ jobs:
       DB_DATABASE: activerecord_import_test
     steps:
       - uses: actions/checkout@v4
+      - name: Install SQLite3 Development Library
+        run: |
+          sudo apt-get update
+          sudo apt-get install libsqlite3-dev
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
