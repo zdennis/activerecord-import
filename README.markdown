@@ -569,11 +569,11 @@ require 'activerecord-import'
 ### Load Path Setup
 To understand how rubygems loads code you can reference the following:
 
-  http://guides.rubygems.org/patterns/#loading-code
+  https://guides.rubygems.org/patterns/#loading-code
 
 And an example of how active_record dynamically load adapters:
 
-  https://github.com/rails/rails/blob/master/activerecord/lib/active_record/connection_adapters/connection_specification.rb
+  https://github.com/rails/rails/blob/main/activerecord/lib/active_record/connection_adapters.rb
 
 In summary, when a gem is loaded rubygems adds the `lib` folder of the gem to the global load path `$LOAD_PATH` so that all `require` lookups will not propagate through all of the folders on the load path. When a `require` is issued each folder on the `$LOAD_PATH` is checked for the file and/or folder referenced. This allows a gem (like activerecord-import) to define push the activerecord-import folder (or namespace) on the `$LOAD_PATH` and any adapters provided by activerecord-import will be found by rubygems when the require is issued.
 
