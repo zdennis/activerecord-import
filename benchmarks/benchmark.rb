@@ -44,8 +44,6 @@ require adapter_schema if File.exist?(adapter_schema)
 Dir["#{File.dirname(__FILE__)}/models/*.rb"].sort.each { |file| require file }
 
 require File.join( benchmark_dir, 'lib', "#{options.adapter}_benchmark" )
-
-table_types = nil
 table_types = if options.benchmark_all_types
   ["all"]
 else
