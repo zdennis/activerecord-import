@@ -9,10 +9,13 @@ version = ENV['AR_VERSION'].to_f
 mysql2_version = '0.3.0'
 mysql2_version = '0.4.0' if version >= 4.2
 mysql2_version = '0.5.0' if version >= 6.1
+mysql2_version = '0.5.6' if version >= 8.0
 sqlite3_version = '1.3.0'
 sqlite3_version = '1.4.0' if version >= 6.0
+sqlite3_version = '2.2.0' if version >= 8.0
 pg_version = '0.9'
 pg_version = '1.1' if version >= 6.1
+pg_version = '1.5' if version >= 8.0
 
 group :development, :test do
   gem 'rubocop'
