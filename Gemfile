@@ -51,10 +51,6 @@ gem "chronic"
 gem "mocha", "~> 2.1.0"
 
 # Debugging
-platforms :jruby do
-  gem "ruby-debug", "= 0.10.4"
-end
-
 platforms :ruby do
   gem "pry-byebug"
   gem "pry", "~> 0.14.0"

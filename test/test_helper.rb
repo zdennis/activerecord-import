@@ -49,8 +49,6 @@ if ActiveSupport::VERSION::STRING < "4.1"
   end
 end
 
-require "ruby-debug" if RUBY_VERSION.to_f < 1.9
-
 adapter = ENV["ARE_DB"] || "sqlite3"
 
 FileUtils.mkdir_p 'log'
