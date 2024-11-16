@@ -10,5 +10,9 @@ class Book < ActiveRecord::Base
   has_many :chapters, inverse_of: :book
   has_many :discounts, as: :discountable
   has_many :end_notes, inverse_of: :book
-  enum status: [:draft, :published] if ENV['AR_VERSION'].to_f >= 4.1
+  if ENV['AR_VERSION'].to_f >= 8.0
+    enum :status, [:draft, :published]
+  elsif ENV['AR_VERSION'].to_f >= 4.1
+    enum status: [:draft, :published]
+  end
 end
