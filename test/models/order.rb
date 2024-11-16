@@ -2,7 +2,7 @@
 
 class Order < ActiveRecord::Base
   unless ENV["SKIP_COMPOSITE_PK"]
-    if ENV['AR_VERSION'].to_f <= 7.0
+    if ENV['AR_VERSION'].to_f <= 7.0 || ENV['AR_VERSION'].to_f >= 8.0
       belongs_to :customer,
                  inverse_of: :orders,
                  primary_key: %i(account_id id),

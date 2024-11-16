@@ -2,7 +2,7 @@
 
 class Book < ActiveRecord::Base
   belongs_to :topic, inverse_of: :books
-  if ENV['AR_VERSION'].to_f <= 7.0
+  if ENV['AR_VERSION'].to_f <= 7.0 || ENV['AR_VERSION'].to_f >= 8.0
     belongs_to :tag, foreign_key: [:tag_id, :parent_id] unless ENV["SKIP_COMPOSITE_PK"]
   else
     belongs_to :tag, query_constraints: [:tag_id, :parent_id] unless ENV["SKIP_COMPOSITE_PK"]
