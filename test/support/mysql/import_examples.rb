@@ -84,14 +84,12 @@ def should_support_mysql_import_functionality
       end
     end
 
-    if ENV['AR_VERSION'].to_f >= 5.1
-      context "with virtual columns" do
-        let(:books) { [Book.new(author_name: "foo", title: "bar")] }
+    context "with virtual columns" do
+      let(:books) { [Book.new(author_name: "foo", title: "bar")] }
 
-        it "ignores virtual columns and creates record" do
-          assert_difference "Book.count", +1 do
-            Book.import books
-          end
+      it "ignores virtual columns and creates record" do
+        assert_difference "Book.count", +1 do
+          Book.import books
         end
       end
     end
