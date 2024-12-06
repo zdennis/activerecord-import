@@ -38,10 +38,8 @@ def should_support_postgresql_import_functionality
         assert !topic.changed?
       end
 
-      if ENV['AR_VERSION'].to_f > 4.1
-        it "moves the dirty changes to previous_changes" do
-          assert topic.previous_changes.present?
-        end
+      it "moves the dirty changes to previous_changes" do
+        assert topic.previous_changes.present?
       end
 
       it "marks models as persisted" do
@@ -96,15 +94,9 @@ def should_support_postgresql_import_functionality
     describe "returning" do
       let(:books) { [Book.new(author_name: "King", title: "It")] }
       let(:result) { Book.import(books, returning: %w(author_name title)) }
-      let(:book_id) do
-        if RUBY_PLATFORM == 'java' || ENV['AR_VERSION'].to_i >= 5.0
-          books.first.id
-        else
-          books.first.id.to_s
-        end
-      end
-      let(:true_returning_value) { ENV['AR_VERSION'].to_f >= 5.0 ? true : 't' }
-      let(:false_returning_value) { ENV['AR_VERSION'].to_f >= 5.0 ? false : 'f' }
+      let(:book_id) { books.first.id }
+      let(:true_returning_value) { true }
+      let(:false_returning_value) { false }
 
       it "creates records" do
         assert_difference("Book.count", +1) { result }
@@ -222,21 +214,19 @@ def should_support_postgresql_import_functionality
     end
   end
 
-  if ENV['AR_VERSION'].to_f >= 4.0
-    describe "with a uuid primary key" do
-      let(:vendor) { Vendor.new(name: "foo") }
-      let(:vendors) { [vendor] }
+  describe "with a uuid primary key" do
+    let(:vendor) { Vendor.new(name: "foo") }
+    let(:vendors) { [vendor] }
 
-      it "creates records" do
-        assert_difference "Vendor.count", +1 do
-          Vendor.import vendors
-        end
-      end
-
-      it "assigns an id to the model objects" do
+    it "creates records" do
+      assert_difference "Vendor.count", +1 do
         Vendor.import vendors
-        assert_not_nil vendor.id
       end
+    end
+
+    it "assigns an id to the model objects" do
+      Vendor.import vendors
+      assert_not_nil vendor.id
     end
 
     describe "with an assigned uuid primary key" do
@@ -254,44 +244,38 @@ def should_support_postgresql_import_functionality
   end
 
   describe "with store accessor fields" do
-    if ENV['AR_VERSION'].to_f >= 4.0
-      it "imports values for json fields" do
-        vendors = [Vendor.new(name: 'Vendor 1', size: 100)]
-        assert_difference "Vendor.count", +1 do
-          Vendor.import vendors
-        end
-        assert_equal(100, Vendor.first.size)
+    it "imports values for json fields" do
+      vendors = [Vendor.new(name: 'Vendor 1', size: 100)]
+      assert_difference "Vendor.count", +1 do
+        Vendor.import vendors
       end
-
-      it "imports values for hstore fields" do
-        vendors = [Vendor.new(name: 'Vendor 1', contact: 'John Smith')]
-        assert_difference "Vendor.count", +1 do
-          Vendor.import vendors
-        end
-        assert_equal('John Smith', Vendor.first.contact)
-      end
+      assert_equal(100, Vendor.first.size)
     end
 
-    if ENV['AR_VERSION'].to_f >= 4.2
-      it "imports values for jsonb fields" do
-        vendors = [Vendor.new(name: 'Vendor 1', charge_code: '12345')]
-        assert_difference "Vendor.count", +1 do
-          Vendor.import vendors
-        end
-        assert_equal('12345', Vendor.first.charge_code)
+    it "imports values for hstore fields" do
+      vendors = [Vendor.new(name: 'Vendor 1', contact: 'John Smith')]
+      assert_difference "Vendor.count", +1 do
+        Vendor.import vendors
       end
+      assert_equal('John Smith', Vendor.first.contact)
+    end
+
+    it "imports values for jsonb fields" do
+      vendors = [Vendor.new(name: 'Vendor 1', charge_code: '12345')]
+      assert_difference "Vendor.count", +1 do
+        Vendor.import vendors
+      end
+      assert_equal('12345', Vendor.first.charge_code)
     end
   end
 
-  if ENV['AR_VERSION'].to_f >= 4.2
-    describe "with serializable fields" do
-      it "imports default values as correct data type" do
-        vendors = [Vendor.new(name: 'Vendor 1')]
-        assert_difference "Vendor.count", +1 do
-          Vendor.import vendors
-        end
-        assert_equal({}, Vendor.first.json_data)
+  describe "with serializable fields" do
+    it "imports default values as correct data type" do
+      vendors = [Vendor.new(name: 'Vendor 1')]
+      assert_difference "Vendor.count", +1 do
+        Vendor.import vendors
       end
+      assert_equal({}, Vendor.first.json_data)
     end
 
     %w(json jsonb).each do |json_type|

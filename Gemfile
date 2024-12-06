@@ -6,8 +6,7 @@ gemspec
 
 version = ENV['AR_VERSION'].to_f
 
-mysql2_version = '0.3.0'
-mysql2_version = '0.4.0' if version >= 4.2
+mysql2_version = '0.4.0'
 mysql2_version = '0.5.0' if version >= 6.1
 mysql2_version = '0.5.6' if version >= 8.0
 sqlite3_version = '1.3.0'
@@ -59,10 +58,6 @@ platforms :ruby do
   gem "pry", "~> 0.14.0"
 end
 
-if version >= 4.0
-  gem "minitest"
-else
-  gem "test-unit"
-end
+gem "minitest"
 
 eval_gemfile File.expand_path("../gemfiles/#{version}.gemfile", __FILE__)
