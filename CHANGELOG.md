@@ -1,9 +1,9 @@
-## Unreleased
+## Changes in 2.0.0
 
 ### Breaking Changes
 
 * Fix `recursive_on_duplicate_key_update` doesn't work with non-standard
-  association name. The documentation for the
+  association name. Thanks to @jacob-carlborg-apoex via \#852. The documentation for the
   `:recursive_on_duplicate_key_update` option specifies that the hash key is
   the association name. But previously the name of associated table was used to
   look up the options. Now the behavior matches the documentation and the name
