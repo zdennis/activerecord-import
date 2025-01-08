@@ -26,6 +26,9 @@ postgresql: &postgresql
 postresql_makara:
   <<: *postgresql
 
+postresql_proxy:
+  <<: *postgresql
+
 postgis:
   <<: *postgresql
 

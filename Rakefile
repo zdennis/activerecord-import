@@ -24,6 +24,7 @@ ADAPTERS = %w(
   jdbcpostgresql
   postgresql
   postgresql_makara
+  postgresql_proxy
   postgis
   makara_postgis
   sqlite3

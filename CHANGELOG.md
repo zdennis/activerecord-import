@@ -1,3 +1,11 @@
+## Changes in 2.1.0
+### New Features
+
+* Add Support for `active_record_proxy_adapters` gem. Since Rails 7.1 and above the support for 
+  makara is gone. It is no longet maintained. Developers are left struggling. folks over at @nasdaq have written a gem called
+  [active_record_proxy_adapters](https://rubygems.org/gems/active_record_proxy_adapters) which
+  does the same thing. Since this gem has its own adapter called `postgresql_proxy` we need to add the same as per the discussions [here.](https://github.com/Nasdaq/active_record_proxy_adapters/issues/20)
+
 ## Changes in 2.0.0
 
 ### Breaking Changes
