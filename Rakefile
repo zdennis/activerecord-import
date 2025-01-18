@@ -19,6 +19,7 @@ ADAPTERS = %w(
   mysql2
   mysql2_makara
   mysql2spatial
+  mysql2_proxy
   jdbcmysql
   jdbcsqlite3
   jdbcpostgresql

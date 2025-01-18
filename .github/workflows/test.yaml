@@ -125,6 +125,7 @@ jobs:
           bundle exec rake test:mysql2
           bundle exec rake test:mysql2_makara
           bundle exec rake test:mysql2spatial
+          bundle exec rake test:mysql2_proxy
       - name: Run tests with postgresql
         run: |
           bundle exec rake test:postgis

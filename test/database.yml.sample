@@ -16,6 +16,9 @@ mysql2spatial:
 mysql2_makara:
   <<: *mysql2
 
+mysql2_proxy:
+  <<: *mysql2
+
 postgresql: &postgresql
   <<: *common
   username: postgres

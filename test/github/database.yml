@@ -30,6 +30,9 @@ mysql2spatial:
 mysql2_makara:
   <<: *mysql2
 
+mysql2_proxy:
+  <<: *mysql2
+
 oracle:
   <<: *common
   adapter: oracle
