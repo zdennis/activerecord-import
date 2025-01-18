@@ -16,6 +16,9 @@ mysql2spatial:
 mysql2_makara:
   <<: *mysql2
 
+mysql2_proxy:
+  <<: *mysql2
+
 postgresql: &postgresql
   <<: *common
   username: postgres
@@ -24,6 +27,9 @@ postgresql: &postgresql
   min_messages: warning
 
 postresql_makara:
+  <<: *postgresql
+
+postresql_proxy:
   <<: *postgresql
 
 postgis:

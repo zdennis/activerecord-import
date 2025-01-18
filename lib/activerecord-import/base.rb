@@ -11,8 +11,10 @@ module ActiveRecord::Import
     case adapter
     when 'mysql2_makara' then 'mysql2'
     when 'mysql2spatial' then 'mysql2'
+    when 'mysql2_proxy' then 'mysql2'
     when 'spatialite' then 'sqlite3'
     when 'postgresql_makara' then 'postgresql'
+    when 'postgresql_proxy' then 'postgresql'
     when 'makara_postgis' then 'postgresql'
     when 'postgis' then 'postgresql'
     when 'cockroachdb' then 'postgresql'
