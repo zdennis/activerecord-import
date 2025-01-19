@@ -746,7 +746,8 @@ class ActiveRecord::Base
         # if there are auto-save associations on the models we imported that are new, import them as well
         if options[:recursive]
           options[:on_duplicate_key_update] = on_duplicate_key_update unless on_duplicate_key_update.nil?
-          import_associations(models, options.dup.merge(validate: false))
+          valid_models = models.filter { |model| model.errors.blank? }
+          import_associations(valid_models, options.dup.merge(validate: false))
         end
       end
 
