@@ -559,7 +559,7 @@ class ActiveRecord::Base
       options[:primary_key] = primary_key
       options[:locking_column] = locking_column if locking_enabled?
 
-      is_validating = options[:validate_with_context].present? ? true : options[:validate]
+      is_validating = options[:validate_with_context].present? || options[:validate]
       validator = ActiveRecord::Import::Validator.new(self, options)
 
       # assume array of model objects
