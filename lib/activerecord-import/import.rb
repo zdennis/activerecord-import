@@ -1132,8 +1132,6 @@ When importing an array of hashes with provided columns_names, each hash must co
 
 Required keys: #{required_keys}
 Missing keys: #{missing_keys}
-
-Hash: #{hash}
         EOS
       else
         <<-EOS
@@ -1146,8 +1144,6 @@ for the missing keys or group these records into batches by key set before impor
 Required keys: #{required_keys}
 Extra keys: #{extra_keys}
 Missing keys: #{missing_keys}
-
-Hash: #{hash}
         EOS
       end
     end
