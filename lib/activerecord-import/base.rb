@@ -10,6 +10,7 @@ module ActiveRecord::Import
   def self.base_adapter(adapter)
     case adapter
     when 'mysql2_makara' then 'mysql2'
+    when 'janus_mysql2' then 'mysql2'
     when 'mysql2spatial' then 'mysql2'
     when 'mysql2_proxy' then 'mysql2'
     when 'spatialite' then 'sqlite3'
