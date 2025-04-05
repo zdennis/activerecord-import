@@ -126,6 +126,7 @@ jobs:
           bundle exec rake test:mysql2_makara
           bundle exec rake test:mysql2spatial
           bundle exec rake test:mysql2_proxy
+          bundle exec rake test:janus_mysql2
       - name: Run tests with postgresql
         run: |
           bundle exec rake test:postgis
@@ -142,7 +143,10 @@ jobs:
           bundle exec rake test:sqlite3
       - name: Run trilogy tests
         if: ${{ matrix.env.AR_VERSION >= '7.0' && !startsWith(matrix.ruby, 'jruby') }}
-        run: bundle exec rake test:trilogy
+        run: |
+          bundle exec rake test:trilogy
+          bundle exec rake test:janus_trilogy
+
   lint:
     runs-on: ubuntu-latest
     env:
