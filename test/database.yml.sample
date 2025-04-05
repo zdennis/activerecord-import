@@ -19,6 +19,9 @@ mysql2_makara:
 mysql2_proxy:
   <<: *mysql2
 
+janus_mysql2:
+  <<: *mysql2
+
 postgresql: &postgresql
   <<: *common
   username: postgres
@@ -60,6 +63,11 @@ spatialite:
   <<: *sqlite3
 
 trilogy:
+  <<: *common
+  adapter: trilogy
+  host: mysql
+
+janus_trilogy:
   <<: *common
   adapter: trilogy
   host: mysql
