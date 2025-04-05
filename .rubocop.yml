@@ -15,9 +15,6 @@ Metrics/ClassLength:
 Metrics/CyclomaticComplexity:
   Enabled: false
 
-Metrics/LineLength:
-  Enabled: false
-
 Metrics/MethodLength:
   Enabled: false
 
@@ -91,6 +88,9 @@ Layout/SpaceInsideParens:
   Enabled: false
 
 Layout/SpaceInsidePercentLiteralDelimiters:
+  Enabled: false
+
+Layout/LineLength:
   Enabled: false
 
 Lint/ErbNewArguments:
