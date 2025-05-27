@@ -1,3 +1,9 @@
+## Changes in 2.2.0
+
+### New Features
+
+* Add Support for Janus ActiveRecord adapters. Thanks to @permidon via #\873.
+
 ## Changes in 2.1.0
 
 ### New Features
