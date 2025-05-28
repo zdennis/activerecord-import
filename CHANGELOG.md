@@ -27,6 +27,10 @@
   associations and class names, i.e. when the `class_name:` option is used on
   an association.
 
+### Fixes
+
+* Activerecord-Import imports associations for invalid models. Thanks to @jacob-carlborg-apoex via \##858.
+
 ## Changes in 1.8.1
 
 ### Fixes
