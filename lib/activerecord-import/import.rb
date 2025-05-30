@@ -141,7 +141,7 @@ class ActiveRecord::Associations::CollectionAssociation
     model_klass = reflection.klass
     symbolized_foreign_key = reflection.foreign_key.to_sym
 
-    symbolized_column_names = if model_klass.connection.respond_to?(:supports_virtual_columns?) && model_klass.connection.supports_virtual_columns?
+    symbolized_column_names = if model_klass.connection_pool.with_connection { |conn| conn.respond_to?(:supports_virtual_columns?) && conn.supports_virtual_columns? }
       model_klass.columns.reject(&:virtual?).map { |c| c.name.to_sym }
     else
       model_klass.column_names.map(&:to_sym)
