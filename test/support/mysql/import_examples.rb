@@ -2,7 +2,7 @@
 
 def should_support_mysql_import_functionality
   # Forcefully disable strict mode for this session.
-  ActiveRecord::Base.connection.execute "set sql_mode='STRICT_ALL_TABLES'"
+  ActiveRecord::Base.connection_pool.with_connection { |conn| conn.execute "set sql_mode='STRICT_ALL_TABLES'" }
 
   should_support_basic_on_duplicate_key_update
   should_support_on_duplicate_key_ignore

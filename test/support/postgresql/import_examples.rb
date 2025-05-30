@@ -3,7 +3,7 @@
 def should_support_postgresql_import_functionality
   should_support_recursive_import
 
-  if ActiveRecord::Base.connection.supports_on_duplicate_key_update?
+  if ActiveRecord::Base.connection_pool.with_connection(&:supports_on_duplicate_key_update?)
     should_support_postgresql_upsert_functionality
   end
 
@@ -55,8 +55,8 @@ def should_support_postgresql_import_functionality
 
     describe "with query cache enabled" do
       setup do
-        unless ActiveRecord::Base.connection.query_cache_enabled
-          ActiveRecord::Base.connection.enable_query_cache!
+        unless ActiveRecord::Base.connection_pool.with_connection(&:query_cache_enabled)
+          ActiveRecord::Base.connection_pool.with_connection(&:enable_query_cache!)
           @disable_cache_on_teardown = true
         end
       end
@@ -72,7 +72,7 @@ def should_support_postgresql_import_functionality
 
       teardown do
         if @disable_cache_on_teardown
-          ActiveRecord::Base.connection.disable_query_cache!
+          ActiveRecord::Base.connection_pool.with_connection(&:disable_query_cache!)
         end
       end
     end
