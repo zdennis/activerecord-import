@@ -60,4 +60,14 @@ end
 
 gem "minitest"
 
+# mutex_m, drb, base64, bigdecimal moved from default gems to bundled gems in Ruby 3.4.0.
+# ActiveSupport 6.1-7.0 don't include these gems as dependencies, so they must be explicitly required.
+# ActiveSupport 7.1+ includes them as dependencies or not required, so no explicit inclusion is needed.
+if version >= 6.1 && version <= 7.0 && Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.4.0')
+  gem "mutex_m"
+  gem "drb"
+  gem "base64"
+  gem "bigdecimal"
+end
+
 eval_gemfile File.expand_path("../gemfiles/#{version}.gemfile", __FILE__)
