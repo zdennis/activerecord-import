@@ -37,6 +37,8 @@ jobs:
         ruby:
           - 3.4
         env:
+          - AR_VERSION: '8.1'
+            RUBYOPT: --enable-frozen-string-literal
           - AR_VERSION: '8.0'
             RUBYOPT: --enable-frozen-string-literal
           - AR_VERSION: '7.2'
@@ -48,6 +50,9 @@ jobs:
           - AR_VERSION: '6.1'
             RUBYOPT: --enable-frozen-string-literal
         include:
+          - ruby: 3.3
+            env:
+              AR_VERSION: '8.1'
           - ruby: 3.3
             env:
               AR_VERSION: '8.0'
