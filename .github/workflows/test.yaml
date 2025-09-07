@@ -116,7 +116,7 @@ jobs:
       AR_VERSION: ${{ matrix.env.AR_VERSION }}
       DB_DATABASE: activerecord_import_test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install SQLite3 Development Library
         run: |
           sudo apt-get update
@@ -167,7 +167,7 @@ jobs:
     env:
       AR_VERSION: '7.0'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install SQLite3 Development Library
         run: |
           sudo apt-get update
