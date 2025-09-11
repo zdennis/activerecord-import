@@ -3,7 +3,7 @@
 module ActiveRecord::Import::ConnectionAdapters; end
 
 module ActiveRecord::Import # :nodoc:
-  Result = Struct.new(:failed_instances, :num_inserts, :ids, :results)
+  Result = Struct.new(:failed_instances, :num_inserts, :ids, :results, :affected_rows)
 
   module ImportSupport # :nodoc:
     def supports_import? # :nodoc:
@@ -790,7 +790,7 @@ class ActiveRecord::Base
       else
         import_without_validations_or_callbacks( conn, column_names, array_of_attributes, options )
       end
-      ActiveRecord::Import::Result.new(failed_instances, result.num_inserts, result.ids, result.results)
+      ActiveRecord::Import::Result.new(failed_instances, result.num_inserts, result.ids, result.results, result.affected_rows)
     end
 
     # Imports the passed in +column_names+ and +array_of_attributes+
@@ -837,6 +837,8 @@ class ActiveRecord::Base
       number_inserted = 0
       ids = []
       results = []
+      affected_rows = nil
+
       if supports_import?(conn)
         # generate the sql
         post_sql_statements = conn.post_sql_statements( quoted_table_name, options )
@@ -860,6 +862,7 @@ class ActiveRecord::Base
           number_inserted += result.num_inserts
           ids += result.ids
           results += result.results
+          affected_rows = result.affected_rows
           current_batch += 1
 
           progress_proc.call(import_size, batches, current_batch, Time.now.to_i - batch_started_at) if run_proc
@@ -872,7 +875,7 @@ class ActiveRecord::Base
           end
         end
       end
-      ActiveRecord::Import::Result.new([], number_inserted, ids, results)
+      ActiveRecord::Import::Result.new([], number_inserted, ids, results, affected_rows)
     end
 
     private
