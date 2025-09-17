@@ -93,7 +93,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
       sql << " RETURNING #{selections.join(', ')}"
     end
 
-    sql
+    sql.uniq
   end
 
   def returning_selections(options)
