@@ -12,7 +12,7 @@ module ActiveRecord::Import::MysqlAdapter
   def insert_many( sql, values, options = {}, *args ) # :nodoc:
     # the number of inserts default
     number_of_inserts = 0
-    affected_rows = raw_connection.respond_to?(:affected_rows) ? 0 : nil
+    affected_rows = nil
 
     base_sql, post_sql = case sql
                          when String
@@ -38,8 +38,10 @@ module ActiveRecord::Import::MysqlAdapter
     if max == NO_MAX_PACKET || total_bytes <= max || options[:force_single_insert]
       number_of_inserts += 1
       sql2insert = base_sql + values.join( ',' ) + post_sql
-      execute( sql2insert, *args )
-      affected_rows += raw_connection.affected_rows if affected_rows
+      result = execute( sql2insert, *args )
+      if result.respond_to?(:affected_rows)
+        affected_rows = (affected_rows || 0) + result.affected_rows
+      end
     else
       value_sets = ::ActiveRecord::Import::ValueSetsBytesParser.parse(values,
         reserved_bytes: sql_size,
@@ -49,8 +51,10 @@ module ActiveRecord::Import::MysqlAdapter
         value_sets.each do |value_set|
           number_of_inserts += 1
           sql2insert = base_sql + value_set.join( ',' ) + post_sql
-          execute( sql2insert, *args )
-          affected_rows += raw_connection.affected_rows if affected_rows
+          result = execute( sql2insert, *args )
+          if result.respond_to?(:affected_rows)
+            affected_rows = (affected_rows || 0) + result.affected_rows
+          end
         end
       end
     end

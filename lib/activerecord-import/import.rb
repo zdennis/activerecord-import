@@ -839,7 +839,7 @@ class ActiveRecord::Base
       number_inserted = 0
       ids = []
       results = []
-      affected_rows = nil
+      affected_rows = 0
 
       if supports_import?(conn)
         # generate the sql
@@ -864,7 +864,7 @@ class ActiveRecord::Base
           number_inserted += result.num_inserts
           ids += result.ids
           results += result.results
-          affected_rows = result.affected_rows
+          affected_rows = result.affected_rows.nil? ? nil : (affected_rows || 0) + result.affected_rows
           current_batch += 1
 
           progress_proc.call(import_size, batches, current_batch, Time.now.to_i - batch_started_at) if run_proc

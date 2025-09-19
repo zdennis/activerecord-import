@@ -39,6 +39,25 @@ def should_support_affected_rows
         assert_equal actual_inserted, result.affected_rows, "affected_rows should match actual database inserts"
         assert_equal 1, result.num_inserts, "num_inserts should be 1 (single INSERT statement)"
       end
+
+      it "should return correct affected_rows count with on_duplicate_key_update" do
+        existing = Build(:topic)
+        existing.save!
+
+        # Create a duplicate with different data to trigger UPDATE
+        topics = [
+          Build(:topic, id: existing.id, title: "Updated Title") # This should update
+        ]
+
+        result = Topic.import topics,
+          on_duplicate_key_update: [:title],
+          validate: false
+
+        skip "affected_rows not supported on this adapter" if result.affected_rows.nil?
+
+        # MySQL returns 2 for ON DUPLICATE KEY UPDATE when a row is actually updated
+        assert_equal 2, result.affected_rows, "affected_rows should be 2 for ON DUPLICATE KEY UPDATE"
+      end
     end
   end
 end
