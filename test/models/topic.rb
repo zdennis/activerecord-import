@@ -5,6 +5,7 @@ class Topic < ActiveRecord::Base
     self.ignored_columns = [:priority]
   end
   alias_attribute :name, :title
+  alias_attribute :author_full_name, :author_name
 
   validates_presence_of :author_name
   validates :title, numericality: { only_integer: true }, on: :context_test
