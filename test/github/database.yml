@@ -76,7 +76,14 @@ sqlite3: &sqlite3
 spatialite:
   <<: *sqlite3
 
+sqlite3_proxy:
+  <<: *sqlite3
+
 trilogy:
+  <<: *common
+  adapter: trilogy
+
+trilogy_proxy:
   <<: *common
   adapter: trilogy
 

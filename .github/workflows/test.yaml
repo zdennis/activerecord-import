@@ -161,10 +161,12 @@ jobs:
         run: |
           bundle exec rake test:spatialite
           bundle exec rake test:sqlite3
+          bundle exec rake test:sqlite3_proxy
       - name: Run trilogy tests
         if: ${{ matrix.env.AR_VERSION >= '7.0' && !startsWith(matrix.ruby, 'jruby') }}
         run: |
           bundle exec rake test:trilogy
+          bundle exec rake test:trilogy_proxy
           bundle exec rake test:janus_trilogy
 
   lint:

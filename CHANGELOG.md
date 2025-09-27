@@ -1,3 +1,8 @@
+## Unreleased
+
+* Add Support for trilogy_proxy from [active_record_proxy_adapters](https://rubygems.org/gems/active_record_proxy_adapters) by @mateuscruz
+* Add Support for sqlite3_proxy from [active_record_proxy_adapters](https://rubygems.org/gems/active_record_proxy_adapters) by @mateuscruz
+
 ## Changes in 2.2.0
 
 ### New Features
