@@ -296,7 +296,7 @@ book.reload.title  # => "Book1"     (stayed the same)
 book.reload.author # => "George Orwell" (stayed the same)
 ```
 
-The option `:on_duplicate_key_ignore` is bypassed when `:recursive` is enabled for [PostgreSQL imports](https://github.com/zdennis/activerecord-import/wiki#recursive-example-postgresql-only).
+The option `:on_duplicate_key_ignore` is bypassed when `:recursive` is enabled for [PostgreSQL imports](https://rubydoc.info/gems/activerecord-import/ActiveRecord/Base#label-Options) (`:recursive` is not supported with other adapters).
 
 #### Duplicate Key Update
 
@@ -510,7 +510,7 @@ The following database adapters are currently supported:
 * Oracle - supports core import functionality through DML trigger (available as an external gem: [activerecord-import-oracle_enhanced](https://github.com/keeguon/activerecord-import-oracle_enhanced))
 * SQL Server - supports core import functionality (available as an external gem: [activerecord-import-sqlserver](https://github.com/keeguon/activerecord-import-sqlserver))
 
-If your adapter isn't listed here, please consider creating an external gem as described in the README to provide support. If you do, feel free to update this wiki to include a link to the new adapter's repository!
+If your adapter isn't listed here, please consider creating an external gem as described in the README to provide support. If you do, feel free to update this README to include a link to the new adapter's repository!
 
 To test which features are supported by your adapter, use the following methods on a model class:
 * `supports_import?(*args)`
@@ -624,7 +624,7 @@ See https://github.com/zdennis/activerecord-import/issues/233 for further discus
 
 ### More Information
 
-For more information on Activerecord-Import please see its wiki: https://github.com/zdennis/activerecord-import/wiki
+For more information on Activerecord-Import please see its docs: https://rubydoc.info/gems/activerecord-import/ActiveRecord/Base
 
 To document new information, please add to the README instead of the wiki. See https://github.com/zdennis/activerecord-import/issues/397 for discussion.
 
