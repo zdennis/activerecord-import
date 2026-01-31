@@ -14,9 +14,7 @@ Gem::Specification.new do |gem|
     "changelog_uri" => "https://github.com/zdennis/activerecord-import/blob/master/CHANGELOG.md"
   }
 
-  gem.files         = `git ls-files`.split($\)
-  gem.executables   = gem.files.grep(%r{^bin/}).map { |f| File.basename(f) }
-  gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
+  gem.files         = `git ls-files lib`.split($/) + ["CHANGELOG.md", "LICENSE", "README.markdown"]
   gem.name          = "activerecord-import"
   gem.require_paths = ["lib"]
   gem.version       = ActiveRecord::Import::VERSION
