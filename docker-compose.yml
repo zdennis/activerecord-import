@@ -8,13 +8,19 @@ services:
       - mysql-data:/var/lib/mysql
     ports:
       - "3306:3306"
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: yes
+      MYSQL_DATABASE: activerecord_import_test
 
   postgresql:
-    image: postgres:latest
+    image: postgis/postgis:10-2.5
     volumes:
       - postgresql-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: activerecord_import_test
 
   app:
     build:
