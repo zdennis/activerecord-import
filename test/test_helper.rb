@@ -23,7 +23,7 @@ end
 require "active_record"
 require "active_record/fixtures"
 require "active_support/test_case"
-require 'active_support/testing/autorun'
+require 'minitest/autorun'
 require "mocha/minitest"
 
 require 'timecop'
