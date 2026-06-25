@@ -23,6 +23,7 @@ jobs:
         env:
           MYSQL_HOST: 127.0.0.1
           MYSQL_ROOT_PASSWORD: root
+          MYSQL_ROOT_HOST: '%'
           MYSQL_USER: github
           MYSQL_PASSWORD: github
           MYSQL_DATABASE: activerecord_import_test
@@ -133,6 +134,12 @@ jobs:
           rubygems: latest
       - name: Set up databases
         run: |
+          sudo apt-get update
+          sudo apt-get install -y default-mysql-client
+          mysql -h 127.0.0.1 -uroot -proot -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';"
+          mysql -h 127.0.0.1 -uroot -proot -e "ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'root';"
+          mysql -h 127.0.0.1 -uroot -proot -e "ALTER USER 'github'@'%' IDENTIFIED WITH mysql_native_password BY 'github';"
+          mysql -h 127.0.0.1 -uroot -proot -e "FLUSH PRIVILEGES;"
           psql -h localhost -U postgres -c 'create database ${{ env.DB_DATABASE }};'
           psql -h localhost -U postgres -d ${{ env.DB_DATABASE }} -c 'create extension if not exists hstore;'
           psql -h localhost -U postgres -c 'create extension if not exists postgis;'
