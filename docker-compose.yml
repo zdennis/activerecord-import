@@ -3,7 +3,7 @@ version: "3.5"
 services:
   mysql:
     platform: linux/x86_64
-    image: mysql:5.7
+    image: mysql:8.0
     volumes:
       - mysql-data:/var/lib/mysql
     ports:
