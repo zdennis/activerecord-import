@@ -2,6 +2,13 @@
 
 * Add Support for trilogy_proxy from [active_record_proxy_adapters](https://rubygems.org/gems/active_record_proxy_adapters) by @mateuscruz
 * Add Support for sqlite3_proxy from [active_record_proxy_adapters](https://rubygems.org/gems/active_record_proxy_adapters) by @mateuscruz
+* Fix adapter-specific import support (e.g. `on_duplicate_key_update`) never loading for
+  a connection established via `connects_to`/`ActiveRecord::ConnectionAdapters::
+  ConnectionHandler#establish_connection` instead of `ActiveRecord::Base.establish_connection`
+  directly - most commonly hit with a Rails multi-database secondary connection. The lazy
+  adapter loader now hooks `ConnectionHandler#establish_connection` instead of
+  `ActiveRecord::Base.establish_connection`, so it fires for every connection regardless of
+  how it was established. Thanks to @mateuscruz via #886.
 
 ## Changes in 2.2.0
 
