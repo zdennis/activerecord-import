@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 ActiveRecord::Schema.define do
+  enable_extension "pgcrypto"
   execute('CREATE extension IF NOT EXISTS "hstore";')
   execute('CREATE extension IF NOT EXISTS "pgcrypto";')
   execute('CREATE extension IF NOT EXISTS "uuid-ossp";')
@@ -54,6 +55,17 @@ ActiveRecord::Schema.define do
     t.column :secret_key, :binary
     t.datetime :created_at
     t.datetime :updated_at
+  end
+
+  create_table :redirections, force: :cascade do |t|
+    t.uuid "guid", default: -> { "gen_random_uuid()" }
+    t.string :title, null: false
+    t.string :author_name
+    t.string :url
+    t.datetime :created_at
+    t.datetime :created_on
+    t.datetime :updated_at
+    t.datetime :updated_on
   end
 
   add_index :alarms, [:device_id, :alarm_type], unique: true, where: 'status <> 0'
