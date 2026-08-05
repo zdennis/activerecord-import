@@ -121,20 +121,20 @@ Book.import values
 The `import` method can take an array of column names and an array of hash objects. The column names are used to determine what fields of data should be imported. The following example will only import books with the `title` field:
 
 ```ruby
-books = [
+values = [
   { title: "Book 1", author: "George Orwell" },
   { title: "Book 2", author: "Bob Jones" }
 ]
 columns = [ :title ]
 
 # without validations
-Book.import columns, books, validate: false
+Book.import columns, values, validate: false
 
 # with validations
-Book.import columns, books, validate: true
+Book.import columns, values, validate: true
 
 # when not specified :validate defaults to true
-Book.import columns, books
+Book.import columns, values
 
 # result in table books
 # title  | author
