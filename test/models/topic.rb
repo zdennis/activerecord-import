@@ -13,6 +13,7 @@ class Topic < ActiveRecord::Base
   validates :word_count, numericality: { greater_than: 0 }, if: :content?
 
   validate -> { errors.add(:title, :validate_failed) if title == 'validate_failed' }
+  validate -> { raise 'validation blew up' if title == 'raise_during_validation' }
   before_validation -> { errors.add(:title, :invalid) if title == 'invalid' }
 
   has_many :books, inverse_of: :topic

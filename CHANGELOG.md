@@ -1,5 +1,12 @@
 ## Unreleased
 
+* Fix `NoMethodError: undefined method 'validation_context='` when importing with validations
+  against Rails main (8.2.0.alpha). Rails removed ActiveModel's private `validation_context=`
+  writer in rails/rails@0f9d1270834a6407a59637650bf910d8ae826169 in favor of a validation
+  context object reachable through `context_for_validation`. `ActiveRecord::Import::Validator`
+  now sets and restores the validation context through whichever API the loaded ActiveModel
+  provides.
+
 * Add Support for trilogy_proxy from [active_record_proxy_adapters](https://rubygems.org/gems/active_record_proxy_adapters) by @mateuscruz
 * Add Support for sqlite3_proxy from [active_record_proxy_adapters](https://rubygems.org/gems/active_record_proxy_adapters) by @mateuscruz
 * Fix adapter-specific import support (e.g. `on_duplicate_key_update`) never loading for

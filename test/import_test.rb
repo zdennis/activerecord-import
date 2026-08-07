@@ -341,6 +341,89 @@ describe "#import" do
       end
     end
 
+    # Regression coverage for rails/rails@0f9d1270834a6407a59637650bf910d8ae826169, which removed
+    # ActiveModel's private #validation_context= writer on Rails main (>= 8.2).
+    context "with respect to the model's validation context" do
+      let(:validator) { ActiveRecord::Import::Validator.new(Topic) }
+      let(:valid_topic) { Topic.new(title: "LDAP", author_name: "Jerry Carter", content: "Putting Directories to Work.") }
+
+      it "should import valid models" do
+        assert_difference "Topic.count", +2 do
+          Topic.import valid_models, validate: true
+        end
+      end
+
+      it "should not import invalid models" do
+        assert_no_difference "Topic.count" do
+          Topic.import invalid_models, validate: true
+        end
+      end
+
+      it "should import with validate_with_context" do
+        assert_difference "Topic.count", +2 do
+          Topic.import columns, valid_values_with_context, validate_with_context: :context_test
+        end
+
+        assert_no_difference "Topic.count" do
+          Topic.import columns, valid_values, validate_with_context: :context_test
+        end
+      end
+
+      it "should restore the previous validation context" do
+        validator.send(:set_validation_context, valid_topic, :previous_context)
+
+        assert validator.valid_model?(valid_topic)
+        assert_equal :previous_context, valid_topic.send(:validation_context)
+      end
+
+      it "should restore the previous validation context when validation raises" do
+        exploding_topic = Topic.new(title: "raise_during_validation", author_name: "Jerry Carter", content: "Putting Directories to Work.")
+        validator.send(:set_validation_context, exploding_topic, :previous_context)
+
+        assert_raises(RuntimeError) { validator.valid_model?(exploding_topic) }
+        assert_equal :previous_context, exploding_topic.send(:validation_context)
+      end
+
+      context "when ActiveModel has no private validation_context= writer (Rails main)" do
+        let(:validator) { ActiveRecord::Import::Validator.new(RailsMainValidationContextModel) }
+        let(:context_validator) { ActiveRecord::Import::Validator.new(RailsMainValidationContextModel, validate_with_context: :context_test) }
+        let(:valid_model) { RailsMainValidationContextModel.new(title: "LDAP", author_name: "Jerry Carter") }
+
+        it "should exercise the context_for_validation fallback" do
+          assert_not valid_model.respond_to?(:validation_context=, true)
+          assert valid_model.respond_to?(:context_for_validation, true)
+        end
+
+        it "should validate valid models" do
+          assert validator.valid_model?(valid_model)
+        end
+
+        it "should not validate invalid models" do
+          assert_not validator.valid_model?(RailsMainValidationContextModel.new(title: "LDAP", author_name: ""))
+        end
+
+        it "should validate with validate_with_context" do
+          assert context_validator.valid_model?(RailsMainValidationContextModel.new(title: 1111, author_name: "Jerry Carter"))
+          assert_not context_validator.valid_model?(valid_model)
+        end
+
+        it "should restore the previous validation context" do
+          validator.send(:set_validation_context, valid_model, :previous_context)
+
+          assert validator.valid_model?(valid_model)
+          assert_equal :previous_context, valid_model.validation_context
+        end
+
+        it "should restore the previous validation context when validation raises" do
+          exploding_model = RailsMainValidationContextModel.new(title: "raise_during_validation", author_name: "Jerry Carter")
+          validator.send(:set_validation_context, exploding_model, :previous_context)
+
+          assert_raises(RuntimeError) { validator.valid_model?(exploding_model) }
+          assert_equal :previous_context, exploding_model.validation_context
+        end
+      end
+    end
+
     context "with uniqueness validators included" do
       it "should not import duplicate records" do
         Topic.import columns, valid_values
