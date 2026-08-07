@@ -5,7 +5,7 @@
   writer in rails/rails@0f9d1270834a6407a59637650bf910d8ae826169 in favor of a validation
   context object reachable through `context_for_validation`. `ActiveRecord::Import::Validator`
   now sets and restores the validation context through whichever API the loaded ActiveModel
-  provides.
+  provides. Thanks to @yu-yaba via #900.
 
 * Add Support for trilogy_proxy from [active_record_proxy_adapters](https://rubygems.org/gems/active_record_proxy_adapters) by @mateuscruz
 * Add Support for sqlite3_proxy from [active_record_proxy_adapters](https://rubygems.org/gems/active_record_proxy_adapters) by @mateuscruz
