@@ -79,7 +79,7 @@ module ActiveRecord::Import # :nodoc:
       current_context = model.send(:validation_context)
 
       begin
-        model.send(:validation_context=, validation_context)
+        set_validation_context(model, validation_context)
         model.errors.clear
 
         model.run_callbacks(:validation) do
@@ -117,7 +117,22 @@ module ActiveRecord::Import # :nodoc:
 
         model.errors.empty?
       ensure
-        model.send(:validation_context=, current_context)
+        set_validation_context(model, current_context)
+      end
+    end
+
+    private
+
+    # ActiveModel's private +validation_context=+ writer was removed in Rails
+    # 8.2 (rails/rails@0f9d1270834a6407a59637650bf910d8ae826169) in favor of a
+    # validation context object reachable through the private
+    # +context_for_validation+ reader. Support both so that validated imports
+    # keep working across all supported ActiveRecord versions.
+    def set_validation_context(model, context)
+      if model.respond_to?(:validation_context=, true)
+        model.send(:validation_context=, context)
+      else
+        model.send(:context_for_validation).context = context
       end
     end
   end
