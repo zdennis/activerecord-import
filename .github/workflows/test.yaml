@@ -137,10 +137,13 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-          # Skip the cache for the Rails main target; a cached Gemfile.lock would pin the
-          # git source to a stale revision instead of resolving the current branch head.
-          bundler-cache: ${{ !matrix.experimental }}
+          bundler-cache: true
           rubygems: latest
+      - name: Update Rails to the current main revision
+        # A restored bundler cache can pin the git source to a stale revision, which would
+        # quietly test an old Rails main instead of the current branch head.
+        if: ${{ matrix.experimental }}
+        run: bundle update activesupport activemodel activerecord
       - name: Set up databases
         run: |
           sudo apt-get update
