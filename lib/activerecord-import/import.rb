@@ -170,6 +170,7 @@ class ActiveRecord::Associations::CollectionAssociation
       if args.length == 2
         models = args.last
         column_names = args.first.dup
+        symbolized_column_names = column_names.map(&:to_sym)
       else
         models = args.first
         column_names = symbolized_column_names
@@ -177,6 +178,10 @@ class ActiveRecord::Associations::CollectionAssociation
 
       unless symbolized_column_names.include?(symbolized_foreign_key)
         column_names << symbolized_foreign_key
+      end
+
+      if reflection.type && !symbolized_column_names.include?(reflection.type.to_sym)
+        column_names << reflection.type.to_sym
       end
 
       models.each do |m|
