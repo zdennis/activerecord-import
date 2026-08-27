@@ -877,8 +877,8 @@ class ActiveRecord::Base
             "#{model_name} Create Many" )
 
           number_inserted += result.num_inserts
-          ids += result.ids
-          results += result.results
+          ids.concat(result.ids)
+          results.concat(result.results)
           affected_rows = result.affected_rows.nil? ? nil : (affected_rows || 0) + result.affected_rows
           current_batch += 1
 
