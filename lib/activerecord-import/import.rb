@@ -769,6 +769,8 @@ class ActiveRecord::Base
           import_without_validations_or_callbacks( conn, column_names, array_of_attributes, options )
         end
 
+        return return_obj if options[:all_or_none] && return_obj.failed_instances.any?
+
         if options[:synchronize]
           sync_keys = options[:synchronize_keys] || Array(primary_key)
           synchronize( options[:synchronize], sync_keys)
