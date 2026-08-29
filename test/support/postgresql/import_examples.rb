@@ -241,6 +241,198 @@ def should_support_postgresql_import_functionality
         assert_equal id, vendor.id
       end
     end
+
+    if ENV['AR_VERSION'].to_f >= 5.0
+      describe 'with :omit_columns option' do
+        let(:values) do
+          [
+            {
+              title: "Invictus",
+              author_name: "William Ernest Henley",
+              url: 'https://www.poetryfoundation.org/poems/51642/invictus',
+              guid: '' # guid is blank, but will be ignored
+            },
+            {
+              title: 'If',
+              author_name: 'Rudyard Kipling',
+              guid: SecureRandom.uuid, # this will still be ignored
+              url: 'https://www.poetryfoundation.org/poems/46473/if---'
+            }
+          ]
+        end
+
+        context 'with array of hashes' do
+          context ':omit_columns is a Proc' do
+            it "should succeed with guid being generated" do
+              assert_difference "Redirection.count", +2 do
+                Redirection.import values, omit_columns: ->(model, _column_names) { [:guid] if model == Redirection }
+              end
+            end
+
+            it "should generate guid on match" do
+              Redirection.import! values, omit_columns: ->(model, _column_names) { [:guid] if model == Redirection }
+              assert_not_nil Redirection.last.guid
+              assert_not_equal Redirection.last.guid, values.last[:guid]
+            end
+
+            it "should not generate guid when not ignored" do
+              Redirection.import! values, omit_columns: ->(model, _column_names) { [:guid] unless model == Redirection }
+              assert_nil Redirection.first.guid
+              assert_equal values.last[:guid], Redirection.last.guid
+            end
+          end
+
+          context ':omit_columns is an Array' do
+            it "should succeed with guid being generated" do
+              assert_difference "Redirection.count", +2 do
+                Redirection.import values, omit_columns: [:guid]
+              end
+            end
+
+            it "should generate guid" do
+              Redirection.import! values, omit_columns: [:guid]
+              assert_not_nil Redirection.last.guid
+              assert_not_equal Redirection.last.guid, values.last[:guid]
+            end
+
+            it "should not generate guid when not ignored" do
+              Redirection.import! values
+              assert_nil Redirection.first.guid
+              assert_equal values.last[:guid], Redirection.last.guid
+            end
+          end
+
+          context ':omit_columns is a Hash' do
+            it "should succeed with guid being generated" do
+              assert_difference "Redirection.count", +2 do
+                Redirection.import values, omit_columns: { Redirection => [:guid] }
+              end
+            end
+
+            it "should generate guid" do
+              Redirection.import! values, omit_columns: { Redirection => [:guid] }
+              assert_not_nil Redirection.last.guid
+              assert_not_equal Redirection.last.guid, values.last[:guid]
+            end
+
+            it "should not generate guid when not ignored" do
+              Redirection.import! values, omit_columns: { Book => [:guid] }
+              assert_nil Redirection.first.guid
+              assert_equal values.last[:guid], Redirection.last.guid
+            end
+          end
+        end
+
+        context 'with array of models' do
+          let(:models) { values.map { |hash| Redirection.new(hash) } }
+          context ':omit_columns is a Proc' do
+            it "should succeed with guid being generated" do
+              assert_difference "Redirection.count", +2 do
+                Redirection.import models, omit_columns: ->(model, _column_names) { [:guid] if model == Redirection }
+              end
+            end
+
+            it "should generate guid on match" do
+              Redirection.import! models, omit_columns: ->(model, _column_names) { [:guid] if model == Redirection }
+              assert_not_nil Redirection.last.guid
+              assert_not_equal Redirection.last.guid, models.last[:guid]
+            end
+
+            it "should not generate guid when not ignored" do
+              Redirection.import! models, omit_columns: ->(model, _column_names) { [:guid] unless model == Redirection }
+              assert_nil Redirection.first.guid
+              assert_equal values.last[:guid], Redirection.last.guid
+            end
+          end
+
+          context ':omit_columns is an Array' do
+            it "should succeed with guid being generated" do
+              assert_difference "Redirection.count", +2 do
+                Redirection.import models, omit_columns: [:guid]
+              end
+            end
+
+            it "should generate guid" do
+              Redirection.import! models, omit_columns: [:guid]
+              assert_not_nil Redirection.last.guid
+              assert_not_equal Redirection.last.guid, values.last[:guid]
+            end
+
+            it "should not generate guid when not ignored" do
+              Redirection.import! models
+              assert_nil Redirection.first.guid
+              assert_equal values.last[:guid], Redirection.last.guid
+            end
+          end
+
+          context ':omit_columns is a Hash' do
+            it "should succeed with guid being generated" do
+              assert_difference "Redirection.count", +2 do
+                Redirection.import models, omit_columns: { Redirection => [:guid] }
+              end
+            end
+
+            it "should generate guid" do
+              Redirection.import! models, omit_columns: { Redirection => [:guid] }
+              assert_not_nil Redirection.last.guid
+              assert_not_equal Redirection.last.guid, models.last[:guid]
+            end
+
+            it "should not generate guid when not ignored" do
+              Redirection.import! models, omit_columns: { Book => [:guid] }
+              assert_nil Redirection.first.guid
+              assert_equal values.last[:guid], Redirection.last.guid
+            end
+          end
+        end
+      end
+
+      describe 'with :omit_columns_with_default_functions option' do
+        let(:values) do
+          [
+            {
+              title: "Invictus",
+              author_name: "William Ernest Henley",
+              url: 'https://www.poetryfoundation.org/poems/51642/invictus',
+              guid: '' # guid is blank, but will be ignored
+            },
+            {
+              title: 'If',
+              author_name: 'Rudyard Kipling',
+              guid: SecureRandom.uuid, # this will still be ignored
+              url: 'https://www.poetryfoundation.org/poems/46473/if---'
+            }
+          ]
+        end
+
+        context 'with array of hashes' do
+          it "should succeed with guid being generated" do
+            assert_difference "Redirection.count", +2 do
+              Redirection.import values, omit_columns_with_default_functions: true
+            end
+          end
+
+          it "should generate guid" do
+            Redirection.import values, omit_columns_with_default_functions: true
+            assert_not_nil Redirection.last.guid
+          end
+        end
+
+        context 'with array of models' do
+          let(:models) { values.map { |hash| Redirection.new(hash) } }
+          it "should succeed with guid being generated" do
+            assert_difference "Redirection.count", +2 do
+              Redirection.import models, omit_columns_with_default_functions: true
+            end
+          end
+
+          it "should generate guid" do
+            Redirection.import models, omit_columns_with_default_functions: true
+            assert_not_nil Redirection.last.guid
+          end
+        end
+      end
+    end
   end
 
   describe "with store accessor fields" do
