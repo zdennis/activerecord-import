@@ -907,7 +907,9 @@ class ActiveRecord::Base
 
     def set_attributes_and_mark_clean(conn, models, import_result, timestamps, options)
       return if models.nil?
-      models -= import_result.failed_instances
+      failed_instances = import_result.failed_instances
+      failed_instances = failed_instances.map(&:last) if options[:track_validation_failures]
+      models -= failed_instances
 
       # if ids were returned for all models we know all were updated
       if models.size == import_result.ids.size
