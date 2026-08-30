@@ -164,6 +164,13 @@ class ActiveRecord::Associations::CollectionAssociation
 
     owner_primary_key = reflection.active_record_primary_key.to_sym
     owner_primary_key_value = owner.send(owner_primary_key)
+    owner_polymorphic_name = if reflection.type
+      if owner.class.respond_to?(:polymorphic_name)
+        owner.class.polymorphic_name
+      else
+        owner.class.base_class
+      end
+    end
 
     # assume array of model objects
     if args.last.is_a?( Array ) && args.last.first.is_a?(ActiveRecord::Base)
@@ -181,7 +188,7 @@ class ActiveRecord::Associations::CollectionAssociation
 
       models.each do |m|
         m.public_send "#{symbolized_foreign_key}=", owner_primary_key_value
-        m.public_send "#{reflection.type}=", owner.class.name if reflection.type
+        m.public_send "#{reflection.type}=", owner_polymorphic_name if reflection.type
       end
 
       model_klass.bulk_import column_names, models, options
@@ -216,7 +223,7 @@ class ActiveRecord::Associations::CollectionAssociation
           if key == symbolized_foreign_key
             owner_primary_key_value
           elsif reflection.type && key == reflection.type.to_sym
-            owner.class.name
+            owner_polymorphic_name
           else
             h[key]
           end
@@ -251,10 +258,10 @@ class ActiveRecord::Associations::CollectionAssociation
         symbolized_type = reflection.type.to_sym
         if symbolized_column_names.include?(symbolized_type)
           index = symbolized_column_names.index(symbolized_type)
-          array_of_attributes.each { |attrs| attrs[index] = owner.class.name }
+          array_of_attributes.each { |attrs| attrs[index] = owner_polymorphic_name }
         else
           column_names << symbolized_type
-          array_of_attributes.each { |attrs| attrs << owner.class.name }
+          array_of_attributes.each { |attrs| attrs << owner_polymorphic_name }
         end
       end
 
