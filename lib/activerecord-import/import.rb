@@ -154,7 +154,7 @@ class ActiveRecord::Associations::CollectionAssociation
     options = args.last.is_a?(Hash) ? args.pop : {}
 
     model_klass = reflection.klass
-    symbolized_foreign_key = reflection.foreign_key.to_sym
+    symbolized_foreign_keys = Array(reflection.foreign_key).map(&:to_sym)
 
     symbolized_column_names = if model_klass.connection_pool.with_connection { |conn| conn.respond_to?(:supports_virtual_columns?) && conn.supports_virtual_columns? }
       model_klass.columns.reject(&:virtual?).map { |c| c.name.to_sym }
@@ -162,8 +162,9 @@ class ActiveRecord::Associations::CollectionAssociation
       model_klass.column_names.map(&:to_sym)
     end
 
-    owner_primary_key = reflection.active_record_primary_key.to_sym
-    owner_primary_key_value = owner.send(owner_primary_key)
+    owner_primary_keys = Array(reflection.active_record_primary_key).map(&:to_sym)
+    owner_key_values = owner_primary_keys.map { |key| owner.public_send(key) }
+    owner_key_values_by_foreign_key = symbolized_foreign_keys.zip(owner_key_values).to_h
     owner_polymorphic_name = if reflection.type
       if owner.class.respond_to?(:polymorphic_name)
         owner.class.polymorphic_name
@@ -183,8 +184,8 @@ class ActiveRecord::Associations::CollectionAssociation
         column_names = symbolized_column_names
       end
 
-      unless symbolized_column_names.include?(symbolized_foreign_key)
-        column_names << symbolized_foreign_key
+      symbolized_foreign_keys.each do |foreign_key|
+        column_names << foreign_key unless symbolized_column_names.include?(foreign_key)
       end
 
       if reflection.type && !symbolized_column_names.include?(reflection.type.to_sym)
@@ -192,7 +193,9 @@ class ActiveRecord::Associations::CollectionAssociation
       end
 
       models.each do |m|
-        m.public_send "#{symbolized_foreign_key}=", owner_primary_key_value
+        owner_key_values_by_foreign_key.each do |foreign_key, value|
+          m.public_send "#{foreign_key}=", value
+        end
         m.public_send "#{reflection.type}=", owner_polymorphic_name if reflection.type
       end
 
@@ -212,8 +215,8 @@ class ActiveRecord::Associations::CollectionAssociation
 
       required_column_names = column_names.dup
       symbolized_column_names = column_names.map(&:to_sym)
-      unless symbolized_column_names.include?(symbolized_foreign_key)
-        column_names << symbolized_foreign_key
+      symbolized_foreign_keys.each do |foreign_key|
+        column_names << foreign_key unless symbolized_column_names.include?(foreign_key)
       end
 
       if reflection.type && !symbolized_column_names.include?(reflection.type.to_sym)
@@ -227,8 +230,8 @@ class ActiveRecord::Associations::CollectionAssociation
 
         column_names.map do |key|
           symbolized_key = key.to_sym
-          if symbolized_key == symbolized_foreign_key
-            owner_primary_key_value
+          if owner_key_values_by_foreign_key.key?(symbolized_key)
+            owner_key_values_by_foreign_key[symbolized_key]
           elsif reflection.type && symbolized_key == reflection.type.to_sym
             owner_polymorphic_name
           else
@@ -253,12 +256,14 @@ class ActiveRecord::Associations::CollectionAssociation
 
       symbolized_column_names = column_names.map(&:to_sym)
 
-      if symbolized_column_names.include?(symbolized_foreign_key)
-        index = symbolized_column_names.index(symbolized_foreign_key)
-        array_of_attributes.each { |attrs| attrs[index] = owner_primary_key_value }
-      else
-        column_names << symbolized_foreign_key
-        array_of_attributes.each { |attrs| attrs << owner_primary_key_value }
+      owner_key_values_by_foreign_key.each do |foreign_key, value|
+        if symbolized_column_names.include?(foreign_key)
+          index = symbolized_column_names.index(foreign_key)
+          array_of_attributes.each { |attrs| attrs[index] = value }
+        else
+          column_names << foreign_key
+          array_of_attributes.each { |attrs| attrs << value }
+        end
       end
 
       if reflection.type
