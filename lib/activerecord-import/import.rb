@@ -1071,6 +1071,10 @@ class ActiveRecord::Base
     # and +array_of_attributes+.
     def values_sql_for_columns_and_attributes(conn, columns, array_of_attributes) # :nodoc:
       array_of_attributes.map do |arr|
+        if arr.length < columns.length
+          raise ArgumentError, "Number of values (#{arr.length}) is less than number of columns (#{columns.length})"
+        end
+
         my_values = arr.each_with_index.map do |val, j|
           column = columns[j]
 
