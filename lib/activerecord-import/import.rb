@@ -203,6 +203,7 @@ class ActiveRecord::Associations::CollectionAssociation
         allow_extra_hash_keys = false
       end
 
+      required_column_names = column_names.dup
       symbolized_column_names = column_names.map(&:to_sym)
       unless symbolized_column_names.include?(symbolized_foreign_key)
         column_names << symbolized_foreign_key
@@ -213,14 +214,15 @@ class ActiveRecord::Associations::CollectionAssociation
       end
 
       array_of_attributes = array_of_hashes.map do |h|
-        error_message = model_klass.send(:validate_hash_import, h, symbolized_column_names, allow_extra_hash_keys)
+        error_message = model_klass.send(:validate_hash_import, h, required_column_names, allow_extra_hash_keys)
 
         raise ArgumentError, error_message if error_message
 
         column_names.map do |key|
-          if key == symbolized_foreign_key
+          symbolized_key = key.to_sym
+          if symbolized_key == symbolized_foreign_key
             owner_primary_key_value
-          elsif reflection.type && key == reflection.type.to_sym
+          elsif reflection.type && symbolized_key == reflection.type.to_sym
             owner.class.name
           else
             h[key]
