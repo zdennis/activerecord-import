@@ -31,6 +31,7 @@ module ActiveRecord::Import # :nodoc:
     end
 
     def init_validations(klass)
+      @validator_class = klass
       @validate_callbacks = klass._validate_callbacks.dup
 
       @validate_callbacks.each_with_index do |callback, i|
