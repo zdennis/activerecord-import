@@ -104,7 +104,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
     selections += Array(options[:returning]) if options[:returning].present?
 
     selections.map do |selection|
-      column_names.include?(selection.to_s) ? "\"#{selection}\"" : selection
+      column_names.include?(selection.to_s) ? quote_column_name(selection) : selection
     end
   end
 
