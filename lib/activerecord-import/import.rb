@@ -23,7 +23,22 @@ module ActiveRecord::Import # :nodoc:
     end
   end
 
+  # Skips uniqueness validations while a model is being validated for an import
+  # that doesn't validate uniqueness. This covers the validations Rails runs on a
+  # model's associated records, which don't go through the Validator's callbacks.
+  module SkipUniquenessValidation # :nodoc:
+    def validate_each(record, attribute, value)
+      super unless ActiveRecord::Import::Validator.skip_uniqueness?
+    end
+  end
+
   class Validator
+    SKIP_UNIQUENESS = :activerecord_import_skip_uniqueness
+
+    def self.skip_uniqueness?
+      Thread.current[SKIP_UNIQUENESS] == true
+    end
+
     def initialize(klass, options = {})
       @options = options
       @validator_class = klass
@@ -77,9 +92,11 @@ module ActiveRecord::Import # :nodoc:
       validation_context = @options[:validate_with_context]
       validation_context ||= (model.new_record? ? :create : :update)
       current_context = model.send(:validation_context)
+      current_skip_uniqueness = Thread.current[SKIP_UNIQUENESS]
 
       begin
         set_validation_context(model, validation_context)
+        Thread.current[SKIP_UNIQUENESS] = !@options[:validate_uniqueness]
         model.errors.clear
 
         model.run_callbacks(:validation) do
@@ -118,6 +135,7 @@ module ActiveRecord::Import # :nodoc:
         model.errors.empty?
       ensure
         set_validation_context(model, current_context)
+        Thread.current[SKIP_UNIQUENESS] = current_skip_uniqueness
       end
     end
 
@@ -137,6 +155,8 @@ module ActiveRecord::Import # :nodoc:
     end
   end
 end
+
+ActiveRecord::Validations::UniquenessValidator.prepend(ActiveRecord::Import::SkipUniquenessValidation)
 
 class ActiveRecord::Associations::CollectionProxy
   def bulk_import(*args, &block)
