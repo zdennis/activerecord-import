@@ -236,4 +236,9 @@ ActiveRecord::Schema.define do
     t.integer :playlist_id
     t.string :title
   end
+
+  create_table :contacts, force: :cascade do |t|
+    t.string :name
+    t.string :display_name
+  end
 end

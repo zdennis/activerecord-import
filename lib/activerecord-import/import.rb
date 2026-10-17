@@ -556,6 +556,14 @@ class ActiveRecord::Base
       bulk_import(*args, options)
     end
 
+    # Returns the column for +name+, following an attribute alias unless +name+ is
+    # itself a column, so a column that's also an alias isn't replaced by the
+    # column it aliases.
+    def column_name_for_import(name) # :nodoc:
+      name = name.to_s
+      attribute_alias?(name) && !columns_hash.key?(name) ? attribute_alias(name) : name
+    end
+
     def import_helper( *args )
       connection_pool.with_connection do |conn|
         options = { validate: true, timestamps: true, track_validation_failures: false }
@@ -618,7 +626,9 @@ class ActiveRecord::Base
                  !model.send("#{name}_changed?")
                 nil
               else
-                model.read_attribute(name.to_s)
+                name = name.to_s
+                # Read a column's own value, as saving the model would, even if it's also an alias
+                columns_hash.key?(name) ? model._read_attribute(name) : model.read_attribute(name)
               end
             end
           end
@@ -794,8 +804,7 @@ class ActiveRecord::Base
       return ActiveRecord::Import::Result.new([], 0, [], []) if array_of_attributes.empty?
 
       column_names = column_names.map do |name|
-        original_name = attribute_alias?(name) ? attribute_alias(name) : name
-        original_name.to_sym
+        column_name_for_import(name).to_sym
       end
       scope_columns, scope_values = scope_attributes.to_a.transpose
 
