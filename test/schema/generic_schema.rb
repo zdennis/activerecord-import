@@ -85,6 +85,7 @@ ActiveRecord::Schema.define do
     t.integer :publisher_id
     t.boolean :for_sale, default: true
     t.integer :status, default: 0
+    t.integer :cover
     t.string :type
   end
 
