@@ -58,7 +58,7 @@ module ActiveRecord::Import::SQLite3Adapter
     sql = []
 
     # Options :recursive and :on_duplicate_key_ignore are mutually exclusive
-    if supports_on_duplicate_key_update? && ((options[:ignore] || options[:on_duplicate_key_ignore]) && !options[:on_duplicate_key_update])
+    if supports_on_duplicate_key_update? && (options[:ignore] || options[:on_duplicate_key_ignore]) && !options[:on_duplicate_key_update]
       sql << sql_for_on_duplicate_key_ignore( options[:on_duplicate_key_ignore] )
     end
 

@@ -8,13 +8,24 @@ describe ".synchronize" do
 
   setup do
     # update records outside of ActiveRecord knowing about it
-    Topic.connection.execute( "UPDATE #{Topic.table_name} SET title='#{titles[0]}_haha' WHERE id=#{topics[0].id}", "Updating record 1 without ActiveRecord" )
-    Topic.connection.execute( "UPDATE #{Topic.table_name} SET title='#{titles[1]}_haha' WHERE id=#{topics[1].id}", "Updating record 2 without ActiveRecord" )
-    Topic.connection.execute( "UPDATE #{Topic.table_name} SET title='#{titles[2]}_haha' WHERE id=#{topics[2].id}", "Updating record 3 without ActiveRecord" )
+    Topic.connection_pool.with_connection do |conn|
+      conn.execute( "UPDATE #{Topic.table_name} SET title='#{titles[0]}_haha' WHERE id=#{topics[0].id}", "Updating record 1 without ActiveRecord" )
+      conn.execute( "UPDATE #{Topic.table_name} SET title='#{titles[1]}_haha' WHERE id=#{topics[1].id}", "Updating record 2 without ActiveRecord" )
+      conn.execute( "UPDATE #{Topic.table_name} SET title='#{titles[2]}_haha' WHERE id=#{topics[2].id}", "Updating record 3 without ActiveRecord" )
+    end
   end
 
   it "reloads data for the specified records" do
     Topic.synchronize topics
+
+    actual_titles = topics.map(&:title)
+    assert_equal "#{titles[0]}_haha", actual_titles[0], "the first record was not correctly updated"
+    assert_equal "#{titles[1]}_haha", actual_titles[1], "the second record was not correctly updated"
+    assert_equal "#{titles[2]}_haha", actual_titles[2], "the third record was not correctly updated"
+  end
+
+  it "reloads data using multiple key fields" do
+    Topic.synchronize topics, [:id, :author_name]
 
     actual_titles = topics.map(&:title)
     assert_equal "#{titles[0]}_haha", actual_titles[0], "the first record was not correctly updated"
@@ -35,7 +46,7 @@ describe ".synchronize" do
 
   it "ignores default scope" do
     # update records outside of ActiveRecord knowing about it
-    Topic.connection.execute( "UPDATE #{Topic.table_name} SET approved='0' WHERE id=#{topics[0].id}", "Updating record 1 without ActiveRecord" )
+    Topic.connection_pool.with_connection { |conn| conn.execute( "UPDATE #{Topic.table_name} SET approved='0' WHERE id=#{topics[0].id}", "Updating record 1 without ActiveRecord" ) }
 
     Topic.synchronize topics
     assert_equal false, topics[0].approved

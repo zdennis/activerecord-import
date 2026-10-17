@@ -2,10 +2,11 @@
 
 def should_support_mysql_import_functionality
   # Forcefully disable strict mode for this session.
-  ActiveRecord::Base.connection.execute "set sql_mode='STRICT_ALL_TABLES'"
+  ActiveRecord::Base.connection_pool.with_connection { |conn| conn.execute "set sql_mode='STRICT_ALL_TABLES'" }
 
   should_support_basic_on_duplicate_key_update
   should_support_on_duplicate_key_ignore
+  should_support_affected_rows
 
   describe "#import" do
     context "with :on_duplicate_key_update and validation checks turned off" do
@@ -84,14 +85,12 @@ def should_support_mysql_import_functionality
       end
     end
 
-    if ENV['AR_VERSION'].to_f >= 5.1
-      context "with virtual columns" do
-        let(:books) { [Book.new(author_name: "foo", title: "bar")] }
+    context "with virtual columns" do
+      let(:books) { [Book.new(author_name: "foo", title: "bar")] }
 
-        it "ignores virtual columns and creates record" do
-          assert_difference "Book.count", +1 do
-            Book.import books
-          end
+      it "ignores virtual columns and creates record" do
+        assert_difference "Book.count", +1 do
+          Book.import books
         end
       end
     end

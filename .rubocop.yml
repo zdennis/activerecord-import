@@ -1,7 +1,7 @@
 inherit_from: .rubocop_todo.yml
 
 AllCops:
-  TargetRubyVersion: 3.0.x
+  TargetRubyVersion: 3.1
 
 Metrics/AbcSize:
   Enabled: false
@@ -13,9 +13,6 @@ Metrics/ClassLength:
   Enabled: false
 
 Metrics/CyclomaticComplexity:
-  Enabled: false
-
-Metrics/LineLength:
   Enabled: false
 
 Metrics/MethodLength:
@@ -91,6 +88,9 @@ Layout/SpaceInsideParens:
   Enabled: false
 
 Layout/SpaceInsidePercentLiteralDelimiters:
+  Enabled: false
+
+Layout/LineLength:
   Enabled: false
 
 Lint/ErbNewArguments:

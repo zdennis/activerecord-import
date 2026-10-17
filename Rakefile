@@ -19,17 +19,23 @@ ADAPTERS = %w(
   mysql2
   mysql2_makara
   mysql2spatial
+  mysql2_proxy
+  janus_mysql2
   jdbcmysql
   jdbcsqlite3
   jdbcpostgresql
   postgresql
   postgresql_makara
+  postgresql_proxy
   postgis
   makara_postgis
   sqlite3
+  sqlite3_proxy
   spatialite
   seamless_database_pool
   trilogy
+  trilogy_proxy
+  janus_trilogy
 ).freeze
 ADAPTERS.each do |adapter|
   namespace :test do

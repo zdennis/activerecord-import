@@ -1,9 +1,57 @@
-## Unreleased
+## Changes in 2.3.0
+
+### New Features
+
+* Add Support for trilogy_proxy from [active_record_proxy_adapters](https://rubygems.org/gems/active_record_proxy_adapters) by @mateuscruz via #887.
+* Add Support for sqlite3_proxy from [active_record_proxy_adapters](https://rubygems.org/gems/active_record_proxy_adapters) by @mateuscruz via #887.
+* Add affected rows support for the MySQL adapter. `ActiveRecord::Import::Result` now carries an
+  `affected_rows` member, which reports the number of rows the server actually reported as
+  affected when the adapter exposes it (`nil` otherwise). This is most useful with
+  `on_duplicate_key_update`, where the count distinguishes inserted from updated rows.
+  Thanks to @ehasrouni via #882 and #885.
+
+### Fixes
+
+* Fix `NoMethodError: undefined method 'validation_context='` when importing with validations
+  against Rails main (8.2.0.alpha). Rails removed ActiveModel's private `validation_context=`
+  writer in rails/rails@0f9d1270834a6407a59637650bf910d8ae826169 in favor of a validation
+  context object reachable through `context_for_validation`. `ActiveRecord::Import::Validator`
+  now sets and restores the validation context through whichever API the loaded ActiveModel
+  provides. Thanks to @yu-yaba via #900.
+* Fix adapter-specific import support (e.g. `on_duplicate_key_update`) never loading for
+  a connection established via `connects_to`/`ActiveRecord::ConnectionAdapters::
+  ConnectionHandler#establish_connection` instead of `ActiveRecord::Base.establish_connection`
+  directly - most commonly hit with a Rails multi-database secondary connection. The lazy
+  adapter loader now hooks `ConnectionHandler#establish_connection` instead of
+  `ActiveRecord::Base.establish_connection`, so it fires for every connection regardless of
+  how it was established. Thanks to @mateuscruz via #886.
+* Fix `active_record_proxy_adapters` support, which was not loading the import adapter for
+  proxied connections. Thanks to @mateuscruz via #880.
+* Use `with_connection` instead of `ActiveRecord::Base.connection`, which is deprecated as of
+  ActiveRecord 7.2. Thanks to @nerdrew via #875 and #876.
+* Reduce the size of the published gem by excluding test files. Thanks to @yuri-zubov via #893.
+
+## Changes in 2.2.0
+
+### New Features
+
+* Add Support for Janus ActiveRecord adapters. Thanks to @permidon via #\873.
+
+## Changes in 2.1.0
+
+### New Features
+
+* Add Support for `active_record_proxy_adapters` gem thanks to @stingrayzboy via #\867.
+  Since Rails 7.1 makara no longer works and it is not currently maintained. The @nasdaq team
+  have written a gem called [active_record_proxy_adapters](https://rubygems.org/gems/active_record_proxy_adapters)
+  that implements some makara functionality.
+
+## Changes in 2.0.0
 
 ### Breaking Changes
 
 * Fix `recursive_on_duplicate_key_update` doesn't work with non-standard
-  association name. The documentation for the
+  association name. Thanks to @jacob-carlborg-apoex via \#852. The documentation for the
   `:recursive_on_duplicate_key_update` option specifies that the hash key is
   the association name. But previously the name of associated table was used to
   look up the options. Now the behavior matches the documentation and the name
@@ -11,10 +59,6 @@
   a name that doesn't follow the ActiveRecord naming conventions of
   associations and class names, i.e. when the `class_name:` option is used on
   an association.
-
-### Fixes
-
-* Activerecord-Import imports associations for invalid models. Thanks to @jacob-carlborg-apoex via \##858.
 
 ## Changes in 1.8.1
 

@@ -2,6 +2,8 @@
 
 require 'pathname'
 require 'rake'
+require 'logger'
+
 test_dir = Pathname.new File.dirname(__FILE__)
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
@@ -21,14 +23,8 @@ end
 require "active_record"
 require "active_record/fixtures"
 require "active_support/test_case"
-
-if ActiveSupport::VERSION::STRING < "4.0"
-  require 'test/unit'
-  require 'mocha/test_unit'
-else
-  require 'active_support/testing/autorun'
-  require "mocha/minitest"
-end
+require 'minitest/autorun'
+require "mocha/minitest"
 
 require 'timecop'
 require 'chronic'
@@ -40,16 +36,6 @@ rescue LoadError
     ENV['SKIP_COMPOSITE_PK'] = 'true'
   end
 end
-
-# Support MySQL 5.7
-if ActiveSupport::VERSION::STRING < "4.1"
-  require "active_record/connection_adapters/mysql2_adapter"
-  class ActiveRecord::ConnectionAdapters::Mysql2Adapter
-    NATIVE_DATABASE_TYPES[:primary_key] = "int(11) auto_increment PRIMARY KEY"
-  end
-end
-
-require "ruby-debug" if RUBY_VERSION.to_f < 1.9
 
 adapter = ENV["ARE_DB"] || "sqlite3"
 
@@ -102,4 +88,4 @@ Dir["#{File.dirname(__FILE__)}/models/*.rb"].sort.each { |file| require file }
 # Prevent this deprecation warning from breaking the tests.
 Rake::FileList.send(:remove_method, :import)
 
-ActiveSupport::TestCase.test_order = :random if ENV['AR_VERSION'].to_f >= 4.2
+ActiveSupport::TestCase.test_order = :random

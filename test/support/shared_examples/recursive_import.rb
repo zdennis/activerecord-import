@@ -105,6 +105,32 @@ def should_support_recursive_import
       end
     end
 
+    context "when associations have uniqueness validators" do
+      let(:new_playlist) do
+        Playlist.new(name: "Playlist").tap { |playlist| playlist.songs.build(title: "Song") }
+      end
+
+      setup do
+        Playlist.import [Playlist.new(name: "Existing").tap { |playlist| playlist.songs.build(title: "Song") }], recursive: true
+      end
+
+      it "skips them by default" do
+        assert_difference "Playlist.count", +1 do
+          assert_difference "Song.count", +1 do
+            Playlist.import [new_playlist], recursive: true
+          end
+        end
+      end
+
+      it "runs them if validate_uniqueness is true" do
+        assert_no_difference "Playlist.count" do
+          assert_no_difference "Song.count" do
+            Playlist.import [new_playlist], recursive: true, validate_uniqueness: true
+          end
+        end
+      end
+    end
+
     it "skips validation of the associations if requested" do
       assert_difference "Chapter.count", +num_chapters do
         Topic.import new_topics_with_invalid_chapter, validate: false, recursive: true
@@ -164,12 +190,29 @@ def should_support_recursive_import
         end
       end
 
+      context "when validations are enabled and failures are tracked" do
+        it "does not import its associations" do
+          assert_no_difference "Book.count" do
+            Topic.import invalid_topics, validate: true, recursive: true, track_validation_failures: true
+          end
+        end
+      end
+
       context "when validations are not enabled" do
         it "import its associations anyway" do
           assert_difference "Book.count", invalid_topics.first.books.size do
             Topic.import invalid_topics, validate: false, recursive: true
           end
         end
+      end
+    end
+
+    it "imports the associations of a model with errors left over from an earlier validation" do
+      topic = Build(1, :topic_with_book).first
+      topic.errors.add(:base, :invalid)
+
+      assert_difference "Book.count", topic.books.size do
+        Topic.import [topic], validate: false, recursive: true
       end
     end
 
@@ -220,7 +263,7 @@ def should_support_recursive_import
 
     # If adapter supports on_duplicate_key_update and specific columns are specified, it is only applied to top level models so that SQL with invalid
     # columns, keys, etc isn't generated for child associations when doing recursive import
-    if ActiveRecord::Base.connection.supports_on_duplicate_key_update?
+    if ActiveRecord::Base.connection_pool.with_connection(&:supports_on_duplicate_key_update?)
       describe "on_duplicate_key_update" do
         let(:new_topics) { Build(1, :topic_with_book) }
 

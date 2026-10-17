@@ -1,0 +1,10 @@
+# frozen_string_literal: true
+
+# 8.2 is the version currently under development on the Rails main branch. Tracking the
+# branch itself (rather than a released gem) is what surfaces upstream removals such as
+# ActiveModel's private #validation_context= writer before they reach a stable release.
+git 'https://github.com/rails/rails.git', branch: 'main' do
+  gem 'activesupport'
+  gem 'activemodel'
+  gem 'activerecord'
+end

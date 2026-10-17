@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 def should_support_sqlite3_import_functionality
-  if ActiveRecord::Base.connection.supports_on_duplicate_key_update?
+  if ActiveRecord::Base.connection_pool.with_connection(&:supports_on_duplicate_key_update?)
     should_support_sqlite_upsert_functionality
   end
 
