@@ -60,6 +60,10 @@ end
 
 gem "minitest"
 
+# json 3.0 changed JSON.generate and JSON.parse in ways ActiveSupport isn't
+# compatible with (e.g. quirks_mode), breaking serialized attributes.
+gem "json", "< 3"
+
 # mutex_m, drb, base64, bigdecimal moved from default gems to bundled gems in Ruby 3.4.0.
 # ActiveSupport 6.1-7.0 don't include these gems as dependencies, so they must be explicitly required.
 # ActiveSupport 7.1+ includes them as dependencies or not required, so no explicit inclusion is needed.
