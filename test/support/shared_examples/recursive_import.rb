@@ -105,6 +105,32 @@ def should_support_recursive_import
       end
     end
 
+    context "when associations have uniqueness validators" do
+      let(:new_playlist) do
+        Playlist.new(name: "Playlist").tap { |playlist| playlist.songs.build(title: "Song") }
+      end
+
+      setup do
+        Playlist.import [Playlist.new(name: "Existing").tap { |playlist| playlist.songs.build(title: "Song") }], recursive: true
+      end
+
+      it "skips them by default" do
+        assert_difference "Playlist.count", +1 do
+          assert_difference "Song.count", +1 do
+            Playlist.import [new_playlist], recursive: true
+          end
+        end
+      end
+
+      it "runs them if validate_uniqueness is true" do
+        assert_no_difference "Playlist.count" do
+          assert_no_difference "Song.count" do
+            Playlist.import [new_playlist], recursive: true, validate_uniqueness: true
+          end
+        end
+      end
+    end
+
     it "skips validation of the associations if requested" do
       assert_difference "Chapter.count", +num_chapters do
         Topic.import new_topics_with_invalid_chapter, validate: false, recursive: true

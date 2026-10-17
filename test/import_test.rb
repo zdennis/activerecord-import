@@ -431,6 +431,35 @@ describe "#import" do
           Topic.import columns, valid_values, validate_uniqueness: true
         end
       end
+
+      context "on associated records" do
+        let(:playlist) do
+          Playlist.new(name: "New").tap { |playlist| playlist.songs.build(title: "Duplicate") }
+        end
+
+        setup do
+          Song.create!(title: "Duplicate", playlist: Playlist.create!(name: "Existing"))
+        end
+
+        it "should skip them by default" do
+          assert_difference "Playlist.count", +1 do
+            Playlist.import [playlist]
+          end
+        end
+
+        it "should run them if validate_uniqueness is true" do
+          assert_no_difference "Playlist.count" do
+            Playlist.import [playlist], validate_uniqueness: true
+          end
+          assert_equal ["Songs is invalid"], playlist.errors.full_messages
+        end
+
+        it "should run them outside of an import" do
+          Playlist.import [playlist]
+          assert_not ActiveRecord::Import::Validator.skip_uniqueness?
+          assert_not Song.new(title: "Duplicate").valid?
+        end
+      end
     end
 
     context "when validatoring presence of belongs_to association" do
