@@ -13,7 +13,8 @@ class CompositeBook < ActiveRecord::Base
                                   query_constraints: [:id, :author_id]
   end
 
+  # PostgreSQL's sequence for the id column, which isn't found because of the composite primary key
   def self.sequence_name
-    "composite_book_id_seq"
+    connection_pool.with_connection { |conn| conn.adapter_name =~ /postg/i } ? "composite_book_id_seq" : super
   end
 end

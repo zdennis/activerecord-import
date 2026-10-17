@@ -62,6 +62,59 @@ module ActiveRecord::Import::AbstractAdapter
       post_sql_statements
     end
 
+    # Returns the selections for an INSERT ... RETURNING clause: the primary key
+    # and any +:returning+ columns. Known columns are quoted, anything else (such
+    # as raw SQL) is returned unchanged.
+    def returning_selections(options)
+      selections = []
+      column_names = Array(options[:model]&.column_names)
+
+      selections += Array(options[:primary_key]) if options[:primary_key].present?
+      selections += Array(options[:returning]) if options[:returning].present?
+
+      selections.map do |selection|
+        column_names.include?(selection.to_s) ? quote_column_name(selection) : selection
+      end
+    end
+
+    # Splits the values returned by an INSERT ... RETURNING into the ids and the
+    # +:returning+ results. +returned_values+ is a Hash with the returned
+    # +:values+, and the +:columns+ when more than one column was returned.
+    def ids_and_results_from_returned_values( returned_values, options ) # :nodoc:
+      if options[:returning].blank?
+        [Array(returned_values[:values]), []]
+      elsif options[:primary_key].blank?
+        options[:returning_columns] ||= returned_values[:columns]
+        [[], Array(returned_values[:values])]
+      else
+        # split primary key and returning columns
+        ids, results, options[:returning_columns] = split_ids_and_results(returned_values, options)
+        [ids, results]
+      end
+    end
+
+    def split_ids_and_results( selections, options )
+      ids = []
+      returning_values = []
+
+      columns = Array(selections[:columns])
+      values = Array(selections[:values])
+      id_indexes = Array(options[:primary_key]).map { |key| columns.index(key) }
+      returning_columns = columns.reject.with_index { |_, index| id_indexes.include?(index) }
+      returning_indexes = returning_columns.map { |column| columns.index(column) }
+
+      values.each do |value|
+        value_array = Array(value)
+        ids << id_indexes.map { |index| value_array[index] }
+        returning_values << returning_indexes.map { |index| value_array[index] }
+      end
+
+      ids.map!(&:first) if id_indexes.size == 1
+      returning_values.map!(&:first) if returning_columns.size == 1
+
+      [ids, returning_values, returning_columns]
+    end
+
     def increment_locking_column!(table_name, results, locking_column)
       if locking_column.present?
         results << "\"#{locking_column}\"=#{table_name}.\"#{locking_column}\"+1"

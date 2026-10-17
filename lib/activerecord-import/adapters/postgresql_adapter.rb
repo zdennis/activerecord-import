@@ -9,8 +9,6 @@ module ActiveRecord::Import::PostgreSQLAdapter
   def insert_many( sql, values, options = {}, *args ) # :nodoc:
     number_of_inserts = 1
     returned_values = {}
-    ids = []
-    results = []
 
     base_sql, post_sql = case sql
                          when String
@@ -37,39 +35,9 @@ module ActiveRecord::Import::PostgreSQLAdapter
     end
     clear_query_cache if query_cache_enabled
 
-    if options[:returning].blank?
-      ids = Array(returned_values[:values])
-    elsif options[:primary_key].blank?
-      options[:returning_columns] ||= returned_values[:columns]
-      results = Array(returned_values[:values])
-    else
-      # split primary key and returning columns
-      ids, results, options[:returning_columns] = split_ids_and_results(returned_values, options)
-    end
+    ids, results = ids_and_results_from_returned_values(returned_values, options)
 
     ActiveRecord::Import::Result.new([], number_of_inserts, ids, results)
-  end
-
-  def split_ids_and_results( selections, options )
-    ids = []
-    returning_values = []
-
-    columns = Array(selections[:columns])
-    values = Array(selections[:values])
-    id_indexes = Array(options[:primary_key]).map { |key| columns.index(key) }
-    returning_columns = columns.reject.with_index { |_, index| id_indexes.include?(index) }
-    returning_indexes = returning_columns.map { |column| columns.index(column) }
-
-    values.each do |value|
-      value_array = Array(value)
-      ids << id_indexes.map { |index| value_array[index] }
-      returning_values << returning_indexes.map { |index| value_array[index] }
-    end
-
-    ids.map!(&:first) if id_indexes.size == 1
-    returning_values.map!(&:first) if returning_columns.size == 1
-
-    [ids, returning_values, returning_columns]
   end
 
   def next_value_for_sequence(sequence_name)
@@ -96,18 +64,6 @@ module ActiveRecord::Import::PostgreSQLAdapter
     end
 
     sql.uniq
-  end
-
-  def returning_selections(options)
-    selections = []
-    column_names = Array(options[:model]&.column_names)
-
-    selections += Array(options[:primary_key]) if options[:primary_key].present?
-    selections += Array(options[:returning]) if options[:returning].present?
-
-    selections.map do |selection|
-      column_names.include?(selection.to_s) ? quote_column_name(selection) : selection
-    end
   end
 
   # Add a column to be updated on duplicate key update
