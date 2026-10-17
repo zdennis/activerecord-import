@@ -627,8 +627,7 @@ class ActiveRecord::Base
 
           # if there are auto-save associations on the models we imported that are new, import them as well
           if options[:recursive]
-            options[:on_duplicate_key_update] = on_duplicate_key_update unless on_duplicate_key_update.nil?
-            import_associations(imported_models(models, return_obj, options), options.dup.merge(validate: false))
+            import_associations_of_imported_models(models, return_obj, on_duplicate_key_update, options)
           end
         end
 
@@ -960,6 +959,13 @@ class ActiveRecord::Base
         failed_instances << (options[:track_validation_failures] ? [i, failure] : failure )
       end
       array_of_attributes.compact!
+    end
+
+    # Imports the new and changed associations of the +models+ that were imported, with the
+    # :on_duplicate_key_update option that was passed in rather than the copy used for +models+.
+    def import_associations_of_imported_models(models, import_result, on_duplicate_key_update, options)
+      options[:on_duplicate_key_update] = on_duplicate_key_update unless on_duplicate_key_update.nil?
+      import_associations(imported_models(models, import_result, options), options.dup.merge(validate: false))
     end
 
     # ActiveRecord treats "id" as the primary key when writing attributes
