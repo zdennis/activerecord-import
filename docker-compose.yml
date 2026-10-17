@@ -1,41 +1,89 @@
-version: "3.5"
+# Databases for running the test suite. Start them with `docker compose up -d`.
+#
+# The host ports default to values that don't collide with a locally installed
+# MySQL (3306) or PostgreSQL (5432), and can be changed with the MYSQL_PORT,
+# MARIADB_PORT and PG_PORT environment variables. test/database.default.yml reads
+# the same variables, so the tests connect to these containers without a
+# test/database.yml. See "Running Tests" in the README.
 
 services:
   mysql:
-    platform: linux/x86_64
     image: mysql:8.0
+    # As in CI: trilogy can't do the full authentication of MySQL 8's default
+    # caching_sha2_password plugin over a connection without TLS.
     command: --default-authentication-plugin=mysql_native_password
     volumes:
       - mysql-data:/var/lib/mysql
     ports:
-      - "3306:3306"
+      - "127.0.0.1:${MYSQL_PORT:-13306}:3306"
     environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: yes
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: activerecord_import_test
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mariadb:
+    image: mariadb:11.8
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    ports:
+      - "127.0.0.1:${MARIADB_PORT:-13307}:3306"
+    environment:
+      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
+      MARIADB_DATABASE: activerecord_import_test
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
   postgresql:
+    # The same image CI uses. It is only published for amd64, so it runs emulated on ARM.
     image: postgis/postgis:10-2.5
+    platform: linux/amd64
     volumes:
       - postgresql-data:/var/lib/postgresql/data
+      # Runs once, when the data volume is first created, after the image's own postgis setup
+      - ./test/docker/postgresql-init.sql:/docker-entrypoint-initdb.d/20_activerecord_import.sql:ro
     ports:
-      - "5432:5432"
+      - "127.0.0.1:${PG_PORT:-15432}:5432"
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
       POSTGRES_DB: activerecord_import_test
+    healthcheck:
+      # Checks over TCP, which the server only listens on once the init scripts have run
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "postgres", "-d", "activerecord_import_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
+  # A container with Ruby and the gems installed, for running the tests without a local
+  # Ruby. It is in the "app" profile so that `docker compose up -d` only starts the
+  # databases; use `docker compose --profile app up -d --build`, then
+  # `docker compose exec app bash`.
   app:
+    profiles: ["app"]
     build:
       context: .
     environment:
-      DB_HOST: mysql
-      AR_VERSION: 7.0
+      AR_VERSION: "8.1"
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+      PG_HOST: postgresql
+      PG_PORT: "5432"
     volumes:
       - .:/usr/src/app
     depends_on:
-      - mysql
-      - postgresql
+      mysql:
+        condition: service_healthy
+      postgresql:
+        condition: service_healthy
     command: tail -f /dev/null
 
 volumes:
   mysql-data:
+  mariadb-data:
   postgresql-data:

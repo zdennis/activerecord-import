@@ -1,0 +1,84 @@
+# The database configuration the tests use when there is no test/database.yml.
+#
+# Its defaults connect to the databases in docker-compose.yml (`docker compose up -d`).
+# To point the tests elsewhere, set these environment variables, or copy this file
+# (or test/database.yml.sample) to test/database.yml and edit it.
+#
+#   DB_HOST         host for every database (default: 127.0.0.1)
+#   DB_DATABASE     database name (default: activerecord_import_test)
+#   MYSQL_HOST      MySQL/MariaDB host (default: DB_HOST)
+#   MYSQL_PORT      MySQL/MariaDB port (default: 13306, docker-compose.yml's MySQL;
+#                   use 13307 for its MariaDB, or 3306 for a local server)
+#   MYSQL_USERNAME  (default: root)
+#   MYSQL_PASSWORD  (default: empty)
+#   PG_HOST         PostgreSQL host (default: DB_HOST)
+#   PG_PORT         PostgreSQL port (default: 15432, docker-compose.yml's PostgreSQL;
+#                   use 5432 for a local server)
+#   PG_USERNAME     (default: postgres)
+#   PG_PASSWORD     (default: empty)
+<% db_host = ENV.fetch("DB_HOST", "127.0.0.1") %>
+common: &common
+  database: <%= ENV.fetch("DB_DATABASE", "activerecord_import_test") %>
+
+mysql: &mysql
+  <<: *common
+  host: <%= ENV.fetch("MYSQL_HOST", db_host) %>
+  port: <%= ENV.fetch("MYSQL_PORT", 13306) %>
+  username: <%= ENV.fetch("MYSQL_USERNAME", "root") %>
+  password: <%= ENV.fetch("MYSQL_PASSWORD", "").to_json %>
+  encoding: utf8
+  collation: utf8_general_ci
+
+mysql2: &mysql2
+  <<: *mysql
+  adapter: mysql2
+
+mysql2spatial:
+  <<: *mysql2
+
+mysql2_makara:
+  <<: *mysql2
+
+trilogy:
+  <<: *mysql
+  adapter: trilogy
+
+jdbcmysql:
+  <<: *mysql
+  adapter: jdbcmysql
+
+seamless_database_pool:
+  <<: *mysql
+  adapter: seamless_database_pool
+  pool_adapter: mysql2
+  prepared_statements: false
+  master:
+    host: <%= ENV.fetch("MYSQL_HOST", db_host) %>
+    port: <%= ENV.fetch("MYSQL_PORT", 13306) %>
+
+postgresql: &postgresql
+  <<: *common
+  adapter: postgresql
+  host: <%= ENV.fetch("PG_HOST", db_host) %>
+  port: <%= ENV.fetch("PG_PORT", 15432) %>
+  username: <%= ENV.fetch("PG_USERNAME", "postgres") %>
+  password: <%= ENV.fetch("PG_PASSWORD", "").to_json %>
+  min_messages: warning
+
+postgis:
+  <<: *postgresql
+
+jdbcpostgresql:
+  <<: *postgresql
+  adapter: jdbcpostgresql
+
+sqlite3: &sqlite3
+  adapter: sqlite3
+  database: ":memory:"
+
+spatialite:
+  <<: *sqlite3
+
+jdbcsqlite3:
+  <<: *sqlite3
+  adapter: jdbcsqlite3

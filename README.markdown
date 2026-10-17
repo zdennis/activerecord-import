@@ -660,21 +660,35 @@ To document new information, please add to the README instead of the wiki. See h
 
 #### Running Tests
 
-The first thing you need to do is set up your database(s):
-
-* copy `test/database.yml.sample` to `test/database.yml`
-* modify `test/database.yml` for your database settings
-* create databases as needed
-
-After that, you can run the tests. They run against multiple tests and ActiveRecord versions.
-
-This is one example of how to run the tests:
+The tests run against each database adapter (`bundle exec rake -T` lists them) and against multiple ActiveRecord versions, chosen with `AR_VERSION`. The SQLite tests need no setup. For MySQL, MariaDB and PostgreSQL, the quickest way to get databases is Docker (see [Docker Setup](#docker-setup)):
 
 ```bash
-rm Gemfile.lock
-AR_VERSION=7.0 bundle install
-AR_VERSION=7.0 bundle exec rake test:postgresql test:sqlite3 test:mysql2
+docker compose up -d
+rm -f Gemfile.lock
+AR_VERSION=8.1 bundle install
+AR_VERSION=8.1 bundle exec rake test:sqlite3 test:postgresql test:mysql2 test:trilogy
 ```
+
+Without a `test/database.yml`, the tests use `test/database.default.yml`, which connects to the Docker databases by default and can be pointed elsewhere with environment variables:
+
+| Variable | Default | |
+| --- | --- | --- |
+| `DB_HOST` | `127.0.0.1` | Host for all databases |
+| `DB_DATABASE` | `activerecord_import_test` | Database name |
+| `MYSQL_HOST`, `PG_HOST` | `DB_HOST` | Host for MySQL/MariaDB or PostgreSQL |
+| `MYSQL_PORT` | `13306` | MySQL/MariaDB port; Docker's MariaDB is on `13307` |
+| `PG_PORT` | `15432` | PostgreSQL port |
+| `MYSQL_USERNAME`, `MYSQL_PASSWORD` | `root`, empty | |
+| `PG_USERNAME`, `PG_PASSWORD` | `postgres`, empty | |
+
+For example, to run the MySQL tests against Docker's MariaDB, or against a MySQL server you run yourself:
+
+```bash
+MYSQL_PORT=13307 AR_VERSION=8.1 bundle exec rake test:mysql2
+MYSQL_PORT=3306 MYSQL_PASSWORD=secret AR_VERSION=8.1 bundle exec rake test:mysql2
+```
+
+The PostgreSQL tests need the `hstore`, `pgcrypto` and `uuid-ossp` extensions, which they create themselves when connecting as a superuser, and `test:postgis` also needs PostGIS. If you'd rather keep your settings in a file, copy `test/database.yml.sample` to `test/database.yml` and edit it; when that file exists it is used instead (it can also use ERB).
 
 Once you have pushed up your changes, you can find your CI results [here](https://github.com/zdennis/activerecord-import/actions).
 
@@ -685,11 +699,15 @@ Before you begin, make sure you have [Docker](https://www.docker.com/products/do
 ```bash
 brew install docker && brew install docker-compose
 ```
-##### Steps
 
-1. In your terminal run `docker-compose up --build`
-1. In another tab/window run `docker-compose exec app bash`
-1. In that same terminal run the mysql2 test by running `bundle exec rake test:mysql2`
+`docker compose up -d` starts MySQL 8.0, MariaDB 11.8 and PostgreSQL with PostGIS (the image CI uses), listening on localhost ports 13306, 13307 and 15432 so they don't collide with databases you may already run. To use other ports, set `MYSQL_PORT`, `MARIADB_PORT` or `PG_PORT` when starting them, and the same variables (with `MYSQL_PORT` set to the MariaDB port to test MariaDB) when running the tests. `docker compose down -v` stops them and deletes their data.
+
+To run the tests inside Docker instead of with a local Ruby:
+
+1. In your terminal run `docker compose --profile app up -d --build`
+1. Then run `docker compose exec app bash`
+1. In that shell run `bundle install` (the image's gems are for `AR_VERSION=8.1`; to test another version, `rm Gemfile.lock` and run `AR_VERSION=7.2 bundle install`, then set `AR_VERSION` when running the tests too)
+1. Run the mysql2 tests with `bundle exec rake test:mysql2` (set `MYSQL_HOST=mariadb` to use MariaDB)
 
 ## Issue Triage [![Open Source Helpers](https://www.codetriage.com/zdennis/activerecord-import/badges/users.svg)](https://www.codetriage.com/zdennis/activerecord-import)
 
