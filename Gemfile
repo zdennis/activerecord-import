@@ -6,14 +6,11 @@ gemspec
 
 version = ENV['AR_VERSION'].to_f
 
-mysql2_version = '0.4.0'
-mysql2_version = '0.5.0' if version >= 6.1
+mysql2_version = '0.5.0'
 mysql2_version = '0.5.6' if version >= 8.0
-sqlite3_version = '1.3.0'
-sqlite3_version = '1.4.0' if version >= 6.0
+sqlite3_version = '1.4.0'
 sqlite3_version = '2.2.0' if version >= 8.0
-pg_version = '0.9'
-pg_version = '1.1' if version >= 6.1
+pg_version = '1.1'
 pg_version = '1.5' if version >= 8.0
 
 group :development, :test do
@@ -26,12 +23,8 @@ platforms :ruby do
   gem "mysql2",                 "~> #{mysql2_version}"
   gem "pg",                     "~> #{pg_version}"
   gem "sqlite3",                "~> #{sqlite3_version}"
-  # seamless_database_pool requires Ruby ~> 2.0
-  gem "seamless_database_pool", "~> 1.0.20" if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('3.0.0')
-  gem "trilogy" if version >= 6.0
-  if version >= 6.0 && version <= 7.0
-    gem "activerecord-trilogy-adapter"
-  end
+  gem "trilogy"
+  gem "activerecord-trilogy-adapter" if version <= 7.0
 end
 
 platforms :jruby do
@@ -43,11 +36,7 @@ platforms :jruby do
 end
 
 # Support libs
-if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("3.0.0")
-  gem "factory_bot"
-else
-  gem "factory_bot", "~> 5", "< 6.4.5"
-end
+gem "factory_bot"
 gem "timecop"
 gem "chronic"
 gem "mocha", "~> 2.1.0"

@@ -19,8 +19,8 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = ActiveRecord::Import::VERSION
 
-  gem.required_ruby_version = ">= 2.4.0"
+  gem.required_ruby_version = ">= 3.1.0"
 
-  gem.add_runtime_dependency "activerecord", ">= 4.2"
+  gem.add_runtime_dependency "activerecord", ">= 6.1"
   gem.add_development_dependency "rake"
 end
