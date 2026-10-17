@@ -769,7 +769,7 @@ class ActiveRecord::Base
 
         if options[:synchronize]
           sync_keys = options[:synchronize_keys] || Array(primary_key)
-          synchronize( options[:synchronize], sync_keys)
+          synchronized_instances = synchronize_imported_instances(options[:synchronize], sync_keys)
         end
         return_obj.num_inserts = 0 if return_obj.num_inserts.nil?
 
@@ -783,6 +783,10 @@ class ActiveRecord::Base
             import_associations(imported_models(models, return_obj, options), options.dup.merge(validate: false))
           end
         end
+
+        # apply the changes of synchronized instances that weren't marked clean above,
+        # such as when importing columns and values rather than models
+        synchronized_instances&.each { |instance| instance.changes_applied if instance.changed? }
 
         return_obj
       end
@@ -918,6 +922,45 @@ class ActiveRecord::Base
       failed_instances = import_result.failed_instances
       failed_instances = failed_instances.map(&:last) if options[:track_validation_failures]
       models - failed_instances
+    end
+
+    # Synchronizes +instances+ with the database like ActiveRecord::Base.synchronize,
+    # but rather than discarding their changes, it assigns the database values
+    # on top of them. Once the instances are marked clean, previous_changes then
+    # reflects what the import changed, as it does without synchronizing.
+    # Instances left without changes are marked clean right away. Returns the
+    # instances that were synchronized.
+    def synchronize_imported_instances(instances, keys)
+      synchronize_instances(instances, keys) do |instance, fresh_attributes|
+        attributes = instance.instance_variable_get(:@attributes)
+        # the attributes of destroyed records are frozen
+        attributes = attributes.deep_dup if attributes.frozen?
+
+        names = fresh_attributes.keys
+        if names.all? { |name| attributes.key?(name) }
+          names.each do |name|
+            value = fresh_attributes.fetch_value(name)
+            attributes.write_from_user(name, value) unless same_database_value?(attributes.fetch_value(name), value)
+          end
+          instance.instance_variable_set :@attributes, attributes
+          instance.changes_applied unless instance.changed?
+        else
+          # the instance doesn't have all of the attributes, such as when it was
+          # loaded with select, so take the record's attributes as they are
+          instance.instance_variable_set :@attributes, fresh_attributes
+          instance.clear_changes_information
+        end
+      end
+    end
+
+    # Returns true if +database_value+, reloaded from the database, is the +value+ an instance
+    # already has. Databases store times to the microsecond, so a time with more precision,
+    # which ActiveRecord < 7.0 keeps in memory, comes back rounded or truncated.
+    def same_database_value?(value, database_value)
+      return true if value == database_value
+      return false unless value.is_a?(Time) && database_value.is_a?(Time)
+
+      value.round(6) == database_value || value.floor(6) == database_value
     end
 
     def set_attributes_and_mark_clean(conn, models, import_result, timestamps, options)

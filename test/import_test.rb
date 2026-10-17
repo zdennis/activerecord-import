@@ -559,6 +559,70 @@ describe "#import" do
         Topic.import(new_topics, synchronize: new_topics, synchronize_keys: [:title] )
         assert new_topics.all?(&:persisted?), "Records should have been reloaded"
       end
+
+      it "moves the imported changes to previous_changes" do
+        Topic.import(new_topics, synchronize: new_topics, synchronize_keys: [:title] )
+        new_topics.each do |topic|
+          assert_equal false, topic.changed?
+          assert_equal [nil, topic.id], topic.previous_changes["id"]
+          assert_equal [nil, topic.title], topic.previous_changes["title"]
+          assert_equal [nil, topic.author_name], topic.previous_changes["author_name"]
+          assert_equal [nil, topic.created_at], topic.previous_changes["created_at"]
+        end
+      end
+    end
+
+    context "synchronizing on existing records" do
+      let(:topics) { Generate(2, :topics) }
+
+      it "moves the imported changes to previous_changes" do
+        skip unless Topic.connection.supports_on_duplicate_key_update?
+
+        original_title = topics.first.title
+        topics.first.title = "Changed title"
+        Topic.import topics, on_duplicate_key_update: [:title], synchronize: topics
+
+        assert_equal false, topics.first.changed?
+        assert_equal [original_title, "Changed title"], topics.first.previous_changes["title"]
+        assert_nil topics.last.previous_changes["title"]
+      end
+
+      it "moves the changes it reloads to previous_changes" do
+        skip unless Topic.connection.supports_on_duplicate_key_update?
+
+        original_author_name = topics.first.author_name
+        Topic.import [:id, :title, :author_name], [[topics.first.id, topics.first.title, "Jerry Carter"]],
+          validate: false, on_duplicate_key_update: [:author_name], synchronize: topics
+
+        assert_equal false, topics.first.changed?
+        assert_equal [original_author_name, "Jerry Carter"], topics.first.previous_changes["author_name"]
+        assert_equal({}, topics.last.previous_changes)
+      end
+
+      it "doesn't report times the database stored with less precision as changes" do
+        skip unless Topic.connection.supports_on_duplicate_key_update?
+
+        topic = topics.last
+        # A time more precise than the database stores, as ActiveRecord < 7.0 keeps it in memory
+        topic.created_at = Topic.find(topic.id).created_at + Rational(789, 1_000_000_000)
+        topic.clear_changes_information
+
+        Topic.import [:id, :title], [[topic.id, topic.title]],
+          validate: false, timestamps: false, on_duplicate_key_update: [:title], synchronize: [topic]
+
+        assert_equal({}, topic.previous_changes)
+      end
+
+      it "reloads instances that were loaded without all of their attributes" do
+        skip unless Topic.connection.supports_on_duplicate_key_update?
+
+        topic = Topic.select(:id, :title).find(topics.first.id)
+        Topic.import [:id, :title, :author_name], [[topic.id, topic.title, "Jerry Carter"]],
+          validate: false, on_duplicate_key_update: [:author_name], synchronize: [topic]
+
+        assert_equal "Jerry Carter", topic.author_name
+        assert_equal false, topic.changed?
+      end
     end
 
     context "synchronizing on destroyed records with explicit conditions" do
