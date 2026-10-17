@@ -567,14 +567,7 @@ class ActiveRecord::Base
         # missed if activerecord-import is required afterwards, so load it now if it's missing.
         ActiveRecord::Import.load_from_connection_pool_once(connection_pool) unless supports_import?(conn)
 
-        options = { validate: true, timestamps: true, track_validation_failures: false }
-        options.merge!( args.pop ) if args.last.is_a? Hash
-        args = arrays_from_array_like_import_arguments(args)
-        # making sure that the current model and its primary key are used, rather than
-        # the parent model's when importing associations recursively
-        options[:model] = self
-        options[:primary_key] = primary_key
-        options[:locking_column] = locking_column if locking_enabled?
+        options, args = options_and_arguments_for_import(args)
 
         is_validating = options[:validate_with_context].present? || options[:validate]
         validator = ActiveRecord::Import::Validator.new(options)
@@ -900,6 +893,20 @@ class ActiveRecord::Base
     end
 
     private
+
+    # Takes the options Hash, if any, off the end of +args+ and returns the options
+    # for the import, with their defaults, along with the arguments to import.
+    def options_and_arguments_for_import(args)
+      options = { validate: true, timestamps: true, track_validation_failures: false }
+      options.merge!( args.pop ) if args.last.is_a? Hash
+      args = arrays_from_array_like_import_arguments(args)
+      # making sure that the current model and its primary key are used, rather than
+      # the parent model's when importing associations recursively
+      options[:model] = self
+      options[:primary_key] = primary_key
+      options[:locking_column] = locking_column if locking_enabled?
+      [options, args]
+    end
 
     # ActiveRecord treats "id" as the primary key when writing attributes
     # through id= or []=. When the primary key is composite or is another
