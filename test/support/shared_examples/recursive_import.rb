@@ -305,6 +305,21 @@ def should_support_recursive_import
           assert_equal new_chapter_title, Chapter.find(example_chapter.id).title
         end
 
+        it "resolves attribute aliases on the associated model" do
+          playlist = Playlist.new(name: "Playlist")
+          song = playlist.songs.build(title: "Song")
+          Playlist.import [playlist], recursive: true
+          song.title = "Renamed"
+
+          Playlist.import [playlist],
+            recursive: true,
+            on_duplicate_key_update: [:name],
+            recursive_on_duplicate_key_update: {
+              songs: { conflict_target: [:id], columns: [:name] }
+            }
+          assert_equal "Renamed", song.reload.title
+        end
+
         context "when a non-standard association name is used" do
           let(:new_topics) do
             topic = Build(:topic)
