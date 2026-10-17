@@ -430,6 +430,49 @@ def should_support_recursive_import
       end
     end
 
+    describe "existing child records" do
+      it "links an existing record assigned to a new parent" do
+        book = Book.create!(title: "Existing", author_name: "Someone")
+        topic = Build(:topic)
+        topic.books = [book]
+
+        Topic.import [topic], recursive: true, on_duplicate_key_update: :all
+
+        assert_equal topic.id, book.reload.topic_id
+      end
+
+      it "doesn't import existing records already linked to the parent" do
+        topic = Topic.create!(title: "Title", author_name: "Author")
+        topic.books.create!(title: "Existing", author_name: "Someone")
+        topic = Topic.includes(:books).find(topic.id)
+        topic.title = "Changed"
+
+        book_inserts = []
+        subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") do |*, payload|
+          book_inserts << payload[:sql] if payload[:sql] =~ /\AINSERT INTO "?books/i
+        end
+        begin
+          Topic.import [topic], recursive: true, on_duplicate_key_update: [:title]
+        ensure
+          ActiveSupport::Notifications.unsubscribe(subscriber)
+        end
+
+        assert_equal [], book_inserts
+      end
+
+      it "leaves the records of a loaded has_many :through association alone" do
+        topic = Topic.create!(title: "Title", author_name: "Author")
+        book = topic.books.create!(title: "Existing", author_name: "Someone")
+        chapter = book.chapters.create!(title: "Chapter")
+        topic = Topic.includes(:books, :chapters).find(topic.id)
+        topic.title = "Changed"
+
+        Topic.import [topic], recursive: true, on_duplicate_key_update: [:title]
+
+        assert_equal book.id, chapter.reload.book_id
+      end
+    end
+
     # If returning option is provided, it is only applied to top level models so that SQL with invalid
     # columns, keys, etc isn't generated for child associations when doing recursive import
     describe "returning" do

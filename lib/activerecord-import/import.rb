@@ -1171,19 +1171,29 @@ class ActiveRecord::Base
         # Wrap target in an array if not already
         association = Array(association.target)
 
-        changed_objects = association.select { |a| a.new_record? || a.changed? }
+        foreign_key_columns = Array(association_reflection.inverse_of&.foreign_key || association_reflection.foreign_key)
         foreign_key_values = association_foreign_key_values(model, association_reflection)
+
+        # For polymorphic associations
+        association_name = if model.class.respond_to?(:polymorphic_name)
+          model.class.polymorphic_name
+        else
+          model.class.base_class
+        end
+
+        # Import new and changed records, and existing records that were assigned to
+        # this model but aren't linked to it yet, as saving the model would
+        changed_objects = association.select do |child|
+          child.new_record? || child.changed? ||
+            (!association_reflection.through_reflection? &&
+              reassigned_to_parent?(child, foreign_key_columns, foreign_key_values, association_reflection.type, association_name))
+        end
+
         changed_objects.each do |child|
-          Array(association_reflection.inverse_of&.foreign_key || association_reflection.foreign_key).each_with_index do |column, index|
+          foreign_key_columns.each_with_index do |column, index|
             child.public_send("#{column}=", foreign_key_values[index])
           end
 
-          # For polymorphic associations
-          association_name = if model.class.respond_to?(:polymorphic_name)
-            model.class.polymorphic_name
-          else
-            model.class.base_class
-          end
           association_reflection.type.try do |type|
             child.public_send("#{type}=", association_name)
           end
@@ -1203,6 +1213,16 @@ class ActiveRecord::Base
       else
         Array(model.id)
       end
+    end
+
+    # Returns true if +child+, an existing record of a has_one or has_many association,
+    # doesn't refer to the parent yet, such as when it was assigned to a new parent.
+    def reassigned_to_parent?(child, foreign_key_columns, foreign_key_values, type_column, type_name)
+      return false if child.new_record?
+
+      parent_values = foreign_key_columns.zip(foreign_key_values)
+      parent_values << [type_column, type_name.to_s] if type_column.present?
+      parent_values.any? { |column, value| child.has_attribute?(column) && child.read_attribute(column) != value }
     end
 
     # Returns SQL the VALUES for an INSERT statement given the passed in +columns+
