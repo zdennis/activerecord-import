@@ -409,7 +409,8 @@ class ActiveRecord::Base
     # ==== Using :all
     #
     # The :on_duplicate_key_update option can be set to :all. All columns
-    # other than the primary key are updated. If a list of column names is
+    # other than the primary key are updated, except for timestamps recorded
+    # on create, such as created_at. If a list of column names is
     # supplied, only those columns will be updated. Below is an example:
     #
     #   BlogPost.import columns, values, on_duplicate_key_update: :all
@@ -440,7 +441,8 @@ class ActiveRecord::Base
     # ==== Using :all
     #
     # The :on_duplicate_key_update option can be set to :all. All columns
-    # other than the primary key are updated. If a list of column names is
+    # other than the primary key are updated, except for timestamps recorded
+    # on create, such as created_at. If a list of column names is
     # supplied, only those columns will be updated. Below is an example:
     #
     #   BlogPost.import columns, values, on_duplicate_key_update: :all
@@ -505,7 +507,8 @@ class ActiveRecord::Base
     #
     # ===== Using :all
     #
-    # The :columns attribute can be :all. All columns other than the primary key will be updated.
+    # The :columns attribute can be :all. All columns other than the primary key will be updated,
+    # except for timestamps recorded on create, such as created_at.
     # If a list of column names is supplied, only those columns will be updated.
     # Below is an example:
     #
@@ -689,6 +692,10 @@ class ActiveRecord::Base
         on_duplicate_key_update = options[:on_duplicate_key_update]
         if on_duplicate_key_update
           updatable_columns = symbolized_column_names.reject { |c| symbolized_primary_key.include? c }
+          # Like the primary key, timestamps recorded on create shouldn't change when a record is updated
+          if record_timestamps && options[:timestamps]
+            updatable_columns -= timestamp_attributes_for_create_in_model.map(&:to_sym)
+          end
           options[:on_duplicate_key_update] = if on_duplicate_key_update.is_a?(Hash)
             on_duplicate_key_update.each_with_object({}) do |(k, v), duped_options|
               duped_options[k] = if k == :columns && v == :all

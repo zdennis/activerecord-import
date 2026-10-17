@@ -305,6 +305,35 @@ def should_support_basic_on_duplicate_key_update
             assert_in_delta time.to_i, topic.reload.updated_at.to_i, 1.second
           end
         end
+
+        it 'should not overwrite created timestamps when updating :all columns' do
+          topic = Topic.create!(author_name: "Jane Doe", title: "Book")
+          created_at = topic.created_at
+          created_on = topic.created_on
+
+          Timecop.freeze(time) do
+            Topic.import [Topic.new(id: topic.id, author_name: "Jane Doe", title: "Book - 2nd Edition")],
+              on_duplicate_key_update: :all, validate: false
+          end
+
+          topic.reload
+          assert_equal "Book - 2nd Edition", topic.title
+          assert_in_delta created_at.to_i, topic.created_at.to_i, 1.second
+          assert_in_delta created_on.to_i, topic.created_on.to_i, 1.second
+          assert_in_delta time.to_i, topic.updated_at.to_i, 1.second
+        end
+      end
+
+      context "with timestamps disabled" do
+        it 'should update created timestamps when updating :all columns' do
+          topic = Topic.create!(author_name: "Jane Doe", title: "Book")
+          created_at = Chronic.parse("5 days ago").utc
+
+          Topic.import [Topic.new(id: topic.id, author_name: "Jane Doe", title: "Book", created_at: created_at)],
+            on_duplicate_key_update: :all, validate: false, timestamps: false
+
+          assert_in_delta created_at.to_i, topic.reload.created_at.to_i, 1.second
+        end
       end
 
       context "with validation checks turned off" do
