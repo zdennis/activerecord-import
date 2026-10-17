@@ -69,12 +69,13 @@ module ActiveRecord::Import::MysqlAdapter
       end
     end
 
+    # ActiveRecord < 7.1 doesn't clear the query cache for #execute or #exec_query
+    clear_query_cache if query_cache_enabled
+
     ids = []
     results = []
 
     if returning
-      clear_query_cache if query_cache_enabled
-
       returned_values = if returned_columns.size > 1
         { values: returned_rows, columns: returned_columns }
       else

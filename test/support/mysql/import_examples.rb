@@ -85,6 +85,16 @@ def should_support_mysql_import_functionality
       end
     end
 
+    context "with the query cache enabled" do
+      it "clears the query cache" do
+        Topic.cache do
+          before_import = Topic.count
+          Topic.import Build(2, :topics), validate: false
+          assert_equal before_import + 2, Topic.count
+        end
+      end
+    end
+
     context "with virtual columns" do
       let(:books) { [Book.new(author_name: "foo", title: "bar")] }
 
