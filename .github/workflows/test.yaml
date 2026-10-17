@@ -1,5 +1,9 @@
 name: Test
-on: [push, pull_request]
+on:
+  # Pull requests are tested by the pull_request event, so only run on pushes to master
+  push:
+    branches: [master]
+  pull_request:
 jobs:
   test:
     services:
@@ -57,48 +61,17 @@ jobs:
             experimental: true
             env:
               AR_VERSION: '8.2'
-          - ruby: 3.3
-            env:
-              AR_VERSION: '8.1'
-          - ruby: 3.3
-            env:
-              AR_VERSION: '8.0'
-          - ruby: 3.3
-            env:
-              AR_VERSION: '7.2'
-          - ruby: 3.3
-            env:
-              AR_VERSION: '7.1'
-          - ruby: 3.3
-            env:
-              AR_VERSION: '7.0'
-          - ruby: 3.3
+          # The oldest supported Ruby, with the oldest and newest ActiveRecord it supports
+          - ruby: 3.1
             env:
               AR_VERSION: '6.1'
+          - ruby: 3.1
+            env:
+              AR_VERSION: '7.2'
+          # The oldest Ruby that ActiveRecord 8 supports
           - ruby: 3.2
             env:
               AR_VERSION: '8.0'
-          - ruby: 3.2
-            env:
-              AR_VERSION: '7.2'
-          - ruby: 3.2
-            env:
-              AR_VERSION: '7.1'
-          - ruby: 3.2
-            env:
-              AR_VERSION: '7.0'
-          - ruby: 3.2
-            env:
-              AR_VERSION: 6.1
-          - ruby: 3.1
-            env:
-              AR_VERSION: '7.1'
-          - ruby: 3.1
-            env:
-              AR_VERSION: '7.0'
-          - ruby: 3.1
-            env:
-              AR_VERSION: 6.1
           - ruby: jruby-9.4.8.0
             env:
               AR_VERSION: '7.0'
