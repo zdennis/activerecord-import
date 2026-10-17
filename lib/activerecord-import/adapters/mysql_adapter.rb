@@ -42,17 +42,19 @@ module ActiveRecord::Import::MysqlAdapter
       number_of_inserts += 1
       sql2insert = base_sql + value_set.join( ',' ) + post_sql
 
-      result = if returning
-        exec_query( sql2insert, *args ).tap do |returned|
-          returned_columns = returned.columns
-          returned_rows.concat(returned.rows)
+      if returning
+        result = exec_query( sql2insert, *args )
+        returned_columns = result.columns
+        returned_rows.concat(result.rows)
+
+        if result.respond_to?(:affected_rows) && result.affected_rows
+          affected_rows = (affected_rows || 0) + result.affected_rows
         end
       else
-        execute( sql2insert, *args )
-      end
-
-      if result.respond_to?(:affected_rows) && result.affected_rows
-        affected_rows = (affected_rows || 0) + result.affected_rows
+        # Unlike #execute, whose result only has the affected rows with some drivers
+        # (e.g. trilogy, but not mysql2), #exec_update returns them with every driver
+        count = exec_update( sql2insert, *args )
+        affected_rows = (affected_rows || 0) + count if count.is_a?(Integer)
       end
     end
 

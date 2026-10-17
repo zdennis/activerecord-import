@@ -85,6 +85,20 @@ def should_support_mysql_import_functionality
       end
     end
 
+    context "affected_rows" do
+      it "is reported for an import" do
+        result = Topic.import %w(title author_name), [%w(Book1 Author1), %w(Book2 Author2)], validate: false, no_returning: true
+        assert_equal 2, result.affected_rows
+      end
+
+      it "counts a row updated by on_duplicate_key_update twice" do
+        Topic.import %w(id title author_name), [[99, "Book", "Author"]], validate: false
+        result = Topic.import %w(id title author_name), [[99, "Book - 2nd Edition", "Author"]],
+          validate: false, no_returning: true, on_duplicate_key_update: [:title]
+        assert_equal 2, result.affected_rows
+      end
+    end
+
     context "with the query cache enabled" do
       it "clears the query cache" do
         Topic.cache do
