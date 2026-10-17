@@ -565,12 +565,15 @@ You may want to manually load activerecord-import for one reason or another. Fir
 gem 'activerecord-import', require: false
 ```
 
-This will allow you to load up activerecord-import in the file or files where you are using it and only load the parts you need.
-If you are doing this within Rails and ActiveRecord has established a database connection (such as within a controller), you will need to do extra initialization work:
+This will allow you to load up activerecord-import in the file or files where you are using it and only load the parts you need:
 
 ```ruby
 require 'activerecord-import/base'
-# load the appropriate database adapter (postgresql, mysql2, sqlite3, etc)
+```
+
+This works even if ActiveRecord has already established a database connection (such as within a controller): the import support for the connection's adapter (postgresql, mysql2, sqlite3, etc) is loaded the first time you import. If your adapter goes by a name activerecord-import doesn't recognize, load its support yourself:
+
+```ruby
 require 'activerecord-import/active_record/adapters/postgresql_adapter'
 ```
 

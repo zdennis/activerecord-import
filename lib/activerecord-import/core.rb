@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require "pathname"
+require "concurrent/map"
 require "active_record"
 require "active_record/version"
 
 module ActiveRecord::Import
   ADAPTER_PATH = "activerecord-import/active_record/adapters"
+  ATTEMPTED_ADAPTERS = Concurrent::Map.new # :nodoc:
 
   def self.base_adapter(adapter)
     case adapter
@@ -31,8 +33,26 @@ module ActiveRecord::Import
 
   # Loads the import functionality for the passed in ActiveRecord connection
   def self.load_from_connection_pool(connection_pool)
-    require_adapter connection_pool.db_config.adapter
+    require_adapter adapter_for(connection_pool)
   end
+
+  # Loads the import functionality for the passed in ActiveRecord connection,
+  # unless it's been tried for the connection's adapter already. Import uses
+  # this when activerecord-import was required after the connection was
+  # established. Each adapter is only tried once, so an unsupported adapter
+  # doesn't search the load path on every import.
+  def self.load_from_connection_pool_once(connection_pool)
+    adapter = adapter_for(connection_pool)
+    ATTEMPTED_ADAPTERS.compute_if_absent(adapter) do
+      require_adapter adapter
+      true
+    end
+  end
+
+  def self.adapter_for(connection_pool) # :nodoc:
+    connection_pool.db_config.adapter
+  end
+  private_class_method :adapter_for
 end
 
 require 'activerecord-import/import'
