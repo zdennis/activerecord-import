@@ -27,14 +27,7 @@ module ActiveRecord # :nodoc:
 
       synchronize_instances(instances, keys) do |instance, fresh_attributes|
         instance.instance_variable_set :@attributes, fresh_attributes
-
-        if instance.respond_to?(:clear_changes_information)
-          instance.clear_changes_information                      # Rails 4.2 and higher
-        else
-          instance.instance_variable_set :@attributes_cache, {}   # Rails 4.0, 4.1
-          instance.changed_attributes.clear                       # Rails 3.2
-          instance.previous_changes.clear
-        end
+        instance.clear_changes_information
       end
       instances
     end
@@ -67,7 +60,7 @@ module ActiveRecord # :nodoc:
         next false unless matched_instance
 
         instance.instance_variable_set :@association_cache, {}
-        instance.send :clear_aggregation_cache if instance.respond_to?(:clear_aggregation_cache, true)
+        instance.send :clear_aggregation_cache
         yield instance, matched_instance.instance_variable_get(:@attributes)
 
         # Since the instance now accurately reflects the record in
