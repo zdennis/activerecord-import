@@ -599,6 +599,16 @@ When rubygems pushes the `lib` folder onto the load path a `require` will now fi
 
 Activerecord-Import adds the `.import` method onto `ActiveRecord::Base`. There are other gems, such as `elasticsearch-rails`, that do the same thing. In conflicts such as this, there is an aliased method named `.bulk_import` that can be used interchangeably.
 
+Some gems, such as `elasticsearch-model`, won't define their own `.import` on a model if one already exists. To load activerecord-import without the `import` and `import!` aliases, so only `bulk_import` and `bulk_import!` are defined, require it like so:
+
+```ruby
+gem 'activerecord-import', require: 'activerecord-import/without_aliases'
+```
+
+This takes precedence even if `activerecord-import` or `activerecord-import/base` is also required, for example by another gem, regardless of the order they're required in. To confirm the aliases aren't defined, check that `ActiveRecord::Base.respond_to?(:import)` returns `false` in a console.
+
+If you're loading activerecord-import manually (see [Manually Loading](#manually-loading)), require `activerecord-import/without_aliases` in place of `activerecord-import/base`.
+
 If you are using the `apartment` gem, there is a weird triple interaction between that gem, `activerecord-import`, and `activerecord` involving caching of the `sequence_name` of a model. This can be worked around by explicitly setting this value within the model. For example:
 
 ```ruby
