@@ -854,6 +854,7 @@ class ActiveRecord::Base
       insert_sql = ['INSERT', pre_sql_statements, "INTO #{quoted_table_name} #{columns_sql} VALUES "]
       insert_sql = insert_sql.flatten.join(' ')
       values_sql = values_sql_for_columns_and_attributes(conn, columns, array_of_attributes, Array(options[:database_default_columns]))
+      comment_sql = sql_comment_for_annotations(conn)
 
       number_inserted = 0
       ids = []
@@ -863,6 +864,7 @@ class ActiveRecord::Base
       if supports_import?(conn)
         # generate the sql
         post_sql_statements = conn.post_sql_statements( quoted_table_name, options )
+        post_sql_statements += [comment_sql] if comment_sql
         import_size = values_sql.size
 
         batch_size = options[:batch_size] || import_size
@@ -895,7 +897,7 @@ class ActiveRecord::Base
 
         transaction(requires_new: true) do
           values_sql.each do |values|
-            ids << conn.insert(insert_sql + values, "#{model_name} Create Many")
+            ids << conn.insert("#{insert_sql}#{values}#{comment_sql}", "#{model_name} Create Many")
             number_inserted += 1
           end
         end
@@ -910,6 +912,15 @@ class ActiveRecord::Base
     # column, an "id" column has to be written directly instead.
     def write_id_column_directly?(column)
       column.to_s == "id" && primary_key != "id"
+    end
+
+    # Returns SQL comments for the annotations on the current scope, as
+    # ActiveRecord adds them to its queries, or nil if there are none.
+    def sql_comment_for_annotations(conn)
+      annotations = all.annotate_values
+      return if annotations.empty?
+
+      " #{annotations.map { |value| "/* #{conn.sanitize_as_sql_comment(value)} */" }.join(' ')}"
     end
 
     def associated_options(options, association)
