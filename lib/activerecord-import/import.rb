@@ -1052,10 +1052,22 @@ class ActiveRecord::Base
           association = association.target
           next if association.blank? || model.public_send(column_name).present?
 
-          association_primary_key = Array(association_reflection.association_primary_key.tr("[]:", "").split(", "))[column_index]
+          association_primary_key = association_primary_key_names(association_reflection)[column_index]
+          next unless association_primary_key
+
           model.public_send("#{column_name}=", association.send(association_primary_key))
         end
       end
+    end
+
+    # Returns the names of the columns that a belongs_to association's foreign key refers to.
+    # For a composite key, ActiveRecord 7.1+ returns an Array, while older versions return
+    # its string form, e.g. "[:account_id, :id]".
+    def association_primary_key_names(association_reflection)
+      association_primary_key = association_reflection.association_primary_key
+      return association_primary_key.map(&:to_s) if association_primary_key.is_a?(Array)
+
+      association_primary_key.tr("[]:", "").split(", ")
     end
 
     def import_associations(models, options)

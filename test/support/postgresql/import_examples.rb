@@ -488,6 +488,17 @@ def should_support_postgresql_import_functionality
         assert_not_equal db_order.customer_id, nil
       end
 
+      it "maps foreign keys from a parent imported after the child was built" do
+        order # built while the customer has no id, so its customer_id is blank
+
+        Customer.import [customer]
+        Order.import [order]
+
+        db_order = Order.last
+        assert_equal customer.id, db_order.customer_id
+        assert_equal account_id, db_order.account_id
+      end
+
       it "should import models with auto-incrementing ID successfully" do
         author = Author.create!(name: "Foo Barson")
 
