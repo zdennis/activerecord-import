@@ -3,6 +3,8 @@
 require 'pathname'
 require 'rake'
 require 'logger'
+require 'erb'
+require 'json'
 
 test_dir = Pathname.new File.dirname(__FILE__)
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
@@ -49,16 +51,23 @@ elsif ActiveRecord::Base.respond_to?(:use_yaml_unsafe_load)
   ActiveRecord::Base.use_yaml_unsafe_load = true
 end
 
+# Without a test/database.yml, use the committed default, which is configured with
+# environment variables and defaults to the databases in docker-compose.yml.
+database_yml = test_dir.join("database.yml")
+database_yml = test_dir.join("database.default.yml") unless database_yml.exist?
+database_yml_content = ERB.new(database_yml.read).result
+databases = if Gem::Version.new(Psych::VERSION) >= Gem::Version.new('3.2.1')
+  YAML.safe_load(database_yml_content, aliases: true)
+else
+  YAML.load(database_yml_content)
+end
+yaml_config = databases[adapter] || raise("#{database_yml} has no configuration for #{adapter}")
+
 if ENV['AR_VERSION'].to_f >= 6.0
-  yaml_config = if Gem::Version.new(Psych::VERSION) >= Gem::Version.new('3.2.1')
-    YAML.safe_load_file(test_dir.join("database.yml"), aliases: true)[adapter]
-  else
-    YAML.load_file(test_dir.join("database.yml"))[adapter]
-  end
   config = ActiveRecord::DatabaseConfigurations::HashConfig.new("test", adapter, yaml_config)
   ActiveRecord::Base.configurations.configurations << config
 else
-  ActiveRecord::Base.configurations["test"] = YAML.load_file(test_dir.join("database.yml"))[adapter]
+  ActiveRecord::Base.configurations["test"] = yaml_config
 end
 
 if ActiveRecord.respond_to?(:default_timezone)

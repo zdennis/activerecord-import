@@ -1,23 +1,23 @@
-# Use the official Ruby 3.2 image as a base image
-ARG RUBY_VERSION=3.2
-FROM ruby:${RUBY_VERSION}-bullseye
+# The image for docker-compose.yml's app service, for running the tests in Docker
+ARG RUBY_VERSION=3.4
+FROM ruby:${RUBY_VERSION}-bookworm
 
 # Set the working directory
 WORKDIR /usr/src/app
 
-# Install system packages
+# Install the database clients
 RUN apt-get update -qq && \
-    apt-get install -y default-mysql-client postgresql postgresql-contrib vim && \
+    apt-get install -y default-mysql-client postgresql-client vim && \
     apt-get clean
 
 # Set environment variables
-ENV AR_VERSION=7.0
+ENV AR_VERSION=8.1
 
 # Copy all files
 COPY . .
 
-# Move sample database.yml and install gems
-RUN mv test/database.yml.sample test/database.yml && \
-    bundle install
+# Install gems. The tests connect to the docker-compose.yml databases through the
+# MYSQL_HOST/PG_HOST environment variables read by test/database.default.yml.
+RUN bundle install
 
 CMD ["irb"]
