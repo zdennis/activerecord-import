@@ -474,6 +474,17 @@ def should_support_postgresql_upsert_functionality
             assert_equal 57, updated_topic.parent_id
             assert_equal 3, updated_topic.replies_count
           end
+
+          it "should not overwrite created timestamps when importing models" do
+            created_at = Topic.find(99).created_at
+
+            Timecop.freeze(Chronic.parse("5 minutes from now")) do
+              Topic.import [Topic.new(id: 99, title: "Book - 2nd Edition", author_name: "Jane Doe")],
+                on_duplicate_key_update: { conflict_target: :id, columns: :all }, validate: false
+            end
+
+            assert_in_delta created_at.to_i, Topic.find(99).created_at.to_i, 1.second
+          end
         end
 
         context "with :columns a hash" do
