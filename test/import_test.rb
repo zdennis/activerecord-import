@@ -599,6 +599,20 @@ describe "#import" do
         assert_equal({}, topics.last.previous_changes)
       end
 
+      it "doesn't report times the database stored with less precision as changes" do
+        skip unless Topic.connection.supports_on_duplicate_key_update?
+
+        topic = topics.last
+        # A time more precise than the database stores, as ActiveRecord < 7.0 keeps it in memory
+        topic.created_at += Rational(789, 1_000_000_000)
+        topic.clear_changes_information
+
+        Topic.import [:id, :title], [[topic.id, topic.title]],
+          validate: false, timestamps: false, on_duplicate_key_update: [:title], synchronize: [topic]
+
+        assert_equal({}, topic.previous_changes)
+      end
+
       it "reloads instances that were loaded without all of their attributes" do
         skip unless Topic.connection.supports_on_duplicate_key_update?
 

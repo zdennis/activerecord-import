@@ -923,7 +923,10 @@ class ActiveRecord::Base
 
         names = fresh_attributes.keys
         if names.all? { |name| attributes.key?(name) }
-          names.each { |name| attributes.write_from_user(name, fresh_attributes.fetch_value(name)) }
+          names.each do |name|
+            value = fresh_attributes.fetch_value(name)
+            attributes.write_from_user(name, value) unless same_database_value?(attributes.fetch_value(name), value)
+          end
           instance.instance_variable_set :@attributes, attributes
           instance.changes_applied unless instance.changed?
         else
@@ -933,6 +936,16 @@ class ActiveRecord::Base
           instance.clear_changes_information
         end
       end
+    end
+
+    # Returns true if +database_value+, reloaded from the database, is the +value+ an instance
+    # already has. Databases store times to the microsecond, so a time with more precision,
+    # which ActiveRecord < 7.0 keeps in memory, comes back rounded or truncated.
+    def same_database_value?(value, database_value)
+      return true if value == database_value
+      return false unless value.is_a?(Time) && database_value.is_a?(Time)
+
+      value.round(6) == database_value || value.floor(6) == database_value
     end
 
     def set_attributes_and_mark_clean(conn, models, import_result, timestamps, options)
