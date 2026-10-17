@@ -558,9 +558,11 @@ class ActiveRecord::Base
 
     def import_helper( *args )
       connection_pool.with_connection do |conn|
-        options = { model: self, validate: true, timestamps: true, track_validation_failures: false }
+        options = { validate: true, timestamps: true, track_validation_failures: false }
         options.merge!( args.pop ) if args.last.is_a? Hash
-        # making sure that current model's primary key is used
+        # making sure that the current model and its primary key are used, rather than
+        # the parent model's when importing associations recursively
+        options[:model] = self
         options[:primary_key] = primary_key
         options[:locking_column] = locking_column if locking_enabled?
 
