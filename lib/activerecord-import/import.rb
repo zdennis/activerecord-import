@@ -574,26 +574,7 @@ class ActiveRecord::Base
 
         # assume array of model objects
         if args.last.is_a?( Array ) && args.last.first.is_a?(ActiveRecord::Base)
-          if args.length == 2
-            models = args.last
-            column_names = args.first.dup
-          else
-            models = args.first
-            column_names = if conn.try(:supports_virtual_columns?)
-              columns.reject(&:virtual?).map(&:name)
-            else
-              self.column_names.dup
-            end
-            populated_column_names = database_populated_column_names(conn, column_names, models)
-            # Leave out the ones no model assigns, and let the database fill in the rest for the models that don't
-            default_column_names = populated_column_names.select { |name| models.any? { |model| model.attribute_changed?(name) } }
-            column_names -= populated_column_names - default_column_names
-          end
-
-          # Leave out a primary key the database populates, like a uuid, only when no model has one, so
-          # assigned ids are kept. Otherwise the database fills it in for the models without one.
-          column_names -= database_populated_primary_keys(conn) if models.all? { |model| model.id.nil? }
-
+          models, column_names, default_column_names = models_and_column_names_for_import(conn, args)
           array_of_attributes = attributes_from_models(conn, models, column_names, validator, options)
           # supports array of hash objects
         elsif args.last.is_a?( Array ) && args.last.first.is_a?(Hash)
@@ -878,6 +859,33 @@ class ActiveRecord::Base
       options[:primary_key] = primary_key
       options[:locking_column] = locking_column if locking_enabled?
       [options, args]
+    end
+
+    # Returns the models to import from +args+, the column names to import them with,
+    # and the columns the database populates for the models that don't assign them,
+    # which is nil when +args+ give the column names.
+    def models_and_column_names_for_import(conn, args)
+      if args.length == 2
+        models = args.last
+        column_names = args.first.dup
+      else
+        models = args.first
+        column_names = if conn.try(:supports_virtual_columns?)
+          columns.reject(&:virtual?).map(&:name)
+        else
+          self.column_names.dup
+        end
+        populated_column_names = database_populated_column_names(conn, column_names, models)
+        # Leave out the ones no model assigns, and let the database fill in the rest for the models that don't
+        default_column_names = populated_column_names.select { |name| models.any? { |model| model.attribute_changed?(name) } }
+        column_names -= populated_column_names - default_column_names
+      end
+
+      # Leave out a primary key the database populates, like a uuid, only when no model has one, so
+      # assigned ids are kept. Otherwise the database fills it in for the models without one.
+      column_names -= database_populated_primary_keys(conn) if models.all? { |model| model.id.nil? }
+
+      [models, column_names, default_column_names]
     end
 
     # Returns the values of +column_names+ for each of +models+, the rows to import. Models
