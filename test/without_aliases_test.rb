@@ -13,6 +13,7 @@ describe "loading activerecord-import" do
   # the model doesn't already respond to it.
   let(:script) do
     <<-RUBY
+      require "logger"
       require "active_record"
       ActiveRecord::Base if #{load_base_first}
       #{entry_points.map { |entry_point| "require #{entry_point.inspect}" }.join("\n")}
