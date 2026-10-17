@@ -1079,4 +1079,22 @@ describe "#import" do
       end
     end
   end
+
+  describe "a column that is also an alias of another column" do
+    let(:rows) { -> { Contact.connection.select_rows("SELECT name, display_name FROM contacts ORDER BY id") } }
+
+    it "should insert each column once, as saving the model would" do
+      Contact.import [Contact.new(name: "Imported")]
+      Contact.create!(name: "Saved")
+      assert_equal [["Imported", nil], ["Saved", nil]], rows.call
+    end
+
+    it "should update each column once on duplicate key update" do
+      skip unless Contact.connection.supports_on_duplicate_key_update?
+
+      contact = Contact.create!(name: "Saved")
+      Contact.import [:id, :name, :display_name], [[contact.id, "Updated", nil]], on_duplicate_key_update: [:name, :display_name]
+      assert_equal [["Updated", nil]], rows.call
+    end
+  end
 end

@@ -171,7 +171,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
   def sql_for_on_duplicate_key_update_as_array( table_name, model, locking_column, arr ) # :nodoc:
     results = arr.map do |column|
-      original_column_name = model.attribute_alias?( column ) ? model.attribute_alias( column ) : column
+      original_column_name = model.column_name_for_import( column )
       qc = quote_column_name( original_column_name )
       "#{qc}=EXCLUDED.#{qc}"
     end
@@ -181,10 +181,10 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
   def sql_for_on_duplicate_key_update_as_hash( table_name, model, locking_column, hsh ) # :nodoc:
     results = hsh.map do |column1, column2|
-      original_column1_name = model.attribute_alias?( column1 ) ? model.attribute_alias( column1 ) : column1
+      original_column1_name = model.column_name_for_import( column1 )
       qc1 = quote_column_name( original_column1_name )
 
-      original_column2_name = model.attribute_alias?( column2 ) ? model.attribute_alias( column2 ) : column2
+      original_column2_name = model.column_name_for_import( column2 )
       qc2 = quote_column_name( original_column2_name )
 
       "#{qc1}=EXCLUDED.#{qc2}"
