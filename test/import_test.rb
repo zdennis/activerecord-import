@@ -990,6 +990,16 @@ describe "#import" do
           end
         end
       end
+
+      context "with a frozen options hash" do
+        it "should import data without modifying the options" do
+          options = { validate: false }.freeze
+          assert_difference "Topic.count", +2 do
+            Topic.import! columns, valid_values, options
+          end
+          assert_equal({ validate: false }, options)
+        end
+      end
     end
 
     context "with objects that respond to .to_sql as values" do
