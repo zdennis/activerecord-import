@@ -115,7 +115,7 @@ class ActiveRecord::Associations::CollectionAssociation
     args = model_klass.send(:arrays_from_array_like_import_arguments, args)
     symbolized_foreign_key = reflection.foreign_key.to_sym
 
-    symbolized_column_names = if model_klass.connection_pool.with_connection { |conn| conn.respond_to?(:supports_virtual_columns?) && conn.supports_virtual_columns? }
+    symbolized_column_names = if model_klass.connection_pool.with_connection(&:supports_virtual_columns?)
       model_klass.columns.reject(&:virtual?).map { |c| c.name.to_sym }
     else
       model_klass.column_names.map(&:to_sym)
@@ -123,13 +123,7 @@ class ActiveRecord::Associations::CollectionAssociation
 
     owner_primary_key = reflection.active_record_primary_key.to_sym
     owner_primary_key_value = owner.send(owner_primary_key)
-    owner_polymorphic_name = if reflection.type
-      if owner.class.respond_to?(:polymorphic_name)
-        owner.class.polymorphic_name
-      else
-        owner.class.base_class
-      end
-    end
+    owner_polymorphic_name = owner.class.polymorphic_name if reflection.type
 
     # assume array of model objects
     if args.last.is_a?( Array ) && args.last.first.is_a?(ActiveRecord::Base)
@@ -604,11 +598,7 @@ class ActiveRecord::Base
           column_names -= database_populated_primary_keys(conn) if models.all? { |model| model.id.nil? }
 
           update_attrs = if record_timestamps && options[:timestamps]
-            if respond_to?(:timestamp_attributes_for_update, true)
-              send(:timestamp_attributes_for_update).map(&:to_sym)
-            else
-              allocate.send(:timestamp_attributes_for_update_in_model)
-            end
+            send(:timestamp_attributes_for_update).map(&:to_sym)
           end
 
           array_of_attributes = []
@@ -996,14 +986,8 @@ class ActiveRecord::Base
       deserialize_value = lambda do |column, value|
         column = schema_columns_hash(conn)[column]
         return value unless column
-        if respond_to?(:type_caster)
-          type = type_for_attribute(column.name)
-          type.deserialize(value)
-        elsif column.respond_to?(:type_cast_from_database)
-          column.type_cast_from_database(value)
-        else
-          value
-        end
+        type = type_for_attribute(column.name)
+        type.deserialize(value)
       end
 
       set_value = lambda do |model, column, value|
@@ -1038,14 +1022,7 @@ class ActiveRecord::Base
       end
 
       models.each do |model|
-        if model.respond_to?(:changes_applied) # Rails 4.1.8 and higher
-          model.changes_internally_applied if model.respond_to?(:changes_internally_applied) # legacy behavior for Rails 5.1
-          model.changes_applied
-        elsif model.respond_to?(:clear_changes_information) # Rails 4.0 and higher
-          model.clear_changes_information
-        else # Rails 3.2
-          model.instance_variable_get(:@changed_attributes).clear
-        end
+        model.changes_applied
         model.instance_variable_set(:@new_record, false)
       end
     end
@@ -1146,7 +1123,7 @@ class ActiveRecord::Base
     end
 
     def schema_columns_hash(conn)
-      if respond_to?(:ignored_columns) && ignored_columns.any?
+      if ignored_columns.any?
         conn.schema_cache.columns_hash(table_name)
       else
         columns_hash
@@ -1175,11 +1152,7 @@ class ActiveRecord::Base
         foreign_key_values = association_foreign_key_values(model, association_reflection)
 
         # For polymorphic associations
-        association_name = if model.class.respond_to?(:polymorphic_name)
-          model.class.polymorphic_name
-        else
-          model.class.base_class
-        end
+        association_name = model.class.polymorphic_name
 
         # Import new and changed records, and existing records that were assigned to
         # this model but aren't linked to it yet, as saving the model would
@@ -1249,20 +1222,9 @@ class ActiveRecord::Base
           elsif val.respond_to?(:to_sql)
             "(#{val.to_sql})"
           elsif column
-            if respond_to?(:type_caster)                                         # Rails 5.0 and higher
-              type = type_for_attribute(column.name)
-              val = !type.respond_to?(:subtype) && type.type == :boolean ? type.cast(val) : type.serialize(val)
-              conn.quote(val)
-            elsif column.respond_to?(:type_cast_from_user)                       # Rails 4.2
-              conn.quote(column.type_cast_from_user(val), column)
-            else                                                                 # Rails 3.2, 4.0 and 4.1
-              if serialized_attributes.include?(column.name)
-                val = serialized_attributes[column.name].dump(val)
-              end
-              # Fixes #443 to support binary (i.e. bytea) columns on PG
-              val = column.type_cast(val) unless column.type && column.type.to_sym == :binary
-              conn.quote(val, column)
-            end
+            type = type_for_attribute(column.name)
+            val = !type.respond_to?(:subtype) && type.type == :boolean ? type.cast(val) : type.serialize(val)
+            conn.quote(val)
           else
             raise ArgumentError, "Number of values (#{arr.length}) exceeds number of columns (#{columns.length})"
           end
@@ -1275,14 +1237,8 @@ class ActiveRecord::Base
       timestamp_columns = {}
       timestamps        = {}
 
-      if respond_to?(:all_timestamp_attributes_in_model, true) # Rails 5.1 and higher
-        timestamp_columns[:create] = timestamp_attributes_for_create_in_model
-        timestamp_columns[:update] = timestamp_attributes_for_update_in_model
-      else
-        instance = allocate
-        timestamp_columns[:create] = instance.send(:timestamp_attributes_for_create_in_model)
-        timestamp_columns[:update] = instance.send(:timestamp_attributes_for_update_in_model)
-      end
+      timestamp_columns[:create] = timestamp_attributes_for_create_in_model
+      timestamp_columns[:update] = timestamp_attributes_for_update_in_model
 
       # use tz as set in ActiveRecord::Base
       default_timezone = if ActiveRecord.respond_to?(:default_timezone)
