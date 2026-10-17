@@ -18,6 +18,11 @@ ActiveRecord::Schema.define do
     t.uuid :key, default: -> { "gen_random_uuid()" }
   end
 
+  create_table :coupons, id: false, force: :cascade do |t|
+    t.string :id, primary_key: true, default: -> { "md5(random()::text)" }
+    t.string :name
+  end
+
   create_table :vendors, id: :uuid, force: :cascade do |t|
     t.string :name, null: true
     t.text :hours

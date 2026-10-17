@@ -71,5 +71,10 @@ module ActiveRecord::Import::AbstractAdapter
     def supports_on_duplicate_key_update?
       false
     end
+
+    # Whether a value in an INSERT's VALUES can be DEFAULT, to use the column's default
+    def supports_default_keyword_in_values?
+      true
+    end
   end
 end

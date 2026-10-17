@@ -1086,4 +1086,30 @@ describe "#import" do
       assert_equal [["Updated", nil]], rows.call
     end
   end
+
+  describe "a column the database populates, assigned by only some models" do
+    let(:taken_at) { Time.utc(2020, 1, 1) }
+    let(:readings) { [Reading.new(value: 1, taken_at: taken_at), Reading.new(value: 2)] }
+    let(:supports_default) { Reading.connection_pool.with_connection(&:supports_default_keyword_in_values?) }
+
+    setup do
+      skip "the column's default function isn't known" unless Reading.columns_hash["taken_at"].default_function
+    end
+
+    it "should let the database populate it for the other models" do
+      skip unless supports_default
+
+      Reading.import readings
+      assert_equal taken_at, Reading.find_by(value: 1).taken_at
+      assert_not_nil Reading.find_by(value: 2).taken_at
+    end
+
+    it "should raise an error when the database can't populate it for only some rows" do
+      skip if supports_default
+
+      error = assert_raise(ArgumentError) { Reading.import readings }
+      assert_match(/readings.taken_at/, error.message)
+      assert_equal 0, Reading.count
+    end
+  end
 end

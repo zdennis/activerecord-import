@@ -125,6 +125,11 @@ def should_support_postgresql_import_functionality
         assert_equal key, License.order(:id).first.key
       end
 
+      it "lets the database populate the column for models that don't assign it" do
+        License.import [License.new(name: "First", key: key), License.new(name: "Second")]
+        assert License.find_by(name: "Second").key.present?
+      end
+
       it "inserts the column when it is listed explicitly" do
         License.import [:name, :key], [License.new(name: "First")]
         assert_nil License.last.key
@@ -288,6 +293,66 @@ def should_support_postgresql_import_functionality
         end
         assert_equal id, vendor.id
       end
+    end
+
+    describe "with a uuid primary key assigned to only some models" do
+      let(:id) { SecureRandom.uuid }
+
+      it "keeps the assigned ids when the first model doesn't have one" do
+        assert_difference "Vendor.count", +2 do
+          Vendor.import [Vendor.new(name: "new"), Vendor.new(id: id, name: "assigned")]
+        end
+        assert_equal "assigned", Vendor.find(id).name
+      end
+
+      it "lets the database populate the ids of the other models" do
+        vendors = [Vendor.new(id: id, name: "assigned"), Vendor.new(name: "new")]
+        assert_difference "Vendor.count", +2 do
+          Vendor.import vendors
+        end
+        assert_equal id, vendors.first.id
+        assert vendors.last.id.present?
+      end
+
+      it "updates existing records and creates new ones on duplicate key update" do
+        vendor = Vendor.create!(name: "old")
+        vendor.name = "updated"
+        assert_difference "Vendor.count", +1 do
+          Vendor.import [Vendor.new(name: "new"), vendor], on_duplicate_key_update: [:name]
+        end
+        assert_equal "updated", vendor.reload.name
+      end
+
+      it "lets the database populate the ids missing from hashes" do
+        assert_difference "Vendor.count", +2 do
+          Vendor.import [{ id: id, name: "assigned" }, { id: nil, name: "new" }]
+        end
+        assert_equal "assigned", Vendor.find(id).name
+      end
+
+      it "lets the database populate the ids missing from arrays" do
+        assert_difference "Vendor.count", +2 do
+          Vendor.import [:id, :name], [[id, "assigned"], [nil, "new"]]
+        end
+        assert_equal "assigned", Vendor.find(id).name
+      end
+    end
+  end
+
+  describe "with a primary key the database populates with a function" do
+    it "lets the database populate the ids when no model has one" do
+      coupons = [Coupon.new(name: "First"), Coupon.new(name: "Second")]
+      assert_difference "Coupon.count", +2 do
+        Coupon.import coupons
+      end
+      assert(coupons.all? { |coupon| coupon.id.present? })
+    end
+
+    it "keeps the assigned ids and lets the database populate the others" do
+      assert_difference "Coupon.count", +2 do
+        Coupon.import [Coupon.new(name: "First"), Coupon.new(id: "SPRING", name: "Second")]
+      end
+      assert_equal "Second", Coupon.find("SPRING").name
     end
   end
 

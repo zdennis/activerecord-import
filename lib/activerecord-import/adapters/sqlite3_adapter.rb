@@ -19,6 +19,10 @@ module ActiveRecord::Import::SQLite3Adapter
     database_version >= MIN_VERSION_FOR_UPSERT
   end
 
+  def supports_default_keyword_in_values?
+    false
+  end
+
   # +sql+ can be a single string or an array. If it is an array all
   # elements that are in position >= 1 will be appended to the final SQL.
   def insert_many( sql, values, _options = {}, *args ) # :nodoc:

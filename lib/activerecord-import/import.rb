@@ -591,16 +591,15 @@ class ActiveRecord::Base
             else
               self.column_names.dup
             end
-            column_names -= database_populated_column_names(conn, column_names, models)
+            populated_column_names = database_populated_column_names(conn, column_names, models)
+            # Leave out the ones no model assigns, and let the database fill in the rest for the models that don't
+            default_column_names = populated_column_names.select { |name| models.any? { |model| model.attribute_changed?(name) } }
+            column_names -= populated_column_names - default_column_names
           end
 
-          if models.first.id.nil?
-            Array(primary_key).each do |c|
-              if column_names.include?(c) && schema_columns_hash(conn)[c].type == :uuid
-                column_names.delete(c)
-              end
-            end
-          end
+          # Leave out a primary key the database populates, like a uuid, only when no model has one, so
+          # assigned ids are kept. Otherwise the database fills it in for the models without one.
+          column_names -= database_populated_primary_keys(conn) if models.all? { |model| model.id.nil? }
 
           update_attrs = if record_timestamps && options[:timestamps]
             if respond_to?(:timestamp_attributes_for_update, true)
@@ -673,6 +672,9 @@ class ActiveRecord::Base
         else
           raise ArgumentError, "Invalid arguments!"
         end
+
+        # Rows without a value for these columns get the database's default rather than NULL
+        options[:database_default_columns] = Array(default_column_names) | database_populated_primary_keys(conn)
 
         # Force the primary key col into the insert if it's not
         # on the list and we are using a sequence and stuff a nil
@@ -838,7 +840,7 @@ class ActiveRecord::Base
       pre_sql_statements = conn.pre_sql_statements( options )
       insert_sql = ['INSERT', pre_sql_statements, "INTO #{quoted_table_name} #{columns_sql} VALUES "]
       insert_sql = insert_sql.flatten.join(' ')
-      values_sql = values_sql_for_columns_and_attributes(conn, columns, array_of_attributes)
+      values_sql = values_sql_for_columns_and_attributes(conn, columns, array_of_attributes, Array(options[:database_default_columns]))
 
       number_inserted = 0
       ids = []
@@ -1021,8 +1023,8 @@ class ActiveRecord::Base
     end
 
     # Returns the columns the database populates itself, such as with a default
-    # function, that none of the new +models+ assign a value to. Like ActiveRecord's
-    # own inserts, these are left out so the database can populate them instead of
+    # function, when importing new +models+. Like ActiveRecord's own inserts, the
+    # database populates these for models that don't assign a value, instead of
     # inserting NULL. The primary key is handled separately.
     def database_populated_column_names(conn, column_names, models)
       return [] if models.any?(&:persisted?)
@@ -1034,8 +1036,16 @@ class ActiveRecord::Base
         column = columns_hash[name.to_s]
         next false if column.nil? || primary_keys.include?(name.to_s)
 
-        populated = column.respond_to?(:auto_populated?) ? column.auto_populated? : column.default_function
-        populated && models.none? { |model| model.attribute_changed?(name) }
+        column.respond_to?(:auto_populated?) ? column.auto_populated? : column.default_function
+      end
+    end
+
+    # Returns the primary key columns the database populates itself, such as a uuid
+    # or a key with a default function, rather than from the model's sequence.
+    def database_populated_primary_keys(conn)
+      Array(primary_key).select do |name|
+        column = schema_columns_hash(conn)[name]
+        column && (column.type == :uuid || (column.default_function && sequence_name.blank?))
       end
     end
 
@@ -1087,8 +1097,9 @@ class ActiveRecord::Base
     end
 
     # Returns SQL the VALUES for an INSERT statement given the passed in +columns+
-    # and +array_of_attributes+.
-    def values_sql_for_columns_and_attributes(conn, columns, array_of_attributes) # :nodoc:
+    # and +array_of_attributes+. Nil values for +default_column_names+ use the
+    # database's default.
+    def values_sql_for_columns_and_attributes(conn, columns, array_of_attributes, default_column_names = []) # :nodoc:
       array_of_attributes.map do |arr|
         if arr.length < columns.length
           raise ArgumentError, "Number of values (#{arr.length}) is less than number of columns (#{columns.length})"
@@ -1100,6 +1111,12 @@ class ActiveRecord::Base
           # be sure to query sequence_name *last*, only if cheaper tests fail, because it's costly
           if val.nil? && Array(primary_key).first == column.name && !sequence_name.blank?
             conn.next_value_for_sequence(sequence_name)
+          elsif val.nil? && default_column_names.include?(column.name)
+            unless conn.supports_default_keyword_in_values?
+              raise ArgumentError, "#{conn.adapter_name} doesn't support DEFAULT in VALUES, so the database can't populate " \
+                "#{table_name}.#{column.name} for only the rows without a value. Import those rows separately so the column can be left out."
+            end
+            "DEFAULT"
           elsif val.respond_to?(:to_sql)
             "(#{val.to_sql})"
           elsif column

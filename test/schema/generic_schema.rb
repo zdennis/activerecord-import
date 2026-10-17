@@ -241,4 +241,9 @@ ActiveRecord::Schema.define do
     t.string :name
     t.string :display_name
   end
+
+  create_table :readings, force: :cascade do |t|
+    t.integer :value
+    t.datetime :taken_at, precision: nil, default: -> { "CURRENT_TIMESTAMP" }
+  end
 end
