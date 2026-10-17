@@ -186,6 +186,74 @@ def should_support_mariadb_returning_functionality
       end
     end
 
+    # MariaDB doesn't report affected rows for INSERT ... RETURNING, so it's only
+    # used when the import needs what it returns
+    context "when importing hashes" do
+      let(:hashes) { [{ title: "First", author_name: "Jane" }, { title: "Second", author_name: "John" }] }
+
+      it "doesn't use RETURNING, so affected rows are reported" do
+        result = nil
+        sql = capture_insert_sql { result = Topic.import hashes, validate: false }
+
+        refute_match(/RETURNING/i, sql.first)
+        assert_equal [], result.ids
+
+        skip "affected_rows not supported on this adapter" if result.affected_rows.nil?
+
+        assert_equal 2, result.affected_rows
+      end
+
+      it "reports the affected rows of an update with :on_duplicate_key_update" do
+        topic = Topic.create!(title: "First", author_name: "Jane")
+        result = nil
+        sql = capture_insert_sql do
+          result = Topic.import [{ id: topic.id, title: "Updated", author_name: "Jane" }],
+            on_duplicate_key_update: [:title], validate: false
+        end
+
+        refute_match(/RETURNING/i, sql.first)
+        assert_equal "Updated", topic.reload.title
+
+        skip "affected_rows not supported on this adapter" if result.affected_rows.nil?
+
+        # MySQL and MariaDB report 2 affected rows for a row updated by ON DUPLICATE KEY UPDATE
+        assert_equal 2, result.affected_rows
+      end
+
+      it "uses RETURNING with :returning" do
+        result = nil
+        sql = capture_insert_sql { result = Topic.import hashes, returning: :title, validate: false }
+
+        assert_match(/RETURNING/i, sql.first)
+        assert_equal Topic.order(:id).last(2).map(&:id), result.ids
+        assert_equal %w(First Second), result.results
+      end
+    end
+
+    context "when importing columns and values" do
+      it "doesn't use RETURNING, so affected rows are reported" do
+        result = nil
+        sql = capture_insert_sql { result = Topic.import %w(title author_name), [%w(First Jane)], validate: false }
+
+        refute_match(/RETURNING/i, sql.first)
+        assert_equal [], result.ids
+
+        skip "affected_rows not supported on this adapter" if result.affected_rows.nil?
+
+        assert_equal 1, result.affected_rows
+      end
+    end
+
+    context "when importing models" do
+      it "uses RETURNING to set their ids" do
+        topics = Build(2, :topics)
+        sql = capture_insert_sql { Topic.import topics, validate: false }
+
+        assert_match(/RETURNING/i, sql.first)
+        assert_equal Topic.order(:id).last(2).map(&:id), topics.map(&:id)
+      end
+    end
+
     context "when the insert is split to fit max_allowed_packet" do
       let(:topics) { Build(10, :topics) }
 

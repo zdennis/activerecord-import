@@ -430,7 +430,9 @@ Book.import books, validate_uniqueness: true
 
 ### Return Info
 
-The `import` method returns a `Result` object that responds to `failed_instances` and `num_inserts`. Additionally, for users of Postgres and MariaDB 10.5+, there will be two arrays `ids` and `results` that can be accessed. These are populated with `INSERT ... RETURNING`, which also sets the ids of imported models. On MariaDB this means `affected_rows` isn't available, since MariaDB doesn't report it for `INSERT ... RETURNING`; pass `no_returning: true` to get `affected_rows` instead of `ids`.
+The `import` method returns a `Result` object that responds to `failed_instances` and `num_inserts`. Additionally, for users of Postgres and MariaDB 10.5+, there will be two arrays `ids` and `results` that can be accessed. These are populated with `INSERT ... RETURNING`, which also sets the ids of imported models.
+
+MariaDB doesn't report `affected_rows` for `INSERT ... RETURNING`, so on MariaDB it's only used when importing models, with the `returning` option, or with `recursive: true`. Hashes and arrays of columns and values imported without `returning` report `affected_rows` as on MySQL, and their `ids` are empty. When importing models, pass `no_returning: true` to get `affected_rows` instead of `ids`.
 
 ```ruby
 articles = [

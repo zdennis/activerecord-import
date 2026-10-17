@@ -676,6 +676,9 @@ class ActiveRecord::Base
           raise ArgumentError, invalid_import_arguments_message(args)
         end
 
+        # Lets adapters tell model imports apart from hash and column/value imports
+        options[:importing_models] = !models.nil?
+
         # Rows without a value for these columns get the database's default rather than NULL
         options[:database_default_columns] = Array(default_column_names) | database_populated_primary_keys(conn)
 

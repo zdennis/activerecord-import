@@ -120,11 +120,15 @@ module ActiveRecord::Import::MysqlAdapter
     respond_to?(:mariadb?) && mariadb? && database_version >= MIN_MARIADB_VERSION_FOR_RETURNING
   end
 
-  # Returns true if the import should use INSERT ... RETURNING
+  # Returns true if the import should use INSERT ... RETURNING. MariaDB doesn't
+  # report affected rows for it, so it's only used when what it returns is
+  # needed: to set the ids of imported models, for recursive imports and for
+  # the :returning option.
   def import_returning?( options ) # :nodoc:
-    supports_setting_primary_key_of_imported_objects? &&
-      returning_selections(options).present? &&
-      !(options[:no_returning] && !options[:recursive])
+    return false unless supports_setting_primary_key_of_imported_objects? && returning_selections(options).present?
+    return true if options[:recursive]
+
+    !options[:no_returning] && (options[:importing_models] || options[:returning].present?)
   end
 
   # Add a column to be updated on duplicate key update
