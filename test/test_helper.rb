@@ -31,10 +31,12 @@ require "mocha/minitest"
 require 'timecop'
 require 'chronic'
 
+# Before ActiveRecord 7.1, composite primary keys need the composite_primary_keys gem.
+# 7.1 and later support them natively, so the composite primary key tests run without it.
 begin
   require 'composite_primary_keys'
 rescue LoadError
-  if ENV['AR_VERSION'].to_f <= 7.1
+  if ENV['AR_VERSION'].to_f < 7.1
     ENV['SKIP_COMPOSITE_PK'] = 'true'
   end
 end
