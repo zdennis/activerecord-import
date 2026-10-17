@@ -112,6 +112,7 @@ class ActiveRecord::Associations::CollectionAssociation
     options = args.last.is_a?(Hash) ? args.pop : {}
 
     model_klass = reflection.klass
+    args = model_klass.send(:arrays_from_array_like_import_arguments, args)
     symbolized_foreign_key = reflection.foreign_key.to_sym
 
     symbolized_column_names = if model_klass.connection_pool.with_connection { |conn| conn.respond_to?(:supports_virtual_columns?) && conn.supports_virtual_columns? }
@@ -232,7 +233,7 @@ class ActiveRecord::Associations::CollectionAssociation
 
       model_klass.bulk_import column_names, array_of_attributes, options
     else
-      raise ArgumentError, "Invalid arguments!"
+      raise ArgumentError, model_klass.send(:invalid_import_arguments_message, args)
     end
   end
 end
@@ -570,6 +571,7 @@ class ActiveRecord::Base
       connection_pool.with_connection do |conn|
         options = { validate: true, timestamps: true, track_validation_failures: false }
         options.merge!( args.pop ) if args.last.is_a? Hash
+        args = arrays_from_array_like_import_arguments(args)
         # making sure that the current model and its primary key are used, rather than
         # the parent model's when importing associations recursively
         options[:model] = self
@@ -671,7 +673,7 @@ class ActiveRecord::Base
           column_names = column_names.dup
           array_of_attributes = array_of_attributes.map(&:dup)
         else
-          raise ArgumentError, "Invalid arguments!"
+          raise ArgumentError, invalid_import_arguments_message(args)
         end
 
         # Force the primary key col into the insert if it's not
@@ -1167,6 +1169,17 @@ class ActiveRecord::Base
       end
 
       timestamps
+    end
+
+    # Converts array-like arguments, such as a Relation or a Set, to arrays.
+    def arrays_from_array_like_import_arguments(args) # :nodoc:
+      args.map { |arg| arg.is_a?(Enumerable) && !arg.is_a?(Array) && !arg.is_a?(Hash) ? arg.to_a : arg }
+    end
+
+    def invalid_import_arguments_message(args) # :nodoc:
+      received = args.map { |arg| arg.is_a?(Array) && arg.any? ? "Array of #{arg.first.class}" : arg.class.name }
+      "Invalid arguments! Expected an array of models, an array of hashes, or column names and an array " \
+        "of values, but received #{received.empty? ? 'no arguments' : received.join(', ')}"
     end
 
     # Returns an Array of Hashes for the passed in +column_names+ and +array_of_attributes+.

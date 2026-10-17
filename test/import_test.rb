@@ -48,6 +48,56 @@ describe "#import" do
     end
   end
 
+  describe "with array-like arguments" do
+    it "should import a relation of models" do
+      Topic.import Build(2, :topics)
+
+      assert_difference "Topic.count", +2 do
+        Topic.import %w(title author_name), Topic.where(id: Topic.last(2).map(&:id))
+      end
+    end
+
+    it "should import a set of models" do
+      topics = Set[Topic.new(title: "LDAP", author_name: "Jerry Carter"), Topic.new(title: "Rails Recipes", author_name: "Chad Fowler")].freeze
+
+      assert_difference "Topic.count", +2 do
+        Topic.import topics
+      end
+    end
+
+    it "should import a set of hashes" do
+      values = Set[{ title: "LDAP", author_name: "Jerry Carter" }, { title: "Rails Recipes", author_name: "Chad Fowler" }].freeze
+
+      assert_difference "Topic.count", +2 do
+        Topic.import values
+      end
+    end
+
+    it "should import sets of column names and values" do
+      columns = Set[:title, :author_name].freeze
+      values = Set[["LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]].freeze
+
+      assert_difference "Topic.count", +2 do
+        Topic.import columns, values
+      end
+      assert_equal %w(LDAP), Topic.where(author_name: "Jerry Carter").map(&:title)
+    end
+
+    it "should import an empty relation" do
+      result = Topic.import Topic.none
+
+      assert_equal 0, result.num_inserts
+    end
+
+    it "should say what it received when arguments are invalid" do
+      error = assert_raise(ArgumentError) { Topic.import "LDAP" }
+      assert_match(/received String\z/, error.message)
+
+      error = assert_raise(ArgumentError) { Topic.import %w(LDAP Jerry) }
+      assert_match(/received Array of String\z/, error.message)
+    end
+  end
+
   describe "with non-default ActiveRecord models" do
     context "that have a non-standard primary key (that is no sequence)" do
       it "should import models successfully" do
@@ -777,6 +827,12 @@ describe "#import" do
             klass.new(column => val1),
             klass.new(column => val2)
           ]
+
+          assert_equal [val1, val2], scope.map(&column).sort
+        end
+
+        it "works importing a set of models" do
+          scope.import Set[klass.new(column => val1), klass.new(column => val2)]
 
           assert_equal [val1, val2], scope.map(&column).sort
         end
