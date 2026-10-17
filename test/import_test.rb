@@ -604,7 +604,7 @@ describe "#import" do
 
         topic = topics.last
         # A time more precise than the database stores, as ActiveRecord < 7.0 keeps it in memory
-        topic.created_at += Rational(789, 1_000_000_000)
+        topic.created_at = Topic.find(topic.id).created_at + Rational(789, 1_000_000_000)
         topic.clear_changes_information
 
         Topic.import [:id, :title], [[topic.id, topic.title]],
