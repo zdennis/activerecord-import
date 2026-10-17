@@ -87,6 +87,7 @@
 * Run the database tests locally against Docker without a hand-written `test/database.yml`.
   via #945.
 * Document the memory use of large imports and what gets logged. via #940.
+* Split `import_helper` into smaller steps. via #947.
 
 ## Changes in 2.3.0
 
