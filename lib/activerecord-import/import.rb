@@ -550,8 +550,7 @@ class ActiveRecord::Base
     # with the failed instance.
     def bulk_import!(*args)
       options = args.last.is_a?( Hash ) ? args.pop : {}
-      options[:validate] = true
-      options[:raise_error] = true
+      options = options.merge( validate: true, raise_error: true )
 
       bulk_import(*args, options)
     end
