@@ -105,6 +105,45 @@ def should_support_postgresql_import_functionality
       it "returns no ids" do
         assert_equal [], Book.import(books, no_returning: true).ids
       end
+
+      macro :capture_insert_queries do |&block|
+        queries = []
+        subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") do |*, payload|
+          queries << payload if payload[:sql].start_with?("INSERT")
+        end
+        begin
+          block.call
+        ensure
+          ActiveSupport::Notifications.unsubscribe(subscriber)
+        end
+        queries
+      end
+
+      it "does not add a RETURNING clause when importing models" do
+        queries = capture_insert_queries { Book.import books, no_returning: true }
+
+        assert_equal 1, queries.size
+        assert_equal "Book Create Many", queries.first[:name]
+        refute_match(/RETURNING/i, queries.first[:sql])
+      end
+
+      it "does not add a RETURNING clause when importing hashes" do
+        queries = capture_insert_queries do
+          Book.import [{ author_name: "foo", title: "bar" }], no_returning: true
+        end
+
+        assert_equal 1, queries.size
+        assert_equal "Book Create Many", queries.first[:name]
+        refute_match(/RETURNING/i, queries.first[:sql])
+      end
+
+      it "clears the query cache" do
+        Book.cache do
+          before_import = Book.count
+          Book.import books, no_returning: true
+          assert_equal before_import + 1, Book.count
+        end
+      end
     end
 
     describe "with a column the database populates" do
