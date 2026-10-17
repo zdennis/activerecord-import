@@ -761,7 +761,7 @@ class ActiveRecord::Base
 
         if options[:synchronize]
           sync_keys = options[:synchronize_keys] || Array(primary_key)
-          synchronize( options[:synchronize], sync_keys)
+          synchronized_instances = synchronize_imported_instances(options[:synchronize], sync_keys)
         end
         return_obj.num_inserts = 0 if return_obj.num_inserts.nil?
 
@@ -775,6 +775,10 @@ class ActiveRecord::Base
             import_associations(imported_models(models, return_obj, options), options.dup.merge(validate: false))
           end
         end
+
+        # apply the changes of synchronized instances that weren't marked clean above,
+        # such as when importing columns and values rather than models
+        synchronized_instances&.each { |instance| instance.changes_applied if instance.changed? }
 
         return_obj
       end
@@ -903,6 +907,32 @@ class ActiveRecord::Base
       failed_instances = import_result.failed_instances
       failed_instances = failed_instances.map(&:last) if options[:track_validation_failures]
       models - failed_instances
+    end
+
+    # Synchronizes +instances+ with the database like ActiveRecord::Base.synchronize,
+    # but rather than discarding their changes, it assigns the database values
+    # on top of them. Once the instances are marked clean, previous_changes then
+    # reflects what the import changed, as it does without synchronizing.
+    # Instances left without changes are marked clean right away. Returns the
+    # instances that were synchronized.
+    def synchronize_imported_instances(instances, keys)
+      synchronize_instances(instances, keys) do |instance, fresh_attributes|
+        attributes = instance.instance_variable_get(:@attributes)
+        # the attributes of destroyed records are frozen
+        attributes = attributes.deep_dup if attributes.frozen?
+
+        names = fresh_attributes.keys
+        if names.all? { |name| attributes.key?(name) }
+          names.each { |name| attributes.write_from_user(name, fresh_attributes.fetch_value(name)) }
+          instance.instance_variable_set :@attributes, attributes
+          instance.changes_applied unless instance.changed?
+        else
+          # the instance doesn't have all of the attributes, such as when it was
+          # loaded with select, so take the record's attributes as they are
+          instance.instance_variable_set :@attributes, fresh_attributes
+          instance.clear_changes_information
+        end
+      end
     end
 
     def set_attributes_and_mark_clean(conn, models, import_result, timestamps, options)
