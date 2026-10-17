@@ -1,7 +1,11 @@
 # frozen_string_literal: true
 
-require File.expand_path('../test_helper', __FILE__)
+require File.expand_path("#{File.dirname(__FILE__)}/../test_helper")
 require 'open3'
+
+# These tests don't use the database, and each one starts a new Ruby process,
+# which is slow on JRuby. They live here so that only test:sqlite3 runs them,
+# rather than every adapter's tests.
 
 describe "loading activerecord-import" do
   let(:aliased) { "[true, true, true, true, true, :bulk_import]" }
@@ -42,7 +46,7 @@ describe "loading activerecord-import" do
   end
 
   let(:output) do
-    lib = File.expand_path('../../lib', __FILE__)
+    lib = File.expand_path('../../../lib', __FILE__)
     out, err, status = Open3.capture3(RbConfig.ruby, "-I", lib, "-rbundler/setup", "-e", script)
     assert status.success?, err
     out

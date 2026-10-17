@@ -80,6 +80,8 @@ jobs:
     env:
       AR_VERSION: ${{ matrix.env.AR_VERSION }}
       DB_DATABASE: activerecord_import_test
+      # Skips JRuby's optimizing JIT, which mostly slows down short-lived processes like these test runs
+      JRUBY_OPTS: ${{ startsWith(matrix.ruby, 'jruby') && '--dev' || '' }}
     steps:
       - uses: actions/checkout@v5
       - name: Install SQLite3 Development Library
