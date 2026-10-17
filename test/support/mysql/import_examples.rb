@@ -85,6 +85,16 @@ def should_support_mysql_import_functionality
       end
     end
 
+    context "with the query cache enabled" do
+      it "clears the query cache" do
+        Topic.cache do
+          before_import = Topic.count
+          Topic.import Build(2, :topics), validate: false
+          assert_equal before_import + 2, Topic.count
+        end
+      end
+    end
+
     context "with virtual columns" do
       let(:books) { [Book.new(author_name: "foo", title: "bar")] }
 
@@ -92,6 +102,75 @@ def should_support_mysql_import_functionality
         assert_difference "Book.count", +1 do
           Book.import books
         end
+      end
+    end
+  end
+
+  describe "#supports_setting_primary_key_of_imported_objects?" do
+    supports_setting_primary_key = lambda do |mariadb:, version:|
+      ActiveRecord::Base.connection_pool.with_connection do |conn|
+        conn.stubs(:mariadb?).returns(mariadb)
+        conn.stubs(:database_version).returns(ActiveRecord::ConnectionAdapters::AbstractAdapter::Version.new(version))
+        conn.supports_setting_primary_key_of_imported_objects?
+      end
+    end
+
+    it "is true for MariaDB 10.5 and later" do
+      assert supports_setting_primary_key.call(mariadb: true, version: "10.5.0")
+      assert supports_setting_primary_key.call(mariadb: true, version: "11.8.2")
+    end
+
+    it "is false for MariaDB before 10.5" do
+      assert !supports_setting_primary_key.call(mariadb: true, version: "10.4.34")
+    end
+
+    it "is false for MySQL" do
+      assert !supports_setting_primary_key.call(mariadb: false, version: "11.0.0")
+    end
+  end
+
+  if ActiveRecord::Base.connection_pool.with_connection(&:supports_setting_primary_key_of_imported_objects?)
+    should_support_mariadb_returning_functionality
+  end
+end
+
+# MariaDB 10.5+ supports INSERT ... RETURNING, which sets the primary key of imported objects
+def should_support_mariadb_returning_functionality
+  should_support_recursive_import
+  should_support_returning
+
+  describe "#import" do
+    context "with :on_duplicate_key_update" do
+      let(:original_promotion) { Promotion.new(code: "abc", discount: 10) }
+      let(:updated_promotion) { Promotion.new(code: "abc", description: "ABC discount") }
+      let(:new_promotion) { Promotion.new(code: "xyz", description: "XYZ discount") }
+
+      setup do
+        Promotion.import([original_promotion])
+        Promotion.import([updated_promotion, new_promotion], on_duplicate_key_update: [:description], returning: %w(discount))
+      end
+
+      it "assigns the ids of updated and inserted records" do
+        assert_equal original_promotion.promotion_id, updated_promotion.promotion_id
+        assert_equal Promotion.find_by(code: "xyz").promotion_id, new_promotion.promotion_id
+      end
+
+      it "sets returned attributes" do
+        assert_equal 10, updated_promotion.discount
+      end
+    end
+
+    context "when the insert is split to fit max_allowed_packet" do
+      let(:topics) { Build(10, :topics) }
+
+      setup do
+        ActiveRecord::Base.connection_pool.with_connection { |conn| conn.stubs(:max_allowed_packet).returns(1200) }
+      end
+
+      it "assigns ids from every insert" do
+        result = Topic.import topics
+        assert_operator result.num_inserts, :>, 1
+        assert_equal Topic.order(:id).last(10).map(&:id), topics.map(&:id)
       end
     end
   end

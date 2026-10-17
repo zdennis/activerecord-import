@@ -289,6 +289,11 @@ def should_support_recursive_import
     # If adapter supports on_duplicate_key_update and specific columns are specified, it is only applied to top level models so that SQL with invalid
     # columns, keys, etc isn't generated for child associations when doing recursive import
     if ActiveRecord::Base.connection_pool.with_connection(&:supports_on_duplicate_key_update?)
+      # MySQL's ON DUPLICATE KEY UPDATE takes just the columns to update, without a conflict target
+      mysql_adapter = "ActiveRecord::Import::MysqlAdapter".safe_constantize
+      mysql = mysql_adapter && ActiveRecord::Base.connection_pool.with_connection { |conn| conn.is_a?(mysql_adapter) }
+      update_columns = ->(columns) { mysql ? columns : { conflict_target: [:id], columns: columns } }
+
       describe "on_duplicate_key_update" do
         let(:new_topics) { Build(1, :topic_with_book) }
 
@@ -341,7 +346,7 @@ def should_support_recursive_import
               recursive: true,
               on_duplicate_key_update: [:id],
               recursive_on_duplicate_key_update: {
-                books: { conflict_target: [:id], columns: [:author_name] }
+                books: update_columns.call([:author_name])
               }
           end
           Topic.find(topic.id).books.each do |book|
@@ -362,8 +367,8 @@ def should_support_recursive_import
               recursive: true,
               on_duplicate_key_update: [:id],
               recursive_on_duplicate_key_update: {
-                books: { conflict_target: [:id], columns: [:author_name] },
-                chapters: { conflict_target: [:id], columns: [:title] }
+                books: update_columns.call([:author_name]),
+                chapters: update_columns.call([:title])
               }
           end
           assert_equal new_chapter_title, Chapter.find(example_chapter.id).title
@@ -379,7 +384,7 @@ def should_support_recursive_import
             recursive: true,
             on_duplicate_key_update: [:name],
             recursive_on_duplicate_key_update: {
-              songs: { conflict_target: [:id], columns: [:name] }
+              songs: update_columns.call([:name])
             }
           assert_equal "Renamed", song.reload.title
         end
@@ -415,8 +420,8 @@ def should_support_recursive_import
                 recursive: true,
                 on_duplicate_key_update: [:id],
                 recursive_on_duplicate_key_update: {
-                  novels: { conflict_target: [:id], columns: [:author_name] },
-                  chapters: { conflict_target: [:id], columns: [:title] }
+                  novels: update_columns.call([:author_name]),
+                  chapters: update_columns.call([:title])
                 }
             end
             assert_equal new_chapter_title, Chapter.find(example_chapter.id).title

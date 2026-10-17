@@ -138,6 +138,58 @@ jobs:
           bundle exec rake test:trilogy_proxy
           bundle exec rake test:janus_trilogy
 
+  test-mariadb:
+    services:
+      mariadb:
+        image: mariadb:${{ matrix.mariadb }}
+        ports:
+          - 3306:3306
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: activerecord_import_test
+        options: >-
+          --health-cmd "healthcheck.sh --connect --innodb_initialized"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    strategy:
+      fail-fast: false
+      matrix:
+        # The current long-term support releases
+        mariadb:
+          - '10.11'
+          - '11.8'
+        ar_version:
+          - '8.1'
+          - '7.2'
+          - '6.1'
+    runs-on: ubuntu-latest
+    env:
+      AR_VERSION: ${{ matrix.ar_version }}
+      RUBYOPT: --enable-frozen-string-literal
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install SQLite3 Development Library
+        run: |
+          sudo apt-get update
+          sudo apt-get install libsqlite3-dev
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.4
+          bundler-cache: true
+          rubygems: latest
+      - name: Set up database
+        run: cp test/github/database.yml test/database.yml
+      - name: Run tests with mysql2
+        run: |
+          bundle exec rake test:mysql2
+          bundle exec rake test:mysql2_proxy
+      - name: Run trilogy tests
+        if: ${{ matrix.ar_version >= '7.0' }}
+        run: |
+          bundle exec rake test:trilogy
+          bundle exec rake test:trilogy_proxy
+
   lint:
     runs-on: ubuntu-latest
     env:

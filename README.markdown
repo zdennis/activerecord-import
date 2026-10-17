@@ -246,7 +246,7 @@ Book.import columns, books, batch_size: 2, batch_progress: my_proc
 #### Recursive
 
 > **Note**
-> This only works with PostgreSQL and ActiveRecord objects. This won't work with hashes or arrays as recursive inputs.
+> This only works with PostgreSQL and MariaDB 10.5+, and with ActiveRecord objects. This won't work with hashes or arrays as recursive inputs.
 
 Assume that Books <code>has_many</code> Reviews.
 
@@ -273,7 +273,7 @@ Key                       | Options               | Default            | Descrip
 :on_duplicate_key_update  | :all, `Array`, `Hash` | N/A                | Allows upsert logic to be used. See [here](#duplicate-key-update) for more details.
 :synchronize              | `Array`               | N/A                | An array of ActiveRecord instances. This synchronizes existing instances in memory with updates from the import.
 :timestamps               | `true`/`false`        | `true`             | Enables/disables timestamps on imported records.
-:recursive                | `true`/`false`        | `false`            | Imports has_many/has_one associations (PostgreSQL only).
+:recursive                | `true`/`false`        | `false`            | Imports has_many/has_one associations (PostgreSQL and MariaDB 10.5+ only).
 :recursive_on_duplicate_key_update | `Hash`       | N/A                | Allows upsert logic to be used for recursive associations. The hash key is the association name and the value has the same options as `:on_duplicate_key_update`. See [here](#duplicate-key-update) for more details.
 :batch_size               | `Integer`             | total # of records | Max number of records to insert per import
 :raise_error              | `true`/`false`        | `false`            | Raises an exception at the first invalid record. This means there will not be a result object returned. The `import!` method is a shortcut for this.
@@ -296,7 +296,7 @@ book.reload.title  # => "Book1"     (stayed the same)
 book.reload.author # => "George Orwell" (stayed the same)
 ```
 
-The option `:on_duplicate_key_ignore` is bypassed when `:recursive` is enabled for [PostgreSQL imports](https://rubydoc.info/gems/activerecord-import/ActiveRecord/Base#label-Options) (`:recursive` is not supported with other adapters).
+The option `:on_duplicate_key_ignore` is bypassed when `:recursive` is enabled for [PostgreSQL and MariaDB 10.5+ imports](https://rubydoc.info/gems/activerecord-import/ActiveRecord/Base#label-Options) (`:recursive` is not supported with other databases).
 
 #### Duplicate Key Update
 
@@ -416,7 +416,7 @@ Book.import books, validate_uniqueness: true
 
 ### Return Info
 
-The `import` method returns a `Result` object that responds to `failed_instances` and `num_inserts`. Additionally, for users of Postgres, there will be two arrays `ids` and `results` that can be accessed.
+The `import` method returns a `Result` object that responds to `failed_instances` and `num_inserts`. Additionally, for users of Postgres and MariaDB 10.5+, there will be two arrays `ids` and `results` that can be accessed. These are populated with `INSERT ... RETURNING`, which also sets the ids of imported models. On MariaDB this means `affected_rows` isn't available, since MariaDB doesn't report it for `INSERT ... RETURNING`; pass `no_returning: true` to get `affected_rows` instead of `ids`.
 
 ```ruby
 articles = [
@@ -434,11 +434,11 @@ demo.num_inserts
 => 1,
 
 demo.ids
-=> ["1", "2"] # for Postgres
+=> ["1", "2"] # for Postgres and MariaDB 10.5+
 => [] # for other DBs
 
 demo.results
-=> ["First Article", "Second Article"] # for Postgres
+=> ["First Article", "Second Article"] # for Postgres and MariaDB 10.5+
 => [] # for other DBs
 ```
 
@@ -505,6 +505,7 @@ The following database adapters are currently supported:
 
 * MySQL - supports core import functionality plus on duplicate key update support (included in activerecord-import 0.1.0 and higher)
 * MySQL2 - supports core import functionality plus on duplicate key update support (included in activerecord-import 0.2.0 and higher)
+* MariaDB - supported through the MySQL2 and Trilogy adapters, with the same functionality as MySQL. MariaDB 10.5+ also supports `ids`, `returning` and recursive imports.
 * PostgreSQL - supports core import functionality (included in activerecord-import 0.1.0 and higher)
 * SQLite3 - supports core import functionality (included in activerecord-import 0.1.0 and higher)
 * Oracle - supports core import functionality through DML trigger (available as an external gem: [activerecord-import-oracle_enhanced](https://github.com/keeguon/activerecord-import-oracle_enhanced))
