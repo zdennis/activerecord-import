@@ -1,3 +1,93 @@
+## Changes in 3.0.0
+
+### Breaking Changes
+
+* Drop support for Ruby < 3.1 and ActiveRecord < 6.1. via #918 and #943.
+* MariaDB 10.5+ now imports with `INSERT ... RETURNING`, as PostgreSQL does. Imports return
+  `ids` and `results`, imported models get their ids and are marked persisted, and
+  `recursive: true` imports associations (it was ignored on MariaDB before). MariaDB doesn't
+  report affected rows for `INSERT ... RETURNING`, so `affected_rows` is now `nil` on MariaDB
+  10.5+ unless `no_returning: true` is passed. As on PostgreSQL, `on_duplicate_key_ignore` is
+  ignored for recursive imports. MySQL and MariaDB before 10.5 are unchanged. via #926.
+* When only some rows have a value for a column the database fills in (a uuid or other primary
+  key with a default function, or a column with a default function), the other rows now get the
+  database's default instead of `NULL` on PostgreSQL and MySQL/MariaDB, and assigned primary keys
+  are no longer dropped when the first model doesn't have one. SQLite can't use `DEFAULT` in
+  `VALUES`, so such a mixed import now raises `ArgumentError` there. Fixes #702, #777, #805 and
+  #827 via #929.
+* `on_duplicate_key_update: :all` and `columns: :all` no longer update the timestamps recorded on
+  create (`created_at`, `created_on`) when import records timestamps. via #927.
+* Recursive imports now also import existing records that were assigned to a new parent, so they're
+  linked to it as `save` would do. Without `on_duplicate_key_update` that raises a duplicate key
+  error, where the records used to be silently left unlinked. Fixes #804 via #939.
+* Importing with `synchronize` now keeps the synchronized models' `previous_changes`, rather than
+  clearing them. Fixes #738 via #933.
+
+### New Features
+
+* Add `require "activerecord-import/without_aliases"` to load the library without the `import` and
+  `import!` aliases, for gems such as `elasticsearch-model` that define their own `import`. Use
+  `bulk_import`/`bulk_import!` instead. Fixes #592 via #915.
+* `import` accepts array-like arguments such as an `ActiveRecord::Relation` or a `Set`, and invalid
+  arguments now raise an error saying what was received. Fixes #785 via #935.
+* Annotations from the current scope (`Model.annotate(...)`) are added to the INSERT statements as
+  SQL comments. Fixes #872 via #937.
+* When activerecord-import is required after the database connection is established, import now
+  loads the adapter's import support itself instead of inserting one row at a time. Adapters
+  without bulk import support log a warning when import falls back to row-by-row inserts.
+  via #925 and #941.
+* Validate imported models with `valid?`, so `around` validate callbacks are supported. via #919.
+
+### Fixes
+
+* Report `affected_rows` with the mysql2 adapter. It was always `nil` with mysql2, and only
+  reported with trilogy. via #944.
+* Clear the query cache after MySQL imports on ActiveRecord < 7.1. via #926.
+* Don't import the associations of models that failed validation. Fixes #857. Thanks to
+  @jacob-carlborg-apoex via #858.
+* Fix `NoMethodError` in `returning_selections` when there's no model. Thanks to @mirelon via #892.
+* Don't mark models that failed validation as persisted when `track_validation_failures` is set.
+  Fixes #888. Thanks to @OskarEichler via #903.
+* Leave models unchanged when `all_or_none` aborts an import. Thanks to @OskarEichler via #904.
+* Include the owner's foreign key and polymorphic type when importing models with explicit columns
+  through an association. Thanks to @OskarEichler via #905.
+* Support string hash keys in association imports. Thanks to @OskarEichler via #909.
+* Use the canonical polymorphic name (e.g. for STI owners) in association imports. Thanks to
+  @OskarEichler via #910.
+* Raise `ArgumentError` for rows with fewer values than columns, before running any SQL. Thanks
+  to @OskarEichler via #912.
+* Quote PostgreSQL `RETURNING` column names and generated conflict targets. Thanks to
+  @OskarEichler via #907 and #908.
+* Skip uniqueness validations on associated records unless `validate_uniqueness: true`. Fixes #841
+  via #916.
+* Use each model's own class for `options[:model]` in recursive imports. via #920.
+* Leave columns the database populates (e.g. a uuid with a default function) out of the INSERT
+  when no imported model assigns them, as `save` does. via #921.
+* Don't follow an attribute alias when its name is also a column. via #922.
+* Don't modify the options hash passed to `import!`. via #924.
+* Don't send a `RETURNING` clause on PostgreSQL with `no_returning: true`. Fixes #826 via #930.
+* Support `returning: :id` with composite primary keys that include an `id` column. Fixes #842
+  via #931.
+* Use the association's `primary_key` for foreign keys in recursive imports. Fixes #878 via #932.
+* Serialize values of STI subclass models with the subclass's attribute types, e.g. for enums
+  defined only on the subclass. Fixes #789 via #934.
+* Fix `NoMethodError` when filling in composite `belongs_to` foreign keys. via #938.
+
+### Performance
+
+* Match synchronized records in linear rather than quadratic time. Thanks to @OskarEichler via #902.
+* Collect returned ids and results across batches without recopying them. Thanks to @OskarEichler
+  via #906.
+
+### Development
+
+* Test against MariaDB 10.11 and 11.8 in CI. via #926.
+* Run the composite primary key tests on ActiveRecord 7.1, and speed up the JRuby CI job.
+  via #923, #928 and #945.
+* Run the database tests locally against Docker without a hand-written `test/database.yml`.
+  via #945.
+* Document the memory use of large imports and what gets logged. via #940.
+
 ## Changes in 2.3.0
 
 ### New Features
