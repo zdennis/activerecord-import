@@ -104,6 +104,32 @@ def should_support_mysql_import_functionality
         end
       end
     end
+
+    context "with annotations on the current scope" do
+      let(:columns) { %w(title author_name) }
+      let(:values) { [%w(Book1 Author1), %w(Book2 Author2), %w(Book3 Author3)] }
+
+      it "adds them to each insert it splits the import into" do
+        single_insert = capture_insert_sql do
+          Topic.annotate("NOTE_ME").import columns, values.take(1), validate: false, timestamps: false
+        end.first
+
+        # Allow only one record per insert
+        Topic.connection_pool.with_connection do |conn|
+          conn.stubs(:max_allowed_packet).returns(single_insert.bytesize + ActiveRecord::Import::MysqlAdapter::QUERY_OVERHEAD)
+        end
+
+        sql = capture_insert_sql do
+          assert_difference "Topic.count", +3 do
+            result = Topic.annotate("NOTE_ME").import columns, values, validate: false, timestamps: false
+            assert_equal 3, result.num_inserts
+          end
+        end
+
+        assert_equal 3, sql.size
+        sql.each { |statement| assert_includes statement, " /* NOTE_ME */" }
+      end
+    end
   end
 
   describe "#supports_setting_primary_key_of_imported_objects?" do

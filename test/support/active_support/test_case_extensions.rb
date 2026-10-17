@@ -66,6 +66,18 @@ class ActiveSupport::TestCase
       define_method("test_#{name}_#{description}", &blk)
     end
   end
+
+  # Returns the INSERT statements run by the block.
+  def capture_insert_sql
+    sql = []
+    subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") do |*, payload|
+      sql << payload[:sql] if payload[:sql].start_with?("INSERT")
+    end
+    yield
+    sql
+  ensure
+    ActiveSupport::Notifications.unsubscribe(subscriber)
+  end
 end
 
 def describe(description, &blk)

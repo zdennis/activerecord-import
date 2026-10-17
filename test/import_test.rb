@@ -573,6 +573,76 @@ describe "#import" do
 
       assert_equal ["Topic Create Many"] * 2, query_names
     end
+
+    it "should add the annotations from the current scope to each insert" do
+      Topic.stubs(:supports_import?).returns(false)
+      Topic.logger.stubs(:warn)
+
+      sql = capture_insert_sql do
+        assert_difference "Topic.count", +2 do
+          Topic.annotate("NOTE_ME").import Build(2, :topics)
+        end
+      end
+
+      assert_equal 2, sql.size
+      sql.each { |statement| assert_includes statement, " /* NOTE_ME */" }
+    end
+  end
+
+  context "with annotations on the current scope" do
+    it "should add them to the insert as SQL comments" do
+      sql = capture_insert_sql do
+        assert_difference "Topic.count", +2 do
+          Topic.annotate("NOTE_ME").scoping do
+            Topic.import Build(2, :topics)
+          end
+        end
+      end
+
+      assert_equal 1, sql.size
+      assert_includes sql.first, " /* NOTE_ME */"
+    end
+
+    it "should add them when importing through an annotated relation" do
+      sql = capture_insert_sql do
+        assert_difference "Topic.count", +2 do
+          Topic.annotate("first", "second").import! %w(title author_name), [%w(LDAP Jerry), %w(Rails Chad)]
+        end
+      end
+
+      assert_equal 1, sql.size
+      assert_includes sql.first, " /* first */ /* second */"
+    end
+
+    it "should add them to every insert when importing in batches" do
+      sql = capture_insert_sql do
+        assert_difference "Topic.count", +5 do
+          Topic.annotate("NOTE_ME").import Build(5, :topics), batch_size: 2
+        end
+      end
+
+      assert_equal 3, sql.size
+      sql.each { |statement| assert_includes statement, " /* NOTE_ME */" }
+    end
+
+    it "should sanitize them like ActiveRecord does" do
+      sql = capture_insert_sql do
+        assert_difference "Topic.count", +1 do
+          Topic.annotate("*/ DELETE FROM topics; /*").import Build(1, :topics)
+        end
+      end
+
+      assert_includes sql.first, " /* * / DELETE FROM topics; / * */"
+    end
+
+    it "should not add a comment without annotations" do
+      sql = capture_insert_sql do
+        Topic.where(approved: true).import Build(1, :topics)
+      end
+
+      assert_equal 1, sql.size
+      assert_no_match %r{/\*}, sql.first
+    end
   end
 
   context "with :batch_size option" do

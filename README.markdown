@@ -37,6 +37,7 @@ The gem provides the following high-level features:
   * [ActiveRecord Models](#activerecord-models)
   * [Batching](#batching)
   * [Recursive](#recursive)
+  * [Annotating the SQL](#annotating-the-sql)
 * [Options](#options)
   * [Duplicate Key Ignore](#duplicate-key-ignore)
   * [Duplicate Key Update](#duplicate-key-update)
@@ -258,6 +259,19 @@ books = []
   books << book
 end
 Book.import books, recursive: true
+```
+
+#### Annotating the SQL
+
+To add SQL comments to an import, import through a relation annotated with ActiveRecord's [`annotate`](https://api.rubyonrails.org/classes/ActiveRecord/QueryMethods.html#method-i-annotate), or within its `scoping` block. The comments are added to every INSERT statement, including when the import is batched or split into several statements.
+
+```ruby
+Book.annotate("nightly import").import books
+# INSERT INTO "books" (...) VALUES (...) /* nightly import */
+
+Book.annotate("nightly import").scoping do
+  Book.import books
+end
 ```
 
 ### Options

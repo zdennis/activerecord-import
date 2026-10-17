@@ -39,6 +39,18 @@ def should_support_sqlite3_import_functionality
         assert_equal 2500, Topic.count, "Failed to insert all records. Make sure you have a supported version of SQLite3 (3.7.11 or higher) installed"
       end
     end
+
+    it "adds the annotations from the current scope to each insert it splits the import into" do
+      sql = capture_insert_sql do
+        assert_difference "Topic.count", +501 do
+          result = Topic.annotate("NOTE_ME").import Build(501, :topics)
+          assert_equal 2, result.num_inserts
+        end
+      end
+
+      assert_equal 2, sql.size
+      sql.each { |statement| assert_includes statement, " /* NOTE_ME */" }
+    end
   end
 end
 
