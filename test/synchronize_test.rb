@@ -24,6 +24,15 @@ describe ".synchronize" do
     assert_equal "#{titles[2]}_haha", actual_titles[2], "the third record was not correctly updated"
   end
 
+  it "reloads data using multiple key fields" do
+    Topic.synchronize topics, [:id, :author_name]
+
+    actual_titles = topics.map(&:title)
+    assert_equal "#{titles[0]}_haha", actual_titles[0], "the first record was not correctly updated"
+    assert_equal "#{titles[1]}_haha", actual_titles[1], "the second record was not correctly updated"
+    assert_equal "#{titles[2]}_haha", actual_titles[2], "the third record was not correctly updated"
+  end
+
   it "the synchronized records aren't dirty" do
     # Update the in memory records so they're dirty
     topics.each { |topic| topic.title = 'dirty title' }

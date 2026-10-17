@@ -121,20 +121,20 @@ Book.import values
 The `import` method can take an array of column names and an array of hash objects. The column names are used to determine what fields of data should be imported. The following example will only import books with the `title` field:
 
 ```ruby
-books = [
+values = [
   { title: "Book 1", author: "George Orwell" },
   { title: "Book 2", author: "Bob Jones" }
 ]
 columns = [ :title ]
 
 # without validations
-Book.import columns, books, validate: false
+Book.import columns, values, validate: false
 
 # with validations
-Book.import columns, books, validate: true
+Book.import columns, values, validate: true
 
 # when not specified :validate defaults to true
-Book.import columns, books
+Book.import columns, values
 
 # result in table books
 # title  | author
@@ -265,7 +265,7 @@ Book.import books, recursive: true
 Key                       | Options               | Default            | Description
 ------------------------- | --------------------- | ------------------ | -----------
 :validate                 | `true`/`false`        | `true`             | Whether or not to run `ActiveRecord` validations (uniqueness skipped). This option will always be true when using `import!`.
-:validate_uniqueness      | `true`/`false`        | `false`            | Whether or not to run ActiveRecord uniqueness validations. Beware this will incur an sql query per-record (N+1 queries). (requires `>= v0.27.0`).
+:validate_uniqueness      | `true`/`false`        | `false`            | Whether or not to run ActiveRecord uniqueness validations, including on associated records that are validated with the model. Beware this will incur an sql query per-record (N+1 queries). (requires `>= v0.27.0`).
 :validate_with_context    | `Symbol`              |`:create`/`:update` | Allows passing an ActiveModel validation context for each model. Default is `:create` for new records and `:update` for existing ones.
 :track_validation_failures| `true`/`false`        | `false`            | When this is set to true, `failed_instances` will be an array of arrays, with each inner array having the form `[:index_in_dataset, :object_with_errors]`
 :on_duplicate_key_ignore  | `true`/`false`        | `false`            | Allows skipping records with duplicate keys. See [here](#duplicate-key-ignore) for more details.
@@ -296,7 +296,7 @@ book.reload.title  # => "Book1"     (stayed the same)
 book.reload.author # => "George Orwell" (stayed the same)
 ```
 
-The option `:on_duplicate_key_ignore` is bypassed when `:recursive` is enabled for [PostgreSQL imports](https://github.com/zdennis/activerecord-import/wiki#recursive-example-postgresql-only).
+The option `:on_duplicate_key_ignore` is bypassed when `:recursive` is enabled for [PostgreSQL imports](https://rubydoc.info/gems/activerecord-import/ActiveRecord/Base#label-Options) (`:recursive` is not supported with other adapters).
 
 #### Duplicate Key Update
 
@@ -510,7 +510,7 @@ The following database adapters are currently supported:
 * Oracle - supports core import functionality through DML trigger (available as an external gem: [activerecord-import-oracle_enhanced](https://github.com/keeguon/activerecord-import-oracle_enhanced))
 * SQL Server - supports core import functionality (available as an external gem: [activerecord-import-sqlserver](https://github.com/keeguon/activerecord-import-sqlserver))
 
-If your adapter isn't listed here, please consider creating an external gem as described in the README to provide support. If you do, feel free to update this wiki to include a link to the new adapter's repository!
+If your adapter isn't listed here, please consider creating an external gem as described in the README to provide support. If you do, feel free to update this README to include a link to the new adapter's repository!
 
 To test which features are supported by your adapter, use the following methods on a model class:
 * `supports_import?(*args)`
@@ -599,6 +599,16 @@ When rubygems pushes the `lib` folder onto the load path a `require` will now fi
 
 Activerecord-Import adds the `.import` method onto `ActiveRecord::Base`. There are other gems, such as `elasticsearch-rails`, that do the same thing. In conflicts such as this, there is an aliased method named `.bulk_import` that can be used interchangeably.
 
+Some gems, such as `elasticsearch-model`, won't define their own `.import` on a model if one already exists. To load activerecord-import without the `import` and `import!` aliases, so only `bulk_import` and `bulk_import!` are defined, require it like so:
+
+```ruby
+gem 'activerecord-import', require: 'activerecord-import/without_aliases'
+```
+
+This takes precedence even if `activerecord-import` or `activerecord-import/base` is also required, for example by another gem, regardless of the order they're required in. To confirm the aliases aren't defined, check that `ActiveRecord::Base.respond_to?(:import)` returns `false` in a console.
+
+If you're loading activerecord-import manually (see [Manually Loading](#manually-loading)), require `activerecord-import/without_aliases` in place of `activerecord-import/base`.
+
 If you are using the `apartment` gem, there is a weird triple interaction between that gem, `activerecord-import`, and `activerecord` involving caching of the `sequence_name` of a model. This can be worked around by explicitly setting this value within the model. For example:
 
 ```ruby
@@ -624,7 +634,7 @@ See https://github.com/zdennis/activerecord-import/issues/233 for further discus
 
 ### More Information
 
-For more information on Activerecord-Import please see its wiki: https://github.com/zdennis/activerecord-import/wiki
+For more information on Activerecord-Import please see its docs: https://rubydoc.info/gems/activerecord-import/ActiveRecord/Base
 
 To document new information, please add to the README instead of the wiki. See https://github.com/zdennis/activerecord-import/issues/397 for discussion.
 

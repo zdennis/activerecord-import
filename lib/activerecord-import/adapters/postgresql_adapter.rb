@@ -98,13 +98,13 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
   def returning_selections(options)
     selections = []
+    column_names = Array(options[:model]&.column_names)
 
     selections += Array(options[:primary_key]) if options[:primary_key].present?
     selections += Array(options[:returning]) if options[:returning].present?
 
     selections.map do |selection|
-      column_names = Array(options[:model].column_names)
-      column_names.include?(selection.to_s) ? "\"#{selection}\"" : selection
+      column_names.include?(selection.to_s) ? quote_column_name(selection) : selection
     end
   end
 
@@ -207,7 +207,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
   end
 
   def sql_for_default_conflict_target( table_name, primary_key )
-    conflict_target = Array(primary_key).join(', ')
+    conflict_target = Array(primary_key).map { |key| quote_column_name(key) }.join(', ')
     "(#{conflict_target}) " if conflict_target.present?
   end
 

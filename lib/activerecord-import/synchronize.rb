@@ -27,17 +27,21 @@ module ActiveRecord # :nodoc:
 
       conditions = {}
 
-      key_values = keys.map { |key| instances.map(&key.to_sym) }
+      key_values = keys.map { |key| instances.map(&key.to_sym).uniq }
       keys.zip(key_values).each { |key, values| conditions[key] = values }
       order = keys.map { |key| "#{key} ASC" }.join(",")
 
       klass = instances.first.class
 
       fresh_instances = klass.unscoped.where(conditions).order(order)
+      fresh_instances_by_key = fresh_instances.each_with_object({}) do |fresh_instance, records_by_key|
+        key = keys.map { |key_column| fresh_instance.send(key_column) }
+        records_by_key[key] ||= fresh_instance
+      end
+
       instances.each do |instance|
-        matched_instance = fresh_instances.detect do |fresh_instance|
-          keys.all? { |key| fresh_instance.send(key) == instance.send(key) }
-        end
+        key = keys.map { |key_column| instance.send(key_column) }
+        matched_instance = fresh_instances_by_key[key]
 
         next unless matched_instance
 

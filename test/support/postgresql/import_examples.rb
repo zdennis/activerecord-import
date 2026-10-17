@@ -13,6 +13,22 @@ def should_support_postgresql_import_functionality
     end
   end
 
+  describe "#returning_selections" do
+    it "should quote known columns" do
+      selections = Topic.connection_pool.with_connection do |conn|
+        conn.send(:returning_selections, model: Topic, primary_key: "id", returning: ["title", "now()"])
+      end
+      assert_equal ['"id"', '"title"', "now()"], selections
+    end
+
+    it "should return the selections unchanged without a model" do
+      selections = Topic.connection_pool.with_connection do |conn|
+        conn.send(:returning_selections, primary_key: "id", returning: ["title"])
+      end
+      assert_equal %w(id title), selections
+    end
+  end
+
   describe "#import" do
     it "should import with a single insert" do
       # see ActiveRecord::ConnectionAdapters::AbstractAdapter test for more specifics
