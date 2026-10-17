@@ -574,6 +574,15 @@ describe "#import" do
       assert_equal ["Topic Create Many"] * 2, query_names
     end
 
+    it "should only try to load the adapter's import support once" do
+      Topic.stubs(:supports_import?).returns(false)
+      Topic.logger.stubs(:warn)
+      ActiveRecord::Import::ATTEMPTED_ADAPTERS.clear
+      ActiveRecord::Import.expects(:require_adapter).with(Topic.connection_pool.db_config.adapter).once
+
+      2.times { Topic.import Build(2, :topics) }
+    end
+
     it "should add the annotations from the current scope to each insert" do
       Topic.stubs(:supports_import?).returns(false)
       Topic.logger.stubs(:warn)

@@ -563,6 +563,10 @@ class ActiveRecord::Base
 
     def import_helper( *args )
       connection_pool.with_connection do |conn|
+        # The adapter's import support is loaded when the connection is established, which is
+        # missed if activerecord-import is required afterwards, so load it now if it's missing.
+        ActiveRecord::Import.load_from_connection_pool_once(connection_pool) unless supports_import?(conn)
+
         options = { validate: true, timestamps: true, track_validation_failures: false }
         options.merge!( args.pop ) if args.last.is_a? Hash
         args = arrays_from_array_like_import_arguments(args)
@@ -882,8 +886,8 @@ class ActiveRecord::Base
         end
       else
         logger&.warn "activerecord-import: the #{conn.adapter_name} adapter doesn't support bulk import, so #{model_name} " \
-          "records are being inserted one at a time. If the adapter is supported, make sure activerecord-import is " \
-          "loaded before the database connection is established."
+          "records are being inserted one at a time. If the adapter is supported under another name, require its " \
+          "activerecord-import adapter, e.g. activerecord-import/active_record/adapters/postgresql_adapter."
 
         transaction(requires_new: true) do
           values_sql.each do |values|
