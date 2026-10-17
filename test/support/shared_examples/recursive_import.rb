@@ -265,8 +265,8 @@ def should_support_recursive_import
     # columns, keys, etc isn't generated for child associations when doing recursive import
     if ActiveRecord::Base.connection_pool.with_connection(&:supports_on_duplicate_key_update?)
       # MySQL's ON DUPLICATE KEY UPDATE takes just the columns to update, without a conflict target
-      mysql = defined?(ActiveRecord::Import::MysqlAdapter) &&
-        ActiveRecord::Base.connection_pool.with_connection { |conn| conn.is_a?(ActiveRecord::Import::MysqlAdapter) }
+      mysql_adapter = "ActiveRecord::Import::MysqlAdapter".safe_constantize
+      mysql = mysql_adapter && ActiveRecord::Base.connection_pool.with_connection { |conn| conn.is_a?(mysql_adapter) }
       update_columns = ->(columns) { mysql ? columns : { conflict_target: [:id], columns: columns } }
 
       describe "on_duplicate_key_update" do
