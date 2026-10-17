@@ -633,6 +633,7 @@ class ActiveRecord::Base
             else
               self.column_names.dup
             end
+            column_names -= database_populated_column_names(conn, column_names, models)
           end
 
           if models.first.id.nil?
@@ -1044,6 +1045,25 @@ class ActiveRecord::Base
           associated_class.bulk_import(associated_records,
                                        associated_options(options, association))
         end
+      end
+    end
+
+    # Returns the columns the database populates itself, such as with a default
+    # function, that none of the new +models+ assign a value to. Like ActiveRecord's
+    # own inserts, these are left out so the database can populate them instead of
+    # inserting NULL. The primary key is handled separately.
+    def database_populated_column_names(conn, column_names, models)
+      return [] if models.any?(&:persisted?)
+
+      columns_hash = schema_columns_hash(conn)
+      primary_keys = Array(primary_key).map(&:to_s)
+
+      column_names.select do |name|
+        column = columns_hash[name.to_s]
+        next false if column.nil? || primary_keys.include?(name.to_s)
+
+        populated = column.respond_to?(:auto_populated?) ? column.auto_populated? : column.default_function
+        populated && models.none? { |model| model.attribute_changed?(name) }
       end
     end
 
