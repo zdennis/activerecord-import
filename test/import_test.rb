@@ -552,6 +552,80 @@ describe "#import" do
     end
   end
 
+  context "with :raise_all_errors option" do
+    let(:columns) { %w(title author_name) }
+    let(:valid_values) { [["LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
+    let(:invalid_values) { [["The RSpec Book", ""], ["Agile+UX", ""]] }
+    let(:mixed_values) { [valid_values[0], invalid_values[0], valid_values[1], invalid_values[1]] }
+
+    it "should import valid data" do
+      assert_difference "Topic.count", +2 do
+        result = Topic.import columns, valid_values, raise_all_errors: true
+        assert_empty result.failed_instances
+      end
+    end
+
+    it "should raise an error with every invalid record and import nothing" do
+      error = nil
+      assert_no_difference "Topic.count" do
+        error = assert_raise(ActiveRecord::Import::RecordsInvalid) do
+          Topic.import columns, mixed_values, raise_all_errors: true
+        end
+      end
+
+      assert_kind_of ActiveRecord::RecordInvalid, error
+      assert_equal ["The RSpec Book", "Agile+UX"], error.failed_instances.map(&:title)
+      assert_equal error.failed_instances, error.records
+      assert_equal error.failed_instances.first, error.record
+      assert_equal "Validation failed for 2 records: Author name can't be blank; Author name can't be blank", error.message
+    end
+
+    it "should report the indexes of the invalid records when tracking validation failures" do
+      error = assert_raise(ActiveRecord::Import::RecordsInvalid) do
+        Topic.import columns, mixed_values, raise_all_errors: true, track_validation_failures: true
+      end
+
+      assert_equal [1, 3], error.failed_instances.map(&:first)
+      assert_equal ["The RSpec Book", "Agile+UX"], error.records.map(&:title)
+      assert_equal "Validation failed for 2 records: index 1: Author name can't be blank; index 3: Author name can't be blank", error.message
+    end
+
+    it "should raise an error with every invalid model and import nothing" do
+      topics = [Build(:topic), Build(:invalid_topic), Build(:invalid_topic, title: "")]
+      error = nil
+      assert_no_difference "Topic.count" do
+        error = assert_raise(ActiveRecord::Import::RecordsInvalid) do
+          Topic.import topics, raise_all_errors: true
+        end
+      end
+
+      assert_equal topics[1..2], error.failed_instances
+      assert_equal topics[1], error.record
+      assert topics.none?(&:persisted?)
+      assert_equal "Validation failed for 2 records: Author name can't be blank; Author name can't be blank", error.message
+    end
+
+    it "should raise an error with every invalid record from import!" do
+      error = nil
+      assert_no_difference "Topic.count" do
+        error = assert_raise(ActiveRecord::Import::RecordsInvalid) do
+          Topic.import! columns, mixed_values, raise_all_errors: true
+        end
+      end
+
+      assert_equal 2, error.failed_instances.size
+    end
+
+    it "should not change import! without the option, which raises at the first invalid record" do
+      error = assert_raise(ActiveRecord::RecordInvalid) do
+        Topic.import! columns, mixed_values
+      end
+
+      assert_equal ActiveRecord::RecordInvalid, error.class
+      assert_equal "The RSpec Book", error.record.title
+    end
+  end
+
   context "when the adapter doesn't support bulk import" do
     it "should warn and insert records one at a time" do
       Topic.stubs(:supports_import?).returns(false)

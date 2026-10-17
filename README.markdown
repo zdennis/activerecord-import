@@ -278,6 +278,7 @@ Key                       | Options               | Default            | Descrip
 :batch_size               | `Integer`             | total # of records | Max number of records to insert per import
 :raise_error              | `true`/`false`        | `false`            | Raises an exception at the first invalid record. This means there will not be a result object returned. The `import!` method is a shortcut for this.
 :all_or_none              | `true`/`false`        | `false`            | Will not import any records if there is a record with validation errors.
+:raise_all_errors         | `true`/`false`        | `false`            | Validates every record and, if any are invalid, imports none of them and raises `ActiveRecord::Import::RecordsInvalid`, whose `failed_instances` has all of the invalid records (in the form set by `:track_validation_failures`). It's a subclass of `ActiveRecord::RecordInvalid`, and its `record` is the first invalid record. Can be used with `import` or `import!`.
 
 #### Duplicate Key Ignore
 

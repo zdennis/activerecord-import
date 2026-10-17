@@ -23,6 +23,33 @@ module ActiveRecord::Import # :nodoc:
     end
   end
 
+  # Raised by an import with the +raise_all_errors+ option when any records
+  # fail validation. +failed_instances+ has every invalid record, in the same
+  # form as the import result's, and +record+ is the first invalid record.
+  class RecordsInvalid < ActiveRecord::RecordInvalid
+    attr_reader :failed_instances
+
+    def initialize(failed_instances = [])
+      @failed_instances = failed_instances
+      super(records.first)
+    end
+
+    # Returns the invalid records, without their indexes.
+    def records
+      failed_instances.map { |failure| failure.is_a?(Array) ? failure.last : failure }
+    end
+
+    def to_s
+      failures = failed_instances.map do |failure|
+        index, model = failure.is_a?(Array) ? failure : [nil, failure]
+        messages = model.errors.full_messages.join(", ")
+        index ? "index #{index}: #{messages}" : messages
+      end
+
+      "Validation failed for #{failed_instances.size} #{failed_instances.size == 1 ? 'record' : 'records'}: #{failures.join('; ')}"
+    end
+  end
+
   # Skips uniqueness validations while a model is being validated for an import
   # that doesn't validate uniqueness, including the validations Rails runs on
   # the model's associated records.
@@ -358,6 +385,11 @@ class ActiveRecord::Base
     #   newly imported objects. PostgreSQL only.
     # * +batch_size+ - an integer value to specify the max number of records to
     #   include per insert. Defaults to the total number of records to import.
+    # * +raise_all_errors+ - true|false, tells import to validate every record
+    #   and, if any are invalid, import none of them and raise
+    #   ActiveRecord::Import::RecordsInvalid with all of the failed instances,
+    #   instead of raising ActiveRecord::RecordInvalid at the first invalid
+    #   record like +raise_error+ and import! do.
     #
     # == Examples
     #  class BlogPost < ActiveRecord::Base ; end
@@ -551,7 +583,9 @@ class ActiveRecord::Base
 
     # Imports a collection of values if all values are valid. Import fails at the
     # first encountered validation error and raises ActiveRecord::RecordInvalid
-    # with the failed instance.
+    # with the failed instance. With the +raise_all_errors+ option, every value
+    # is validated first and ActiveRecord::Import::RecordsInvalid is raised with
+    # all of the failed instances.
     def bulk_import!(*args)
       options = args.last.is_a?( Hash ) ? args.pop : {}
       options = options.merge( validate: true, raise_error: true )
@@ -577,6 +611,13 @@ class ActiveRecord::Base
         options[:model] = self
         options[:primary_key] = primary_key
         options[:locking_column] = locking_column if locking_enabled?
+
+        # Validate every record, rather than raising at the first invalid one,
+        # and don't import any of them if one is invalid.
+        if options[:raise_all_errors]
+          options[:raise_error] = false
+          options[:all_or_none] = true
+        end
 
         is_validating = options[:validate_with_context].present? || options[:validate]
         validator = ActiveRecord::Import::Validator.new(options)
@@ -766,6 +807,10 @@ class ActiveRecord::Base
           end
         else
           import_without_validations_or_callbacks( conn, column_names, array_of_attributes, options )
+        end
+
+        if options[:raise_all_errors] && return_obj.failed_instances.any?
+          raise ActiveRecord::Import::RecordsInvalid, return_obj.failed_instances
         end
 
         return return_obj if options[:all_or_none] && return_obj.failed_instances.any?
