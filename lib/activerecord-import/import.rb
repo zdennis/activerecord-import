@@ -572,48 +572,15 @@ class ActiveRecord::Base
         is_validating = options[:validate_with_context].present? || options[:validate]
         validator = ActiveRecord::Import::Validator.new(options) if is_validating
 
+        # supports empty array
+        return ActiveRecord::Import::Result.new([], 0, [], []) if args.last.is_a?( Array ) && args.last.empty?
+
         # assume array of model objects
         if args.last.is_a?( Array ) && args.last.first.is_a?(ActiveRecord::Base)
           models, column_names, default_column_names = models_and_column_names_for_import(conn, args)
           array_of_attributes = attributes_from_models(conn, models, column_names, validator, options)
-          # supports array of hash objects
-        elsif args.last.is_a?( Array ) && args.last.first.is_a?(Hash)
-          if args.length == 2
-            array_of_hashes = args.last
-            column_names = args.first.dup
-            allow_extra_hash_keys = true
-          else
-            array_of_hashes = args.first
-            column_names = array_of_hashes.first.keys
-            allow_extra_hash_keys = false
-          end
-
-          array_of_attributes = array_of_hashes.map do |h|
-            error_message = validate_hash_import(h, column_names, allow_extra_hash_keys)
-
-            raise ArgumentError, error_message if error_message
-
-            column_names.map do |key|
-              h[key]
-            end
-          end
-          # supports empty array
-        elsif args.last.is_a?( Array ) && args.last.empty?
-          return ActiveRecord::Import::Result.new([], 0, [], [])
-          # supports 2-element array and array
-        elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
-
-          unless args.last.first.is_a?(Array)
-            raise ArgumentError, "Last argument should be a two dimensional array '[[]]'. First element in array was a #{args.last.first.class}"
-          end
-
-          column_names, array_of_attributes = args
-
-          # dup the passed args so we don't modify unintentionally
-          column_names = column_names.dup
-          array_of_attributes = array_of_attributes.map(&:dup)
         else
-          raise ArgumentError, invalid_import_arguments_message(args)
+          column_names, array_of_attributes = column_names_and_attributes_for_import(args)
         end
 
         # Rows without a value for these columns get the database's default rather than NULL
@@ -923,6 +890,49 @@ class ActiveRecord::Base
       end
 
       array_of_attributes
+    end
+
+    # Returns the column names and the rows to import from +args+, which are either an
+    # array of hashes, optionally after column names, or column names and an array of values.
+    def column_names_and_attributes_for_import(args)
+      # supports array of hash objects
+      if args.last.is_a?( Array ) && args.last.first.is_a?(Hash)
+        if args.length == 2
+          array_of_hashes = args.last
+          column_names = args.first.dup
+          allow_extra_hash_keys = true
+        else
+          array_of_hashes = args.first
+          column_names = array_of_hashes.first.keys
+          allow_extra_hash_keys = false
+        end
+
+        array_of_attributes = array_of_hashes.map do |h|
+          error_message = validate_hash_import(h, column_names, allow_extra_hash_keys)
+
+          raise ArgumentError, error_message if error_message
+
+          column_names.map do |key|
+            h[key]
+          end
+        end
+        # supports 2-element array and array
+      elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
+
+        unless args.last.first.is_a?(Array)
+          raise ArgumentError, "Last argument should be a two dimensional array '[[]]'. First element in array was a #{args.last.first.class}"
+        end
+
+        column_names, array_of_attributes = args
+
+        # dup the passed args so we don't modify unintentionally
+        column_names = column_names.dup
+        array_of_attributes = array_of_attributes.map(&:dup)
+      else
+        raise ArgumentError, invalid_import_arguments_message(args)
+      end
+
+      [column_names, array_of_attributes]
     end
 
     # ActiveRecord treats "id" as the primary key when writing attributes
