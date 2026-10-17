@@ -89,8 +89,19 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].sort.each { |file| require file
 # Load base/generic schema
 require test_dir.join("schema/version")
 require test_dir.join("schema/generic_schema")
+
+# Load the adapter's own schema if it has one (e.g. postgis), or else the schema for its
+# database, so that e.g. trilogy and mysql2_makara get the mysql2 tables and spatialite the
+# sqlite3 ones instead of relying on tables left behind by an earlier test run.
 adapter_schema = test_dir.join("schema/#{adapter}_schema.rb")
-require adapter_schema if File.exist?(adapter_schema)
+unless adapter_schema.exist?
+  case yaml_config["pool_adapter"] || yaml_config["adapter"]
+  when /mysql|trilogy/ then adapter_schema = test_dir.join("schema/mysql2_schema.rb")
+  when /postg/ then adapter_schema = test_dir.join("schema/postgresql_schema.rb")
+  when /sqlite/ then adapter_schema = test_dir.join("schema/sqlite3_schema.rb")
+  end
+end
+require adapter_schema if adapter_schema.exist?
 
 Dir["#{File.dirname(__FILE__)}/models/*.rb"].sort.each { |file| require file }
 
