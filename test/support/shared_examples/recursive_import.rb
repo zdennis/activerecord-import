@@ -143,6 +143,18 @@ def should_support_recursive_import
       end
     end
 
+    it "sets foreign keys from the primary_key option of the association" do
+      warehouse = Warehouse.new(identifier: 123_456_789)
+      2.times { |i| warehouse.shipments.build(description: "Shipment ##{i}") }
+
+      assert_difference "Shipment.count", +2 do
+        Warehouse.import! [warehouse], recursive: true
+      end
+
+      assert_equal [123_456_789, 123_456_789], warehouse.shipments.map(&:warehouse_id)
+      assert_equal 2, Warehouse.find(warehouse.id).shipments.count
+    end
+
     it "imports an imported belongs_to association id" do
       first_new_topic = new_topics[0]
       second_new_topic = new_topics[1]
@@ -246,6 +258,19 @@ def should_support_recursive_import
                 CompositeBook.import books, recursive: true
               end
             end
+          end
+
+          it "sets foreign keys from the composite primary_key option of the association" do
+            customer = Customer.new(account_id: 123_456_789, name: "Foo Barson")
+            customer.orders.build(amount: 1)
+
+            assert_difference "Order.count", +1 do
+              Customer.import! [customer], recursive: true
+            end
+
+            order = Order.last
+            assert_equal 123_456_789, order.account_id
+            assert_equal customer.id, order.customer_id
           end
         end
       end

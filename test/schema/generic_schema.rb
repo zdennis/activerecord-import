@@ -246,4 +246,14 @@ ActiveRecord::Schema.define do
     t.integer :value
     t.datetime :taken_at, precision: nil, default: -> { "CURRENT_TIMESTAMP" }
   end
+
+  create_table :warehouses, force: :cascade do |t|
+    t.integer :identifier, null: false
+    t.index :identifier, unique: true
+  end
+
+  create_table :shipments, force: :cascade do |t|
+    t.integer :warehouse_id, null: false
+    t.string :description
+  end
 end
