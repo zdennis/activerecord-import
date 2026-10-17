@@ -499,6 +499,35 @@ def should_support_postgresql_import_functionality
           CompositeBook.import books
         end
       end
+
+      if ENV['AR_VERSION'].to_f >= 7.1
+        describe "returning the id column" do
+          let(:author) { Author.create!(name: "Foo Barson") }
+
+          it "sets the id column on models" do
+            books = [CompositeBook.new(author_id: author.id, title: "Book 1"),
+                     CompositeBook.new(author_id: author.id, title: "Book 2")]
+            result = CompositeBook.import books, returning: %i[id title]
+
+            ids = CompositeBook.order(:id).pluck(:id)
+            assert_equal ids.map { |id| [id, author.id] }, books.map(&:id)
+            assert_equal ids, books.map(&:id_value)
+            assert_equal ids.zip(["Book 1", "Book 2"]), result.results
+            assert books.none?(&:changed?)
+          end
+
+          it "imports hashes that include the id column with validations" do
+            next_id = CompositeBook.maximum(:id).to_i + 100
+            books = [{ id: next_id, author_id: author.id, title: "Book 1" }]
+
+            assert_difference "CompositeBook.count", +1 do
+              result = CompositeBook.import! books, returning: %i[id title]
+              assert_equal [[next_id, "Book 1"]], result.results
+            end
+            assert CompositeBook.exists?(id: next_id, author_id: author.id)
+          end
+        end
+      end
     end
   end
 end
