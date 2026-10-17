@@ -586,6 +586,12 @@ class ActiveRecord::Base
         # Rows without a value for these columns get the database's default rather than NULL
         options[:database_default_columns] = Array(default_column_names) | database_populated_primary_keys(conn)
 
+        # Don't modify incoming arguments
+        on_duplicate_key_update = options[:on_duplicate_key_update]
+        if on_duplicate_key_update
+          options[:on_duplicate_key_update] = on_duplicate_key_update_for_import(on_duplicate_key_update, column_names, options)
+        end
+
         # Force the primary key col into the insert if it's not
         # on the list and we are using a sequence and stuff a nil
         # value for it into each row so the sequencer will fire later
@@ -598,33 +604,6 @@ class ActiveRecord::Base
           columns_added = column_names.size - column_count
           new_fields = Array.new(columns_added)
           array_of_attributes.each { |a| a.concat(new_fields) }
-        end
-
-        # Don't modify incoming arguments
-        on_duplicate_key_update = options[:on_duplicate_key_update]
-        if on_duplicate_key_update
-          updatable_columns = symbolized_column_names.reject { |c| symbolized_primary_key.include? c }
-          # Like the primary key, timestamps recorded on create shouldn't change when a record is updated
-          if record_timestamps && options[:timestamps]
-            updatable_columns -= timestamp_attributes_for_create_in_model.map(&:to_sym)
-          end
-          options[:on_duplicate_key_update] = if on_duplicate_key_update.is_a?(Hash)
-            on_duplicate_key_update.each_with_object({}) do |(k, v), duped_options|
-              duped_options[k] = if k == :columns && v == :all
-                updatable_columns
-              elsif v.duplicable?
-                v.dup
-              else
-                v
-              end
-            end
-          elsif on_duplicate_key_update == :all
-            updatable_columns
-          elsif on_duplicate_key_update.duplicable?
-            on_duplicate_key_update.dup
-          else
-            on_duplicate_key_update
-          end
         end
 
         timestamps = {}
@@ -933,6 +912,39 @@ class ActiveRecord::Base
       end
 
       [column_names, array_of_attributes]
+    end
+
+    # Returns a copy of the +on_duplicate_key_update+ option to import with, so it can be
+    # changed, such as when adding timestamp columns, without modifying the option that was
+    # passed in. :all is replaced by the columns other than the primary key and the
+    # timestamps recorded on create.
+    def on_duplicate_key_update_for_import(on_duplicate_key_update, column_names, options)
+      symbolized_column_names = Array(column_names).map(&:to_sym)
+      symbolized_primary_key = Array(primary_key).map(&:to_sym)
+
+      updatable_columns = symbolized_column_names.reject { |c| symbolized_primary_key.include? c }
+      # Like the primary key, timestamps recorded on create shouldn't change when a record is updated
+      if record_timestamps && options[:timestamps]
+        updatable_columns -= timestamp_attributes_for_create_in_model.map(&:to_sym)
+      end
+
+      if on_duplicate_key_update.is_a?(Hash)
+        on_duplicate_key_update.each_with_object({}) do |(k, v), duped_options|
+          duped_options[k] = if k == :columns && v == :all
+            updatable_columns
+          elsif v.duplicable?
+            v.dup
+          else
+            v
+          end
+        end
+      elsif on_duplicate_key_update == :all
+        updatable_columns
+      elsif on_duplicate_key_update.duplicable?
+        on_duplicate_key_update.dup
+      else
+        on_duplicate_key_update
+      end
     end
 
     # ActiveRecord treats "id" as the primary key when writing attributes
