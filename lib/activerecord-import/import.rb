@@ -23,7 +23,22 @@ module ActiveRecord::Import # :nodoc:
     end
   end
 
+  # Skips uniqueness validations while a model is being validated for an import
+  # that doesn't validate uniqueness. This covers the validations Rails runs on a
+  # model's associated records, which don't go through the Validator's callbacks.
+  module SkipUniquenessValidation # :nodoc:
+    def validate_each(record, attribute, value)
+      super unless ActiveRecord::Import::Validator.skip_uniqueness?
+    end
+  end
+
   class Validator
+    SKIP_UNIQUENESS = :activerecord_import_skip_uniqueness
+
+    def self.skip_uniqueness?
+      Thread.current[SKIP_UNIQUENESS] == true
+    end
+
     def initialize(klass, options = {})
       @options = options
       @validator_class = klass
@@ -77,9 +92,11 @@ module ActiveRecord::Import # :nodoc:
       validation_context = @options[:validate_with_context]
       validation_context ||= (model.new_record? ? :create : :update)
       current_context = model.send(:validation_context)
+      current_skip_uniqueness = Thread.current[SKIP_UNIQUENESS]
 
       begin
         set_validation_context(model, validation_context)
+        Thread.current[SKIP_UNIQUENESS] = !@options[:validate_uniqueness]
         model.errors.clear
 
         model.run_callbacks(:validation) do
@@ -118,6 +135,7 @@ module ActiveRecord::Import # :nodoc:
         model.errors.empty?
       ensure
         set_validation_context(model, current_context)
+        Thread.current[SKIP_UNIQUENESS] = current_skip_uniqueness
       end
     end
 
@@ -138,11 +156,12 @@ module ActiveRecord::Import # :nodoc:
   end
 end
 
+ActiveRecord::Validations::UniquenessValidator.prepend(ActiveRecord::Import::SkipUniquenessValidation)
+
 class ActiveRecord::Associations::CollectionProxy
   def bulk_import(*args, &block)
     @association.bulk_import(*args, &block)
   end
-  alias import bulk_import unless respond_to? :import
 end
 
 class ActiveRecord::Associations::CollectionAssociation
@@ -177,6 +196,7 @@ class ActiveRecord::Associations::CollectionAssociation
       if args.length == 2
         models = args.last
         column_names = args.first.dup
+        symbolized_column_names = column_names.map(&:to_sym)
       else
         models = args.first
         column_names = symbolized_column_names
@@ -184,6 +204,10 @@ class ActiveRecord::Associations::CollectionAssociation
 
       unless symbolized_column_names.include?(symbolized_foreign_key)
         column_names << symbolized_foreign_key
+      end
+
+      if reflection.type && !symbolized_column_names.include?(reflection.type.to_sym)
+        column_names << reflection.type.to_sym
       end
 
       models.each do |m|
@@ -205,6 +229,7 @@ class ActiveRecord::Associations::CollectionAssociation
         allow_extra_hash_keys = false
       end
 
+      required_column_names = column_names.dup
       symbolized_column_names = column_names.map(&:to_sym)
       unless symbolized_column_names.include?(symbolized_foreign_key)
         column_names << symbolized_foreign_key
@@ -215,14 +240,15 @@ class ActiveRecord::Associations::CollectionAssociation
       end
 
       array_of_attributes = array_of_hashes.map do |h|
-        error_message = model_klass.send(:validate_hash_import, h, symbolized_column_names, allow_extra_hash_keys)
+        error_message = model_klass.send(:validate_hash_import, h, required_column_names, allow_extra_hash_keys)
 
         raise ArgumentError, error_message if error_message
 
         column_names.map do |key|
-          if key == symbolized_foreign_key
+          symbolized_key = key.to_sym
+          if symbolized_key == symbolized_foreign_key
             owner_primary_key_value
-          elsif reflection.type && key == reflection.type.to_sym
+          elsif reflection.type && symbolized_key == reflection.type.to_sym
             owner_polymorphic_name
           else
             h[key]
@@ -270,7 +296,6 @@ class ActiveRecord::Associations::CollectionAssociation
       raise ArgumentError, "Invalid arguments!"
     end
   end
-  alias import bulk_import unless respond_to? :import
 end
 
 module ActiveRecord::Import::ConnectionHandler
@@ -580,7 +605,6 @@ class ActiveRecord::Base
         import_helper(*args)
       end
     end
-    alias import bulk_import unless ActiveRecord::Base.respond_to? :import
 
     # Imports a collection of values if all values are valid. Import fails at the
     # first encountered validation error and raises ActiveRecord::RecordInvalid
@@ -592,7 +616,6 @@ class ActiveRecord::Base
 
       bulk_import(*args, options)
     end
-    alias import! bulk_import! unless ActiveRecord::Base.respond_to? :import!
 
     def import_helper( *args )
       connection_pool.with_connection do |conn|
@@ -776,6 +799,8 @@ class ActiveRecord::Base
           import_without_validations_or_callbacks( conn, column_names, array_of_attributes, options )
         end
 
+        return return_obj if options[:all_or_none] && return_obj.failed_instances.any?
+
         if options[:synchronize]
           sync_keys = options[:synchronize_keys] || Array(primary_key)
           synchronize( options[:synchronize], sync_keys)
@@ -914,7 +939,9 @@ class ActiveRecord::Base
 
     def set_attributes_and_mark_clean(conn, models, import_result, timestamps, options)
       return if models.nil?
-      models -= import_result.failed_instances
+      failed_instances = import_result.failed_instances
+      failed_instances = failed_instances.map(&:last) if options[:track_validation_failures]
+      models -= failed_instances
 
       # if ids were returned for all models we know all were updated
       if models.size == import_result.ids.size

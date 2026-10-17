@@ -227,4 +227,13 @@ ActiveRecord::Schema.define do
     t.integer :customer_id
     t.integer :amount
   end
+
+  create_table :playlists, force: :cascade do |t|
+    t.string :name
+  end
+
+  create_table :songs, force: :cascade do |t|
+    t.integer :playlist_id
+    t.string :title
+  end
 end

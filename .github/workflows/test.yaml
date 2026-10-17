@@ -99,30 +99,9 @@ jobs:
           - ruby: 3.1
             env:
               AR_VERSION: 6.1
-          - ruby: '3.0'
-            env:
-              AR_VERSION: '7.0'
-          - ruby: '3.0'
-            env:
-              AR_VERSION: 6.1
           - ruby: jruby-9.4.8.0
             env:
               AR_VERSION: '7.0'
-          - ruby: 2.7
-            env:
-              AR_VERSION: '7.0'
-          - ruby: 2.7
-            env:
-              AR_VERSION: 6.1
-          - ruby: 2.7
-            env:
-              AR_VERSION: '6.0'
-          - ruby: jruby-9.3.15.0
-            env:
-              AR_VERSION: '6.1'
-          - ruby: 2.6
-            env:
-              AR_VERSION: 5.2
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.experimental || false }}
     env:
@@ -172,10 +151,6 @@ jobs:
           bundle exec rake test:postgresql
           bundle exec rake test:postgresql_makara
           bundle exec rake test:postgresql_proxy
-      - name: Run tests with seamless_database_pool
-        run: |
-          bundle exec rake test:seamless_database_pool
-        if: ${{ matrix.ruby < '3.0' }}
       - name: Run tests with sqlite
         run: |
           bundle exec rake test:spatialite
@@ -200,7 +175,7 @@ jobs:
           sudo apt-get install libsqlite3-dev
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.0
+          ruby-version: 3.1
           bundler-cache: true
       - name: Run Rubocop
         run: bundle exec rubocop
