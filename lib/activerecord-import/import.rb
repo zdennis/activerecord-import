@@ -604,38 +604,9 @@ class ActiveRecord::Base
         return_obj = if is_validating
           import_with_validations( conn, column_names, array_of_attributes, options ) do |failed_instances|
             if models
-              models.each_with_index do |m, i|
-                next unless m.errors.any?
-
-                failed_instances << (options[:track_validation_failures] ? [i, m] : m)
-              end
+              add_failed_models(failed_instances, models, options)
             else
-              # create instances for each of our column/value sets
-              arr = validations_array_for_column_names_and_attributes( column_names, array_of_attributes )
-
-              # keep track of the instance and the position it is currently at. if this fails
-              # validation we'll use the index to remove it from the array_of_attributes
-              arr.each_with_index do |hsh, i|
-                # utilize block initializer syntax to prevent failure when 'mass_assignment_sanitizer = :strict'
-                model = new do |m|
-                  hsh.each_pair do |k, v|
-                    if write_id_column_directly?(k)
-                      m._write_attribute("id", v)
-                    else
-                      m[k] = v
-                    end
-                  end
-                end
-
-                next if validator.valid_model?(model)
-                raise(ActiveRecord::RecordInvalid, model) if options[:raise_error]
-
-                array_of_attributes[i] = nil
-                failure = model.dup
-                failure.errors.send(:initialize_dup, model.errors)
-                failed_instances << (options[:track_validation_failures] ? [i, failure] : failure )
-              end
-              array_of_attributes.compact!
+              validate_attributes_for_import(failed_instances, column_names, array_of_attributes, validator, options)
             end
           end
         else
@@ -949,6 +920,46 @@ class ActiveRecord::Base
         new_fields = Array.new(columns_added)
         array_of_attributes.each { |a| a.concat(new_fields) }
       end
+    end
+
+    # Adds the models that failed validation, when their rows were read, to +failed_instances+.
+    def add_failed_models(failed_instances, models, options)
+      models.each_with_index do |m, i|
+        next unless m.errors.any?
+
+        failed_instances << (options[:track_validation_failures] ? [i, m] : m)
+      end
+    end
+
+    # Validates each row of +array_of_attributes+ as a new model, adding the models that
+    # fail to +failed_instances+ and removing their rows from +array_of_attributes+.
+    def validate_attributes_for_import(failed_instances, column_names, array_of_attributes, validator, options)
+      # create instances for each of our column/value sets
+      arr = validations_array_for_column_names_and_attributes( column_names, array_of_attributes )
+
+      # keep track of the instance and the position it is currently at. if this fails
+      # validation we'll use the index to remove it from the array_of_attributes
+      arr.each_with_index do |hsh, i|
+        # utilize block initializer syntax to prevent failure when 'mass_assignment_sanitizer = :strict'
+        model = new do |m|
+          hsh.each_pair do |k, v|
+            if write_id_column_directly?(k)
+              m._write_attribute("id", v)
+            else
+              m[k] = v
+            end
+          end
+        end
+
+        next if validator.valid_model?(model)
+        raise(ActiveRecord::RecordInvalid, model) if options[:raise_error]
+
+        array_of_attributes[i] = nil
+        failure = model.dup
+        failure.errors.send(:initialize_dup, model.errors)
+        failed_instances << (options[:track_validation_failures] ? [i, failure] : failure )
+      end
+      array_of_attributes.compact!
     end
 
     # ActiveRecord treats "id" as the primary key when writing attributes
