@@ -739,7 +739,13 @@ class ActiveRecord::Base
               arr.each_with_index do |hsh, i|
                 # utilize block initializer syntax to prevent failure when 'mass_assignment_sanitizer = :strict'
                 model = new do |m|
-                  hsh.each_pair { |k, v| m[k] = v }
+                  hsh.each_pair do |k, v|
+                    if write_id_column_directly?(k)
+                      m._write_attribute("id", v)
+                    else
+                      m[k] = v
+                    end
+                  end
                 end
 
                 next if validator.valid_model?(model)
@@ -890,6 +896,13 @@ class ActiveRecord::Base
 
     private
 
+    # ActiveRecord treats "id" as the primary key when writing attributes
+    # through id= or []=. When the primary key is composite or is another
+    # column, an "id" column has to be written directly instead.
+    def write_id_column_directly?(column)
+      column.to_s == "id" && primary_key != "id"
+    end
+
     def associated_options(options, association)
       return options unless options.key?(:recursive_on_duplicate_key_update)
 
@@ -937,7 +950,11 @@ class ActiveRecord::Base
       set_value = lambda do |model, column, value|
         val = deserialize_value.call(column, value)
         if model.attribute_names.include?(column)
-          model.send("#{column}=", val)
+          if write_id_column_directly?(column)
+            model._write_attribute(column, val)
+          else
+            model.send("#{column}=", val)
+          end
         else
           attributes = attributes_builder.build_from_database(model.attributes.merge(column => val))
           model.instance_variable_set(:@attributes, attributes)
