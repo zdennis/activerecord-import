@@ -867,9 +867,13 @@ class ActiveRecord::Base
           progress_proc.call(import_size, batches, current_batch, Time.now.to_i - batch_started_at) if run_proc
         end
       else
+        logger&.warn "activerecord-import: the #{conn.adapter_name} adapter doesn't support bulk import, so #{model_name} " \
+          "records are being inserted one at a time. If the adapter is supported, make sure activerecord-import is " \
+          "loaded before the database connection is established."
+
         transaction(requires_new: true) do
           values_sql.each do |values|
-            ids << conn.insert(insert_sql + values)
+            ids << conn.insert(insert_sql + values, "#{model_name} Create Many")
             number_inserted += 1
           end
         end

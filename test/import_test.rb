@@ -490,6 +490,29 @@ describe "#import" do
     end
   end
 
+  context "when the adapter doesn't support bulk import" do
+    it "should warn and insert records one at a time" do
+      Topic.stubs(:supports_import?).returns(false)
+      Topic.logger.expects(:warn).with(regexp_matches(/Topic records are being inserted one at a time/))
+
+      query_names = []
+      subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") do |*, payload|
+        query_names << payload[:name] if payload[:sql].start_with?("INSERT")
+      end
+
+      begin
+        assert_difference "Topic.count", +2 do
+          result = Topic.import Build(2, :topics)
+          assert_equal 2, result.num_inserts
+        end
+      ensure
+        ActiveSupport::Notifications.unsubscribe(subscriber)
+      end
+
+      assert_equal ["Topic Create Many"] * 2, query_names
+    end
+  end
+
   context "with :batch_size option" do
     it "should import with a single insert" do
       assert_difference "Topic.count", +10 do
