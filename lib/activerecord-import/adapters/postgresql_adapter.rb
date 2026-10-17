@@ -98,7 +98,7 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
   def returning_selections(options)
     selections = []
-    column_names = Array(options[:model].column_names)
+    column_names = Array(options[:model]&.column_names)
 
     selections += Array(options[:primary_key]) if options[:primary_key].present?
     selections += Array(options[:returning]) if options[:returning].present?
