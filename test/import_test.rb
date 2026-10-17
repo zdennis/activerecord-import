@@ -202,6 +202,18 @@ describe "#import" do
       end
       assert_equal "Dictionary", Dictionary.last.type
     end
+
+    it "should import enums defined only on the subclass through the parent class" do
+      dictionaries = [
+        Dictionary.new(author_name: "Noah Webster", title: "Webster's Dictionary", cover: :hardcover),
+        Dictionary.new(author_name: "Samuel Johnson", title: "A Dictionary of the English Language", cover: :paperback)
+      ]
+
+      assert_difference "Dictionary.count", +2 do
+        Book.import dictionaries
+      end
+      assert_equal %w(hardcover paperback), Dictionary.order(:id).last(2).map(&:cover)
+    end
   end
 
   context "with :validation option" do

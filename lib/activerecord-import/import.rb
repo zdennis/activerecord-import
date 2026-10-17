@@ -629,7 +629,8 @@ class ActiveRecord::Base
               else
                 name = name.to_s
                 # Read a column's own value, as saving the model would, even if it's also an alias
-                columns_hash.key?(name) ? model._read_attribute(name) : model.read_attribute(name)
+                value = columns_hash.key?(name) ? model._read_attribute(name) : model.read_attribute(name)
+                model.instance_of?(self) ? value : value_from_model_type(model, name, value)
               end
             end
           end
@@ -1107,6 +1108,16 @@ class ActiveRecord::Base
         column = schema_columns_hash(conn)[name]
         column && (column.type == :uuid || (column.default_function && sequence_name.blank?))
       end
+    end
+
+    # A model of another class, such as an STI subclass with its own enum, can give
+    # a column a different type than this class, which serializes the imported values.
+    # Convert the model's value to this class's type through its database value.
+    def value_from_model_type(model, name, value)
+      name = column_name_for_import(name)
+      model_type = model.class.type_for_attribute(name)
+      type = type_for_attribute(name)
+      model_type.equal?(type) ? value : type.deserialize(model_type.serialize(value))
     end
 
     def schema_columns_hash(conn)
