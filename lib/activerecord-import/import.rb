@@ -570,7 +570,7 @@ class ActiveRecord::Base
         options, args = options_and_arguments_for_import(args)
 
         is_validating = options[:validate_with_context].present? || options[:validate]
-        validator = ActiveRecord::Import::Validator.new(options)
+        validator = ActiveRecord::Import::Validator.new(options) if is_validating
 
         # assume array of model objects
         if args.last.is_a?( Array ) && args.last.first.is_a?(ActiveRecord::Base)
@@ -594,35 +594,7 @@ class ActiveRecord::Base
           # assigned ids are kept. Otherwise the database fills it in for the models without one.
           column_names -= database_populated_primary_keys(conn) if models.all? { |model| model.id.nil? }
 
-          update_attrs = if record_timestamps && options[:timestamps]
-            send(:timestamp_attributes_for_update).map(&:to_sym)
-          end
-
-          array_of_attributes = []
-
-          models.each do |model|
-            if supports_setting_primary_key_of_imported_objects?(conn)
-              load_association_ids(model)
-            end
-
-            if is_validating && !validator.valid_model?(model)
-              raise(ActiveRecord::RecordInvalid, model) if options[:raise_error]
-              next
-            end
-
-            array_of_attributes << column_names.map do |name|
-              if model.persisted? &&
-                 update_attrs && update_attrs.include?(name.to_sym) &&
-                 !model.send("#{name}_changed?")
-                nil
-              else
-                name = name.to_s
-                # Read a column's own value, as saving the model would, even if it's also an alias
-                value = columns_hash.key?(name) ? model._read_attribute(name) : model.read_attribute(name)
-                model.instance_of?(self) ? value : value_from_model_type(model, name, value)
-              end
-            end
-          end
+          array_of_attributes = attributes_from_models(conn, models, column_names, validator, options)
           # supports array of hash objects
         elsif args.last.is_a?( Array ) && args.last.first.is_a?(Hash)
           if args.length == 2
@@ -906,6 +878,43 @@ class ActiveRecord::Base
       options[:primary_key] = primary_key
       options[:locking_column] = locking_column if locking_enabled?
       [options, args]
+    end
+
+    # Returns the values of +column_names+ for each of +models+, the rows to import. Models
+    # that +validator+ finds invalid are left out, or raise ActiveRecord::RecordInvalid with
+    # the :raise_error option. Without a +validator+, the models aren't validated.
+    def attributes_from_models(conn, models, column_names, validator, options)
+      update_attrs = if record_timestamps && options[:timestamps]
+        send(:timestamp_attributes_for_update).map(&:to_sym)
+      end
+
+      array_of_attributes = []
+
+      models.each do |model|
+        if supports_setting_primary_key_of_imported_objects?(conn)
+          load_association_ids(model)
+        end
+
+        if validator && !validator.valid_model?(model)
+          raise(ActiveRecord::RecordInvalid, model) if options[:raise_error]
+          next
+        end
+
+        array_of_attributes << column_names.map do |name|
+          if model.persisted? &&
+             update_attrs && update_attrs.include?(name.to_sym) &&
+             !model.send("#{name}_changed?")
+            nil
+          else
+            name = name.to_s
+            # Read a column's own value, as saving the model would, even if it's also an alias
+            value = columns_hash.key?(name) ? model._read_attribute(name) : model.read_attribute(name)
+            model.instance_of?(self) ? value : value_from_model_type(model, name, value)
+          end
+        end
+      end
+
+      array_of_attributes
     end
 
     # ActiveRecord treats "id" as the primary key when writing attributes
