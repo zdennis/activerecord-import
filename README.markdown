@@ -45,6 +45,7 @@ The gem provides the following high-level features:
 * [Counter Cache](#counter-cache)
 * [ActiveRecord Timestamps](#activerecord-timestamps)
 * [Callbacks](#callbacks)
+* [Logging](#logging)
 * [Supported Adapters](#supported-adapters)
 * [Additional Adapters](#additional-adapters)
 * [Requiring](#requiring)
@@ -232,6 +233,16 @@ columns = [ :title ]
 Book.import columns, books, batch_size: 2
 ```
 
+`batch_size` only controls how many rows go into each INSERT statement. The whole import is still prepared up front: every record or row passed to `import`, and the SQL for all of them, is held in memory until the import finishes. For very large imports, load and import the data in chunks, so only one chunk is in memory at a time:
+
+```ruby
+Source.find_in_batches(batch_size: 1_000) do |sources|
+  Book.import sources.map { |source| Book.new(title: source.title, author: source.author) }
+end
+```
+
+Each `import` call validates, inserts and returns its own result, so options like `all_or_none` apply to each chunk rather than to all of the data.
+
 If your import is particularly large or slow (possibly due to [callbacks](#callbacks)) whilst batch importing, you might want a way to report back on progress. This is supported by passing a callable as the `batch_progress` option. e.g:
 
 ```ruby
@@ -289,7 +300,7 @@ Key                       | Options               | Default            | Descrip
 :timestamps               | `true`/`false`        | `true`             | Enables/disables timestamps on imported records.
 :recursive                | `true`/`false`        | `false`            | Imports has_many/has_one associations (PostgreSQL and MariaDB 10.5+ only).
 :recursive_on_duplicate_key_update | `Hash`       | N/A                | Allows upsert logic to be used for recursive associations. The hash key is the association name and the value has the same options as `:on_duplicate_key_update`. See [here](#duplicate-key-update) for more details.
-:batch_size               | `Integer`             | total # of records | Max number of records to insert per import
+:batch_size               | `Integer`             | total # of records | Max number of records to insert per INSERT statement. See [Batching](#batching).
 :raise_error              | `true`/`false`        | `false`            | Raises an exception at the first invalid record. This means there will not be a result object returned. The `import!` method is a shortcut for this.
 :all_or_none              | `true`/`false`        | `false`            | Will not import any records if there is a record with validation errors.
 
@@ -511,6 +522,16 @@ valid_books.each do |book|
 end
 
 Book.import valid_books, validate: false
+```
+
+### Logging
+
+Imports are logged like ActiveRecord's own queries, named `<Model> Create Many`. The imported values are part of the SQL rather than bind parameters, so a logged INSERT includes every value it imports. That can make for very long log lines, and ActiveRecord's `filter_attributes` doesn't apply to them, so the values of sensitive columns appear in the log too. ActiveRecord's own `insert_all` and `upsert_all` log the same way.
+
+If that's a concern, silence the logger around imports. For example, with Rails' logger:
+
+```ruby
+ActiveRecord::Base.logger.silence { Book.import books }
 ```
 
 ### Supported Adapters
