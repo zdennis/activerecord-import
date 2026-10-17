@@ -592,19 +592,7 @@ class ActiveRecord::Base
           options[:on_duplicate_key_update] = on_duplicate_key_update_for_import(on_duplicate_key_update, column_names, options)
         end
 
-        # Force the primary key col into the insert if it's not
-        # on the list and we are using a sequence and stuff a nil
-        # value for it into each row so the sequencer will fire later
-        symbolized_column_names = Array(column_names).map(&:to_sym)
-        symbolized_primary_key = Array(primary_key).map(&:to_sym)
-
-        if !symbolized_primary_key.to_set.subset?(symbolized_column_names.to_set) && conn.prefetch_primary_key? && sequence_name
-          column_count = column_names.size
-          column_names.concat(Array(primary_key)).uniq!
-          columns_added = column_names.size - column_count
-          new_fields = Array.new(columns_added)
-          array_of_attributes.each { |a| a.concat(new_fields) }
-        end
+        add_primary_key_for_sequence(conn, column_names, array_of_attributes)
 
         timestamps = {}
 
@@ -944,6 +932,22 @@ class ActiveRecord::Base
         on_duplicate_key_update.dup
       else
         on_duplicate_key_update
+      end
+    end
+
+    # Force the primary key col into the insert if it's not
+    # on the list and we are using a sequence and stuff a nil
+    # value for it into each row so the sequencer will fire later
+    def add_primary_key_for_sequence(conn, column_names, array_of_attributes)
+      symbolized_column_names = Array(column_names).map(&:to_sym)
+      symbolized_primary_key = Array(primary_key).map(&:to_sym)
+
+      if !symbolized_primary_key.to_set.subset?(symbolized_column_names.to_set) && conn.prefetch_primary_key? && sequence_name
+        column_count = column_names.size
+        column_names.concat(Array(primary_key)).uniq!
+        columns_added = column_names.size - column_count
+        new_fields = Array.new(columns_added)
+        array_of_attributes.each { |a| a.concat(new_fields) }
       end
     end
 
