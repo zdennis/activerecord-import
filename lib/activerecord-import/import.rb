@@ -753,7 +753,7 @@ class ActiveRecord::Base
           # if there are auto-save associations on the models we imported that are new, import them as well
           if options[:recursive]
             options[:on_duplicate_key_update] = on_duplicate_key_update unless on_duplicate_key_update.nil?
-            import_associations(models, options.dup.merge(validate: false))
+            import_associations(imported_models(models, return_obj, options), options.dup.merge(validate: false))
           end
         end
 
@@ -876,11 +876,16 @@ class ActiveRecord::Base
       )
     end
 
-    def set_attributes_and_mark_clean(conn, models, import_result, timestamps, options)
-      return if models.nil?
+    # Returns the models that weren't rejected by validations.
+    def imported_models(models, import_result, options)
       failed_instances = import_result.failed_instances
       failed_instances = failed_instances.map(&:last) if options[:track_validation_failures]
-      models -= failed_instances
+      models - failed_instances
+    end
+
+    def set_attributes_and_mark_clean(conn, models, import_result, timestamps, options)
+      return if models.nil?
+      models = imported_models(models, import_result, options)
 
       # if ids were returned for all models we know all were updated
       if models.size == import_result.ids.size

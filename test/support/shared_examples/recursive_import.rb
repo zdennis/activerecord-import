@@ -177,6 +177,45 @@ def should_support_recursive_import
       end
     end
 
+    context "when a model is not valid" do
+      # The issue [1] only occurs when the parent model has an ID set.
+      # [1] https://github.com/zdennis/activerecord-import/issues/857
+      let(:invalid_topics) { Build(1, :topic_with_book, author_name: nil, id: 1) }
+
+      context "when validations are enabled" do
+        it "does not import its associations" do
+          assert_no_difference "Book.count" do
+            Topic.import invalid_topics, validate: true, recursive: true
+          end
+        end
+      end
+
+      context "when validations are enabled and failures are tracked" do
+        it "does not import its associations" do
+          assert_no_difference "Book.count" do
+            Topic.import invalid_topics, validate: true, recursive: true, track_validation_failures: true
+          end
+        end
+      end
+
+      context "when validations are not enabled" do
+        it "import its associations anyway" do
+          assert_difference "Book.count", invalid_topics.first.books.size do
+            Topic.import invalid_topics, validate: false, recursive: true
+          end
+        end
+      end
+    end
+
+    it "imports the associations of a model with errors left over from an earlier validation" do
+      topic = Build(1, :topic_with_book).first
+      topic.errors.add(:base, :invalid)
+
+      assert_difference "Book.count", topic.books.size do
+        Topic.import [topic], validate: false, recursive: true
+      end
+    end
+
     unless ENV["SKIP_COMPOSITE_PK"]
       describe "with composite primary keys" do
         it "should import models and set id" do
