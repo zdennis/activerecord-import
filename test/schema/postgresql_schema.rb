@@ -13,6 +13,11 @@ ActiveRecord::Schema.define do
     execute('ALTER TYPE vendor_type ADD VALUE IF NOT EXISTS \'retailer\';')
   end
 
+  create_table :licenses, force: :cascade do |t|
+    t.string :name
+    t.uuid :key, default: -> { "gen_random_uuid()" }
+  end
+
   create_table :vendors, id: :uuid, force: :cascade do |t|
     t.string :name, null: true
     t.text :hours

@@ -107,6 +107,38 @@ def should_support_postgresql_import_functionality
       end
     end
 
+    describe "with a column the database populates" do
+      let(:key) { "0e4c1c5e-6a3e-4b8a-9f1e-3c2d7b6a5f40" }
+
+      it "leaves the column out when no model assigns it" do
+        License.import [License.new(name: "First"), License.new(name: "Second")]
+        assert License.pluck(:key).all?(&:present?)
+      end
+
+      it "inserts assigned values" do
+        License.import [License.new(name: "First", key: key)]
+        assert_equal key, License.last.key
+      end
+
+      it "inserts the column when any model assigns it" do
+        License.import [License.new(name: "First", key: key), License.new(name: "Second")]
+        assert_equal key, License.order(:id).first.key
+      end
+
+      it "inserts the column when it is listed explicitly" do
+        License.import [:name, :key], [License.new(name: "First")]
+        assert_nil License.last.key
+      end
+
+      it "inserts the column for persisted models" do
+        license = License.create!(name: "First")
+        license.name = "Renamed"
+        License.import [license], on_duplicate_key_update: [:name]
+        assert_equal "Renamed", license.reload.name
+        assert license.key.present?
+      end
+    end
+
     describe "returning" do
       let(:books) { [Book.new(author_name: "King", title: "It")] }
       let(:result) { Book.import(books, returning: %w(author_name title)) }
