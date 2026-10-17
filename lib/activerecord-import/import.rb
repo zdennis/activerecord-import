@@ -24,139 +24,78 @@ module ActiveRecord::Import # :nodoc:
   end
 
   # Skips uniqueness validations while a model is being validated for an import
-  # that doesn't validate uniqueness. This covers the validations Rails runs on a
-  # model's associated records, which don't go through the Validator's callbacks.
+  # that doesn't validate uniqueness, including the validations Rails runs on
+  # the model's associated records.
   module SkipUniquenessValidation # :nodoc:
     def validate_each(record, attribute, value)
       super unless ActiveRecord::Import::Validator.skip_uniqueness?
     end
   end
 
+  # Validates the presence of a belongs_to association on a model being
+  # validated for an import by checking its foreign key, so the associated
+  # record isn't loaded for every model.
+  module ForeignKeyPresenceValidation # :nodoc:
+    def validate(record)
+      validator = ActiveRecord::Import::Validator.foreign_key_presence_validator(self, record)
+      return super unless validator
+
+      ActiveModel::EachValidator.instance_method(:validate).bind(validator).call(record)
+    end
+  end
+
   class Validator
-    SKIP_UNIQUENESS = :activerecord_import_skip_uniqueness
+    # Holds [validator, model] for the current thread while valid_model? runs.
+    CURRENT = :activerecord_import_validation
+
+    attr_reader :options
 
     def self.skip_uniqueness?
-      Thread.current[SKIP_UNIQUENESS] == true
+      validator, = Thread.current[CURRENT]
+      validator ? !validator.options[:validate_uniqueness] : false
     end
 
-    def initialize(klass, options = {})
+    def self.foreign_key_presence_validator(presence_validator, record)
+      validator, model = Thread.current[CURRENT]
+      validator.foreign_key_presence_validator(presence_validator, record.class) if model.equal?(record)
+    end
+
+    def initialize(options = {})
       @options = options
-      @validator_class = klass
-      init_validations(klass)
-    end
-
-    def init_validations(klass)
-      @validate_callbacks = klass._validate_callbacks.dup
-
-      @validate_callbacks.each_with_index do |callback, i|
-        filter = callback.respond_to?(:raw_filter) ? callback.raw_filter : callback.filter
-        next unless filter.class.name =~ /Validations::PresenceValidator/ ||
-                    (!@options[:validate_uniqueness] &&
-                     filter.is_a?(ActiveRecord::Validations::UniquenessValidator))
-
-        callback = callback.dup
-        filter = filter.dup
-        attrs = filter.instance_variable_get(:@attributes).dup
-
-        if filter.is_a?(ActiveRecord::Validations::UniquenessValidator)
-          attrs = []
-        else
-          associations = klass.reflect_on_all_associations(:belongs_to)
-          associations.each do |assoc|
-            if (index = attrs.index(assoc.name))
-              key = assoc.foreign_key.is_a?(Array) ? assoc.foreign_key.map(&:to_sym) : assoc.foreign_key.to_sym
-              attrs[index] = key unless attrs.include?(key)
-            end
-          end
-        end
-
-        filter.instance_variable_set(:@attributes, attrs.flatten)
-
-        if @validate_callbacks.respond_to?(:chain, true)
-          @validate_callbacks.send(:chain).tap do |chain|
-            callback.instance_variable_set(:@filter, filter)
-            callback.instance_variable_set(:@compiled, nil)
-            chain[i] = callback
-          end
-        else
-          callback.raw_filter = filter
-          callback.filter = callback.send(:_compile_filter, filter)
-          @validate_callbacks[i] = callback
-        end
-      end
+      @foreign_key_presence_validators = {}
     end
 
     def valid_model?(model)
-      init_validations(model.class) unless model.instance_of?(@validator_class)
-
-      validation_context = @options[:validate_with_context]
-      validation_context ||= (model.new_record? ? :create : :update)
-      current_context = model.send(:validation_context)
-      current_skip_uniqueness = Thread.current[SKIP_UNIQUENESS]
-
-      begin
-        set_validation_context(model, validation_context)
-        Thread.current[SKIP_UNIQUENESS] = !@options[:validate_uniqueness]
-        model.errors.clear
-
-        model.run_callbacks(:validation) do
-          if defined?(ActiveSupport::Callbacks::Filters::Environment) # ActiveRecord >= 4.1
-            runner = if @validate_callbacks.method(:compile).arity == 0
-              @validate_callbacks.compile
-            else # ActiveRecord >= 7.1
-              @validate_callbacks.compile(nil)
-            end
-            env = ActiveSupport::Callbacks::Filters::Environment.new(model, false, nil)
-            if runner.respond_to?(:call) # ActiveRecord < 5.1
-              runner.call(env)
-            else # ActiveRecord >= 5.1
-              # Note that this is a gross simplification of ActiveSupport::Callbacks#run_callbacks.
-              # It's technically possible for there to exist an "around" callback in the
-              # :validate chain, but this would be an aberration, since Rails doesn't define
-              # "around_validate". Still, rather than silently ignoring such callbacks, we
-              # explicitly raise a RuntimeError, since activerecord-import was asked to perform
-              # validations and it's unable to do so.
-              #
-              # The alternative here would be to copy-and-paste the bulk of the
-              # ActiveSupport::Callbacks#run_callbacks method, which is undesirable if there's
-              # no real-world use case for it.
-              raise "The :validate callback chain contains an 'around' callback, which is unsupported" unless runner.final?
-              runner.invoke_before(env)
-              # Ensure a truthy value is returned. ActiveRecord < 7.2 always returned an array.
-              runner.invoke_after(env) || []
-            end
-          elsif @validate_callbacks.method(:compile).arity == 0 # ActiveRecord = 4.0
-            model.instance_eval @validate_callbacks.compile
-          else # ActiveRecord 3.x
-            model.instance_eval @validate_callbacks.compile(nil, model)
-          end
-        end
-
-        model.errors.empty?
-      ensure
-        set_validation_context(model, current_context)
-        Thread.current[SKIP_UNIQUENESS] = current_skip_uniqueness
-      end
+      current = Thread.current[CURRENT]
+      Thread.current[CURRENT] = [self, model]
+      model.valid?(@options[:validate_with_context])
+    ensure
+      Thread.current[CURRENT] = current
     end
 
-    private
+    # Returns a copy of +presence_validator+ that validates the foreign keys of
+    # any belongs_to associations it validates, or nil if there are none.
+    def foreign_key_presence_validator(presence_validator, klass)
+      key = [presence_validator, klass]
+      return @foreign_key_presence_validators[key] if @foreign_key_presence_validators.key?(key)
 
-    # ActiveModel's private +validation_context=+ writer was removed in Rails
-    # 8.2 (rails/rails@0f9d1270834a6407a59637650bf910d8ae826169) in favor of a
-    # validation context object reachable through the private
-    # +context_for_validation+ reader. Support both so that validated imports
-    # keep working across all supported ActiveRecord versions.
-    def set_validation_context(model, context)
-      if model.respond_to?(:validation_context=, true)
-        model.send(:validation_context=, context)
-      else
-        model.send(:context_for_validation).context = context
+      attrs = presence_validator.attributes.dup
+      klass.reflect_on_all_associations(:belongs_to).each do |assoc|
+        if (index = attrs.index(assoc.name))
+          foreign_key = assoc.foreign_key.is_a?(Array) ? assoc.foreign_key.map(&:to_sym) : assoc.foreign_key.to_sym
+          attrs[index] = foreign_key unless attrs.include?(foreign_key)
+        end
+      end
+
+      @foreign_key_presence_validators[key] = if attrs != presence_validator.attributes
+        presence_validator.dup.tap { |validator| validator.instance_variable_set(:@attributes, attrs.flatten) }
       end
     end
   end
 end
 
 ActiveRecord::Validations::UniquenessValidator.prepend(ActiveRecord::Import::SkipUniquenessValidation)
+ActiveModel::Validations::PresenceValidator.prepend(ActiveRecord::Import::ForeignKeyPresenceValidation)
 
 class ActiveRecord::Associations::CollectionProxy
   def bulk_import(*args, &block)
@@ -612,7 +551,7 @@ class ActiveRecord::Base
         options[:locking_column] = locking_column if locking_enabled?
 
         is_validating = options[:validate_with_context].present? || options[:validate]
-        validator = ActiveRecord::Import::Validator.new(self, options)
+        validator = ActiveRecord::Import::Validator.new(options)
 
         # assume array of model objects
         if args.last.is_a?( Array ) && args.last.first.is_a?(ActiveRecord::Base)
