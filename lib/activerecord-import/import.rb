@@ -1093,9 +1093,10 @@ class ActiveRecord::Base
         association = Array(association.target)
 
         changed_objects = association.select { |a| a.new_record? || a.changed? }
+        foreign_key_values = association_foreign_key_values(model, association_reflection)
         changed_objects.each do |child|
           Array(association_reflection.inverse_of&.foreign_key || association_reflection.foreign_key).each_with_index do |column, index|
-            child.public_send("#{column}=", Array(model.id)[index])
+            child.public_send("#{column}=", foreign_key_values[index])
           end
 
           # For polymorphic associations
@@ -1111,6 +1112,18 @@ class ActiveRecord::Base
         associated_objects_by_class[model.class.name][association_reflection.name].concat changed_objects
       end
       associated_objects_by_class
+    end
+
+    # Returns the values of +model+ that the foreign key of +association_reflection+
+    # refers to: the columns named by the association's :primary_key option when
+    # one is given (e.g. <tt>has_many :reviews, primary_key: :identifier</tt>),
+    # and the model's id otherwise.
+    def association_foreign_key_values(model, association_reflection)
+      if association_reflection.options[:primary_key]
+        Array(association_reflection.active_record_primary_key).map { |key| model.read_attribute(key) }
+      else
+        Array(model.id)
+      end
     end
 
     # Returns SQL the VALUES for an INSERT statement given the passed in +columns+
