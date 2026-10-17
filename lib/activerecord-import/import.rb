@@ -567,152 +567,32 @@ class ActiveRecord::Base
         # missed if activerecord-import is required afterwards, so load it now if it's missing.
         ActiveRecord::Import.load_from_connection_pool_once(connection_pool) unless supports_import?(conn)
 
-        options = { validate: true, timestamps: true, track_validation_failures: false }
-        options.merge!( args.pop ) if args.last.is_a? Hash
-        args = arrays_from_array_like_import_arguments(args)
-        # making sure that the current model and its primary key are used, rather than
-        # the parent model's when importing associations recursively
-        options[:model] = self
-        options[:primary_key] = primary_key
-        options[:locking_column] = locking_column if locking_enabled?
+        options, args = options_and_arguments_for_import(args)
 
         is_validating = options[:validate_with_context].present? || options[:validate]
-        validator = ActiveRecord::Import::Validator.new(options)
+        validator = ActiveRecord::Import::Validator.new(options) if is_validating
+
+        # supports empty array
+        return ActiveRecord::Import::Result.new([], 0, [], []) if args.last.is_a?( Array ) && args.last.empty?
 
         # assume array of model objects
         if args.last.is_a?( Array ) && args.last.first.is_a?(ActiveRecord::Base)
-          if args.length == 2
-            models = args.last
-            column_names = args.first.dup
-          else
-            models = args.first
-            column_names = if conn.try(:supports_virtual_columns?)
-              columns.reject(&:virtual?).map(&:name)
-            else
-              self.column_names.dup
-            end
-            populated_column_names = database_populated_column_names(conn, column_names, models)
-            # Leave out the ones no model assigns, and let the database fill in the rest for the models that don't
-            default_column_names = populated_column_names.select { |name| models.any? { |model| model.attribute_changed?(name) } }
-            column_names -= populated_column_names - default_column_names
-          end
-
-          # Leave out a primary key the database populates, like a uuid, only when no model has one, so
-          # assigned ids are kept. Otherwise the database fills it in for the models without one.
-          column_names -= database_populated_primary_keys(conn) if models.all? { |model| model.id.nil? }
-
-          update_attrs = if record_timestamps && options[:timestamps]
-            send(:timestamp_attributes_for_update).map(&:to_sym)
-          end
-
-          array_of_attributes = []
-
-          models.each do |model|
-            if supports_setting_primary_key_of_imported_objects?(conn)
-              load_association_ids(model)
-            end
-
-            if is_validating && !validator.valid_model?(model)
-              raise(ActiveRecord::RecordInvalid, model) if options[:raise_error]
-              next
-            end
-
-            array_of_attributes << column_names.map do |name|
-              if model.persisted? &&
-                 update_attrs && update_attrs.include?(name.to_sym) &&
-                 !model.send("#{name}_changed?")
-                nil
-              else
-                name = name.to_s
-                # Read a column's own value, as saving the model would, even if it's also an alias
-                value = columns_hash.key?(name) ? model._read_attribute(name) : model.read_attribute(name)
-                model.instance_of?(self) ? value : value_from_model_type(model, name, value)
-              end
-            end
-          end
-          # supports array of hash objects
-        elsif args.last.is_a?( Array ) && args.last.first.is_a?(Hash)
-          if args.length == 2
-            array_of_hashes = args.last
-            column_names = args.first.dup
-            allow_extra_hash_keys = true
-          else
-            array_of_hashes = args.first
-            column_names = array_of_hashes.first.keys
-            allow_extra_hash_keys = false
-          end
-
-          array_of_attributes = array_of_hashes.map do |h|
-            error_message = validate_hash_import(h, column_names, allow_extra_hash_keys)
-
-            raise ArgumentError, error_message if error_message
-
-            column_names.map do |key|
-              h[key]
-            end
-          end
-          # supports empty array
-        elsif args.last.is_a?( Array ) && args.last.empty?
-          return ActiveRecord::Import::Result.new([], 0, [], [])
-          # supports 2-element array and array
-        elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
-
-          unless args.last.first.is_a?(Array)
-            raise ArgumentError, "Last argument should be a two dimensional array '[[]]'. First element in array was a #{args.last.first.class}"
-          end
-
-          column_names, array_of_attributes = args
-
-          # dup the passed args so we don't modify unintentionally
-          column_names = column_names.dup
-          array_of_attributes = array_of_attributes.map(&:dup)
+          models, column_names, default_column_names = models_and_column_names_for_import(conn, args)
+          array_of_attributes = attributes_from_models(conn, models, column_names, validator, options)
         else
-          raise ArgumentError, invalid_import_arguments_message(args)
+          column_names, array_of_attributes = column_names_and_attributes_for_import(args)
         end
 
         # Rows without a value for these columns get the database's default rather than NULL
         options[:database_default_columns] = Array(default_column_names) | database_populated_primary_keys(conn)
 
-        # Force the primary key col into the insert if it's not
-        # on the list and we are using a sequence and stuff a nil
-        # value for it into each row so the sequencer will fire later
-        symbolized_column_names = Array(column_names).map(&:to_sym)
-        symbolized_primary_key = Array(primary_key).map(&:to_sym)
-
-        if !symbolized_primary_key.to_set.subset?(symbolized_column_names.to_set) && conn.prefetch_primary_key? && sequence_name
-          column_count = column_names.size
-          column_names.concat(Array(primary_key)).uniq!
-          columns_added = column_names.size - column_count
-          new_fields = Array.new(columns_added)
-          array_of_attributes.each { |a| a.concat(new_fields) }
-        end
-
         # Don't modify incoming arguments
         on_duplicate_key_update = options[:on_duplicate_key_update]
         if on_duplicate_key_update
-          updatable_columns = symbolized_column_names.reject { |c| symbolized_primary_key.include? c }
-          # Like the primary key, timestamps recorded on create shouldn't change when a record is updated
-          if record_timestamps && options[:timestamps]
-            updatable_columns -= timestamp_attributes_for_create_in_model.map(&:to_sym)
-          end
-          options[:on_duplicate_key_update] = if on_duplicate_key_update.is_a?(Hash)
-            on_duplicate_key_update.each_with_object({}) do |(k, v), duped_options|
-              duped_options[k] = if k == :columns && v == :all
-                updatable_columns
-              elsif v.duplicable?
-                v.dup
-              else
-                v
-              end
-            end
-          elsif on_duplicate_key_update == :all
-            updatable_columns
-          elsif on_duplicate_key_update.duplicable?
-            on_duplicate_key_update.dup
-          else
-            on_duplicate_key_update
-          end
+          options[:on_duplicate_key_update] = on_duplicate_key_update_for_import(on_duplicate_key_update, column_names, options)
         end
+
+        add_primary_key_for_sequence(conn, column_names, array_of_attributes)
 
         timestamps = {}
 
@@ -724,38 +604,9 @@ class ActiveRecord::Base
         return_obj = if is_validating
           import_with_validations( conn, column_names, array_of_attributes, options ) do |failed_instances|
             if models
-              models.each_with_index do |m, i|
-                next unless m.errors.any?
-
-                failed_instances << (options[:track_validation_failures] ? [i, m] : m)
-              end
+              add_failed_models(failed_instances, models, options)
             else
-              # create instances for each of our column/value sets
-              arr = validations_array_for_column_names_and_attributes( column_names, array_of_attributes )
-
-              # keep track of the instance and the position it is currently at. if this fails
-              # validation we'll use the index to remove it from the array_of_attributes
-              arr.each_with_index do |hsh, i|
-                # utilize block initializer syntax to prevent failure when 'mass_assignment_sanitizer = :strict'
-                model = new do |m|
-                  hsh.each_pair do |k, v|
-                    if write_id_column_directly?(k)
-                      m._write_attribute("id", v)
-                    else
-                      m[k] = v
-                    end
-                  end
-                end
-
-                next if validator.valid_model?(model)
-                raise(ActiveRecord::RecordInvalid, model) if options[:raise_error]
-
-                array_of_attributes[i] = nil
-                failure = model.dup
-                failure.errors.send(:initialize_dup, model.errors)
-                failed_instances << (options[:track_validation_failures] ? [i, failure] : failure )
-              end
-              array_of_attributes.compact!
+              validate_attributes_for_import(failed_instances, column_names, array_of_attributes, validator, options)
             end
           end
         else
@@ -776,8 +627,7 @@ class ActiveRecord::Base
 
           # if there are auto-save associations on the models we imported that are new, import them as well
           if options[:recursive]
-            options[:on_duplicate_key_update] = on_duplicate_key_update unless on_duplicate_key_update.nil?
-            import_associations(imported_models(models, return_obj, options), options.dup.merge(validate: false))
+            import_associations_of_imported_models(models, return_obj, on_duplicate_key_update, options)
           end
         end
 
@@ -900,6 +750,223 @@ class ActiveRecord::Base
     end
 
     private
+
+    # Takes the options Hash, if any, off the end of +args+ and returns the options
+    # for the import, with their defaults, along with the arguments to import.
+    def options_and_arguments_for_import(args)
+      options = { validate: true, timestamps: true, track_validation_failures: false }
+      options.merge!( args.pop ) if args.last.is_a? Hash
+      args = arrays_from_array_like_import_arguments(args)
+      # making sure that the current model and its primary key are used, rather than
+      # the parent model's when importing associations recursively
+      options[:model] = self
+      options[:primary_key] = primary_key
+      options[:locking_column] = locking_column if locking_enabled?
+      [options, args]
+    end
+
+    # Returns the models to import from +args+, the column names to import them with,
+    # and the columns the database populates for the models that don't assign them,
+    # which is nil when +args+ give the column names.
+    def models_and_column_names_for_import(conn, args)
+      if args.length == 2
+        models = args.last
+        column_names = args.first.dup
+      else
+        models = args.first
+        column_names = if conn.try(:supports_virtual_columns?)
+          columns.reject(&:virtual?).map(&:name)
+        else
+          self.column_names.dup
+        end
+        populated_column_names = database_populated_column_names(conn, column_names, models)
+        # Leave out the ones no model assigns, and let the database fill in the rest for the models that don't
+        default_column_names = populated_column_names.select { |name| models.any? { |model| model.attribute_changed?(name) } }
+        column_names -= populated_column_names - default_column_names
+      end
+
+      # Leave out a primary key the database populates, like a uuid, only when no model has one, so
+      # assigned ids are kept. Otherwise the database fills it in for the models without one.
+      column_names -= database_populated_primary_keys(conn) if models.all? { |model| model.id.nil? }
+
+      [models, column_names, default_column_names]
+    end
+
+    # Returns the values of +column_names+ for each of +models+, the rows to import. Models
+    # that +validator+ finds invalid are left out, or raise ActiveRecord::RecordInvalid with
+    # the :raise_error option. Without a +validator+, the models aren't validated.
+    def attributes_from_models(conn, models, column_names, validator, options)
+      update_attrs = if record_timestamps && options[:timestamps]
+        send(:timestamp_attributes_for_update).map(&:to_sym)
+      end
+
+      array_of_attributes = []
+
+      models.each do |model|
+        if supports_setting_primary_key_of_imported_objects?(conn)
+          load_association_ids(model)
+        end
+
+        if validator && !validator.valid_model?(model)
+          raise(ActiveRecord::RecordInvalid, model) if options[:raise_error]
+          next
+        end
+
+        array_of_attributes << column_names.map do |name|
+          if model.persisted? &&
+             update_attrs && update_attrs.include?(name.to_sym) &&
+             !model.send("#{name}_changed?")
+            nil
+          else
+            name = name.to_s
+            # Read a column's own value, as saving the model would, even if it's also an alias
+            value = columns_hash.key?(name) ? model._read_attribute(name) : model.read_attribute(name)
+            model.instance_of?(self) ? value : value_from_model_type(model, name, value)
+          end
+        end
+      end
+
+      array_of_attributes
+    end
+
+    # Returns the column names and the rows to import from +args+, which are either an
+    # array of hashes, optionally after column names, or column names and an array of values.
+    def column_names_and_attributes_for_import(args)
+      # supports array of hash objects
+      if args.last.is_a?( Array ) && args.last.first.is_a?(Hash)
+        if args.length == 2
+          array_of_hashes = args.last
+          column_names = args.first.dup
+          allow_extra_hash_keys = true
+        else
+          array_of_hashes = args.first
+          column_names = array_of_hashes.first.keys
+          allow_extra_hash_keys = false
+        end
+
+        array_of_attributes = array_of_hashes.map do |h|
+          error_message = validate_hash_import(h, column_names, allow_extra_hash_keys)
+
+          raise ArgumentError, error_message if error_message
+
+          column_names.map do |key|
+            h[key]
+          end
+        end
+        # supports 2-element array and array
+      elsif args.size == 2 && args.first.is_a?( Array ) && args.last.is_a?( Array )
+
+        unless args.last.first.is_a?(Array)
+          raise ArgumentError, "Last argument should be a two dimensional array '[[]]'. First element in array was a #{args.last.first.class}"
+        end
+
+        column_names, array_of_attributes = args
+
+        # dup the passed args so we don't modify unintentionally
+        column_names = column_names.dup
+        array_of_attributes = array_of_attributes.map(&:dup)
+      else
+        raise ArgumentError, invalid_import_arguments_message(args)
+      end
+
+      [column_names, array_of_attributes]
+    end
+
+    # Returns a copy of the +on_duplicate_key_update+ option to import with, so it can be
+    # changed, such as when adding timestamp columns, without modifying the option that was
+    # passed in. :all is replaced by the columns other than the primary key and the
+    # timestamps recorded on create.
+    def on_duplicate_key_update_for_import(on_duplicate_key_update, column_names, options)
+      symbolized_column_names = Array(column_names).map(&:to_sym)
+      symbolized_primary_key = Array(primary_key).map(&:to_sym)
+
+      updatable_columns = symbolized_column_names.reject { |c| symbolized_primary_key.include? c }
+      # Like the primary key, timestamps recorded on create shouldn't change when a record is updated
+      if record_timestamps && options[:timestamps]
+        updatable_columns -= timestamp_attributes_for_create_in_model.map(&:to_sym)
+      end
+
+      if on_duplicate_key_update.is_a?(Hash)
+        on_duplicate_key_update.each_with_object({}) do |(k, v), duped_options|
+          duped_options[k] = if k == :columns && v == :all
+            updatable_columns
+          elsif v.duplicable?
+            v.dup
+          else
+            v
+          end
+        end
+      elsif on_duplicate_key_update == :all
+        updatable_columns
+      elsif on_duplicate_key_update.duplicable?
+        on_duplicate_key_update.dup
+      else
+        on_duplicate_key_update
+      end
+    end
+
+    # Force the primary key col into the insert if it's not
+    # on the list and we are using a sequence and stuff a nil
+    # value for it into each row so the sequencer will fire later
+    def add_primary_key_for_sequence(conn, column_names, array_of_attributes)
+      symbolized_column_names = Array(column_names).map(&:to_sym)
+      symbolized_primary_key = Array(primary_key).map(&:to_sym)
+
+      if !symbolized_primary_key.to_set.subset?(symbolized_column_names.to_set) && conn.prefetch_primary_key? && sequence_name
+        column_count = column_names.size
+        column_names.concat(Array(primary_key)).uniq!
+        columns_added = column_names.size - column_count
+        new_fields = Array.new(columns_added)
+        array_of_attributes.each { |a| a.concat(new_fields) }
+      end
+    end
+
+    # Adds the models that failed validation, when their rows were read, to +failed_instances+.
+    def add_failed_models(failed_instances, models, options)
+      models.each_with_index do |m, i|
+        next unless m.errors.any?
+
+        failed_instances << (options[:track_validation_failures] ? [i, m] : m)
+      end
+    end
+
+    # Validates each row of +array_of_attributes+ as a new model, adding the models that
+    # fail to +failed_instances+ and removing their rows from +array_of_attributes+.
+    def validate_attributes_for_import(failed_instances, column_names, array_of_attributes, validator, options)
+      # create instances for each of our column/value sets
+      arr = validations_array_for_column_names_and_attributes( column_names, array_of_attributes )
+
+      # keep track of the instance and the position it is currently at. if this fails
+      # validation we'll use the index to remove it from the array_of_attributes
+      arr.each_with_index do |hsh, i|
+        # utilize block initializer syntax to prevent failure when 'mass_assignment_sanitizer = :strict'
+        model = new do |m|
+          hsh.each_pair do |k, v|
+            if write_id_column_directly?(k)
+              m._write_attribute("id", v)
+            else
+              m[k] = v
+            end
+          end
+        end
+
+        next if validator.valid_model?(model)
+        raise(ActiveRecord::RecordInvalid, model) if options[:raise_error]
+
+        array_of_attributes[i] = nil
+        failure = model.dup
+        failure.errors.send(:initialize_dup, model.errors)
+        failed_instances << (options[:track_validation_failures] ? [i, failure] : failure )
+      end
+      array_of_attributes.compact!
+    end
+
+    # Imports the new and changed associations of the +models+ that were imported, with the
+    # :on_duplicate_key_update option that was passed in rather than the copy used for +models+.
+    def import_associations_of_imported_models(models, import_result, on_duplicate_key_update, options)
+      options[:on_duplicate_key_update] = on_duplicate_key_update unless on_duplicate_key_update.nil?
+      import_associations(imported_models(models, import_result, options), options.dup.merge(validate: false))
+    end
 
     # ActiveRecord treats "id" as the primary key when writing attributes
     # through id= or []=. When the primary key is composite or is another
