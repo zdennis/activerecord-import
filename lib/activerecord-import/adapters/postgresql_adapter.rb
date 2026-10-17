@@ -23,7 +23,9 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
     selections = returning_selections(options)
     if selections.blank? || (options[:no_returning] && !options[:recursive])
-      insert( sql2insert, *args )
+      # Don't use #insert here: ActiveRecord appends its own
+      # RETURNING <primary key> clause to statements run through it.
+      exec_update( sql2insert, *args )
     else
       returned_values = if selections.size > 1
         # Select composite columns
@@ -32,8 +34,8 @@ module ActiveRecord::Import::PostgreSQLAdapter
       else
         { values: select_values( sql2insert, *args ) }
       end
-      clear_query_cache if query_cache_enabled
     end
+    clear_query_cache if query_cache_enabled
 
     if options[:returning].blank?
       ids = Array(returned_values[:values])
