@@ -49,6 +49,9 @@ end
 
 gem "minitest"
 
+# Used by benchmarks/ to write CSV results. csv is no longer a default gem as of Ruby 3.4.
+gem "csv"
+
 # json 3.0 changed JSON.generate and JSON.parse in ways ActiveSupport isn't
 # compatible with (e.g. quirks_mode), breaking serialized attributes.
 gem "json", "< 3"

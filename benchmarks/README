@@ -1,24 +1,28 @@
-To run the benchmarks, from within the benchmarks run:
-   ruby benchmark.rb [options]
+To run the benchmarks, from within the benchmarks directory run:
+   AR_VERSION=8.1 bundle exec ruby benchmark.rb [options]
+
+AR_VERSION selects the ActiveRecord version, as it does for the test suite.
+The database connection is read from test/database.yml, falling back to
+test/database.default.yml (see the README for setting up the test databases).
 
 The following options are supported:
-  --adapter [String]   The database adapter to use. IE: mysql, postgresql, oracle
-             
+  --adapter [String]   The database adapter to use. Defaults to mysql2.
+
   --do-not-delete       By default all records in the benchmark tables will be deleted at the end of the benchmark. This flag indicates not to delete the benchmark data.
-  --num [Integer]      The number of objects to benchmark. (Required!)
+  --num [Integer]      The number of objects to benchmark. This can be used multiple times. Defaults to 1000.
   --table-type [String]  The table type to test. This can be used multiple times. By default it is all table types.
   --to-csv [String]      Print results in a CSV file format
-  --to-html [String]     Print results in HTML format (String filename must be supplied)
+  --to-html [String]     Print results in HTML format (String filename must be supplied). This is the default, written to benchmark.html.
 
 See "ruby benchmark.rb -h" for the complete listing of options.
 
 EXAMPLES
 --------
 To output to html format:
-  ruby benchmark.rb --adapter=mysql2 --to-html=results.html
+  AR_VERSION=8.1 bundle exec ruby benchmark.rb --adapter=mysql2 --to-html=results.html
 
 To output to csv format:
-  ruby benchmark.rb --adapter=mysql2 --to-csv=results.csv
+  AR_VERSION=8.1 bundle exec ruby benchmark.rb --adapter=mysql2 --to-csv=results.csv
 
 LIMITATIONS
 -----------
@@ -29,4 +33,3 @@ AUTHOR
 Zach Dennis
 zach.dennis@gmail.com
 http://www.continuousthinking.com
-

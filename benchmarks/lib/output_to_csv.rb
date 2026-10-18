@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require 'csv'
-
 module OutputToCSV
   def self.output_results( filename, results )
+    require 'csv'
+
     CSV.open( filename, 'w' ) do |csv|
       # Iterate over each result set, which contains many results
       results.each do |result_set|
