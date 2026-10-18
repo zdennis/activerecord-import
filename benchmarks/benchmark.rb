@@ -2,6 +2,9 @@
 
 require 'pathname'
 require "fileutils"
+require "erb"
+require "yaml"
+require "benchmark"
 require "active_record"
 require "active_record/base"
 
@@ -19,7 +22,15 @@ Dir[File.join( benchmark_dir, 'lib', '*.rb' )].sort.each { |f| require f }
 options = BenchmarkOptionParser.parse( ARGV )
 
 FileUtils.mkdir_p 'log'
-ActiveRecord::Base.configurations["test"] = YAML.load_file(File.join(benchmark_dir, "../test/database.yml"))[options.adapter]
+
+# Use the same database configuration as the test suite.
+test_dir = File.join(benchmark_dir, "..", "test")
+database_yml = File.join(test_dir, "database.yml")
+database_yml = File.join(test_dir, "database.default.yml") unless File.exist?(database_yml)
+databases = YAML.safe_load(ERB.new(File.read(database_yml)).result, aliases: true)
+db_config = databases[options.adapter] || raise("#{database_yml} has no configuration for #{options.adapter}")
+ActiveRecord::Base.configurations.configurations <<
+  ActiveRecord::DatabaseConfigurations::HashConfig.new("test", options.adapter, db_config)
 ActiveRecord::Base.logger = Logger.new("log/test.log")
 ActiveRecord::Base.logger.level = Logger::DEBUG
 if ActiveRecord.respond_to?(:default_timezone)
@@ -63,9 +74,7 @@ end
 options.outputs.each do |output|
   format = output.format.downcase
   output_module = Object.const_get( "OutputTo#{format.upcase}" )
-  benchmarks.each do |benchmark|
-    output_module.output_results( output.filename, benchmark.results )
-  end
+  output_module.output_results( output.filename, benchmarks.flat_map(&:results) )
 end
 
 puts

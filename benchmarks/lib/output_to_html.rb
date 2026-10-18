@@ -42,7 +42,7 @@ EOT
 EOT
 
   def self.output_results( filename, results )
-    html = ''
+    html = +''
     results.each do |result_set|
       columns = []
       times = []
@@ -57,7 +57,7 @@ EOT
         end
       end
 
-      template = ERB.new( TEMPLATE, 0, "%<>")
+      template = ERB.new( TEMPLATE, trim_mode: "%<>" )
       html << template.result( binding )
     end
 
