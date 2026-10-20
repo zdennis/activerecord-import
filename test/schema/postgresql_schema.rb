@@ -101,4 +101,8 @@ ActiveRecord::Schema.define do
     t.datetime :created_at
     t.datetime :updated_at
   end
+
+  create_table :sections, primary_key: :order, force: :cascade do |t|
+    t.string :name
+  end
 end

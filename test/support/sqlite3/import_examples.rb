@@ -212,6 +212,16 @@ def should_support_sqlite_upsert_functionality
         end
 
         context "with no :conflict_target" do
+          context "with a primary key named after a reserved word" do
+            it "uses the quoted primary key as the conflict target" do
+              Section.import %w(order name), [[1, "Intro"]], validate: false
+              Section.import %w(order name), [[1, "Introduction"]], on_duplicate_key_update: [:name], validate: false
+
+              assert_equal 1, Section.count
+              assert_equal "Introduction", Section.find(1).name
+            end
+          end
+
           context "with no primary key" do
             it "raises ArgumentError" do
               error = assert_raises ArgumentError do
