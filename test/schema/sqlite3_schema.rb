@@ -12,4 +12,8 @@ ActiveRecord::Schema.define do
   end
 
   add_index :alarms, [:device_id, :alarm_type], unique: true, where: 'status <> 0'
+
+  create_table :sections, primary_key: :order, force: :cascade do |t|
+    t.string :name
+  end
 end

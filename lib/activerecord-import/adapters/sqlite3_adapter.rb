@@ -169,7 +169,7 @@ module ActiveRecord::Import::SQLite3Adapter
   end
 
   def sql_for_default_conflict_target( primary_key )
-    conflict_target = Array(primary_key).join(', ')
+    conflict_target = Array(primary_key).map { |key| quote_column_name(key) }.join(', ')
     "(#{conflict_target}) " if conflict_target.present?
   end
 
