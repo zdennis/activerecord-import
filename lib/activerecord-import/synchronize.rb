@@ -60,7 +60,8 @@ module ActiveRecord # :nodoc:
         next false unless matched_instance
 
         instance.instance_variable_set :@association_cache, {}
-        instance.send :clear_aggregation_cache
+        # Aggregations is only included in models that call composed_of
+        instance.send :clear_aggregation_cache if instance.respond_to?(:clear_aggregation_cache, true)
         yield instance, matched_instance.instance_variable_get(:@attributes)
 
         # Since the instance now accurately reflects the record in

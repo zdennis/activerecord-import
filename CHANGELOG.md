@@ -1,3 +1,10 @@
+## Changes in 3.0.1
+
+### Fixes
+
+* Fix `synchronize` raising `NoMethodError` (undefined method `clear_aggregation_cache`) for models
+  that don't use `composed_of`. This regressed in 3.0.0. Fixes #951.
+
 ## Changes in 3.0.0
 
 ### Breaking Changes
