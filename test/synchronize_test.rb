@@ -51,4 +51,12 @@ describe ".synchronize" do
     Topic.synchronize topics
     assert_equal false, topics[0].approved
   end
+
+  it "reloads data for a model that doesn't use composed_of" do
+    books = Generate(2, :books)
+    Book.connection_pool.with_connection { |conn| conn.execute( "UPDATE #{Book.table_name} SET title='changed' WHERE id=#{books[0].id}", "Updating book without ActiveRecord" ) }
+
+    Book.synchronize books
+    assert_equal "changed", books[0].title
+  end
 end

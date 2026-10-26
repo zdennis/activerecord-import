@@ -713,6 +713,15 @@ describe "#import" do
       end
     end
 
+    context "synchronizing a model that doesn't use composed_of" do
+      let(:new_books) { Build(3, :books) }
+
+      it "reloads data for existing in-memory instances" do
+        Book.import(new_books, synchronize: new_books, synchronize_keys: [:title])
+        assert new_books.all?(&:persisted?), "Records should have been reloaded"
+      end
+    end
+
     context "synchronizing on existing records" do
       let(:topics) { Generate(2, :topics) }
 
