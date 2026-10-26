@@ -3,7 +3,14 @@
 ### Fixes
 
 * Fix `synchronize` raising `NoMethodError` (undefined method `clear_aggregation_cache`) for models
-  that don't use `composed_of`. This regressed in 3.0.0. Fixes #951.
+  that don't use `composed_of`. This regressed in 3.0.0. Fixes #951 via #952.
+* Quote the primary key that SQLite uses as the default `ON CONFLICT` target, so
+  `on_duplicate_key_update` works when the primary key is named after a reserved word such as
+  `order`. Thanks to @TakuyaKurimoto via #950.
+
+### Development
+
+* Get the benchmarks running again on Ruby 3.4 and Rails 8. via #949.
 
 ## Changes in 3.0.0
 
